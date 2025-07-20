@@ -1,7 +1,7 @@
 const config = {
   type: Phaser.AUTO,
   width: 800,
-  height: 600,
+  height: 470, // reduced height for better fit
   physics: {
     default: "arcade",
     arcade: {
@@ -24,7 +24,9 @@ function preload() {
   this.load.image("kisscam", "sprites/kisscam.png");
 
   this.load.image("skin", "sprites/crowd/skin.png");
-  this.load.image("hair", "sprites/crowd/hair.png");
+  this.load.image("hair_f", "sprites/crowd/hair_f.png");
+  this.load.image("hair_m", "sprites/crowd/hair_m.png");
+  this.load.image("hat1", "sprites/crowd/hat1.png");
   this.load.image("shirt", "sprites/crowd/shirt.png");
   this.load.image("pants", "sprites/crowd/pants.png");
 }
@@ -33,12 +35,15 @@ function create() {
   cursors = this.input.keyboard.createCursorKeys();
 
   player = this.physics.add.sprite(100, 100, "ceo1").setScale(0.07);
+  player.body.setCollideWorldBounds(true); // keep player inside canvas
+
   hr = this.physics.add.sprite(90, 110, "hr1").setScale(0.07);
+  hr.body.setCollideWorldBounds(true); // keep hr inside canvas
 
   this.anims.create({ key: "ceo_run", frames: [{ key: "ceo1" }, { key: "ceo2" }], frameRate: 8, repeat: -1 });
   this.anims.create({ key: "hr_run", frames: [{ key: "hr1" }, { key: "hr2" }], frameRate: 8, repeat: -1 });
 
-  kissCam = this.physics.add.sprite(400, 300, "kisscam").setScale(0.07);
+  kissCam = this.physics.add.sprite(400, 235, "kisscam").setScale(0.07);
   kissCam.body.setCollideWorldBounds(true);
 
   crowdGroup = this.physics.add.group({ immovable: true, allowGravity: false });
@@ -51,7 +56,7 @@ function create() {
 
 function generateCrowd() {
   const spacing = 35;
-  for (let y = 0; y < 600; y += spacing) {
+  for (let y = 0; y < 470; y += spacing) {
     for (let x = 0; x < 800; x += spacing) {
       if (Phaser.Math.Between(0, 100) > 75) {
         const px = x + Phaser.Math.Between(-5, 5);
@@ -60,16 +65,21 @@ function generateCrowd() {
 
         const base = this.physics.add.sprite(px, py, "skin").setScale(scale);
         base.setImmovable(true);
-
-        // Replace base visuals with layered ones
         base.setVisible(false);
 
         const visuals = this.add.container(px, py, [
           this.add.sprite(0, 0, "skin").setScale(scale),
           this.add.sprite(0, 0, "pants").setScale(scale).setTint(randomColor()),
           this.add.sprite(0, 0, "shirt").setScale(scale).setTint(randomColor()),
-          this.add.sprite(0, 0, "hair").setScale(scale).setTint(randomColor())
         ]);
+
+        const rand = Phaser.Math.Between(0, 2);
+        let accessory;
+        if (rand === 0) accessory = this.add.sprite(0, 0, "hair_f").setScale(scale).setTint(randomColor());
+        else if (rand === 1) accessory = this.add.sprite(0, 0, "hair_m").setScale(scale).setTint(randomColor());
+        else accessory = this.add.sprite(0, 0, "hat1").setScale(scale).setTint(randomColor());
+
+        visuals.add(accessory);
 
         base.visuals = visuals;
 

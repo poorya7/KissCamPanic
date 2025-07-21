@@ -73,13 +73,19 @@ function create() {
 
 
 function generateCrowd() {
-  const spacing = 35;
+  const spacing = 25;  // Tighter general spacing for a packed feel
+
   for (let y = 20; y < 520; y += spacing) {
     for (let x = 10; x < 800; x += spacing) {
-      spawnCrowdMember.call(this, x, y);
+      const densityFactor = Phaser.Math.Clamp(1.3 - (y / 470), 0.5, 1.0);
+      if (Phaser.Math.Between(0, 100) > 40 * densityFactor) {  // Lower threshold = more density at front
+        spawnCrowdMember.call(this, x, y);
+      }
     }
   }
 }
+
+
 
 function spawnCrowdMember(x, y) {
   const insideStageBox = (x > 260 && x < 540 && y < 200);
@@ -89,7 +95,7 @@ function spawnCrowdMember(x, y) {
     const px = x + Phaser.Math.Between(-5, 5);
     let py = y + Phaser.Math.Between(-5, 5);
 
-    const scale = 0.07;
+    const scale = 0.09;
 
     const base = this.physics.add.sprite(px, py, "skin").setScale(scale);
     base.setImmovable(true);
@@ -97,17 +103,76 @@ function spawnCrowdMember(x, y) {
 
     const hairStyle = Phaser.Math.RND.pick(["hair_f", "hair_m", "hat1"]);
 
-    const visuals = this.add.container(px, py, [
-      this.add.sprite(0, 0, "skin").setScale(scale),
-      this.add.sprite(0, 0, "pants").setScale(scale).setTint(randomColor()),
-      this.add.sprite(0, 0, "shirt").setScale(scale).setTint(randomColor()),
-      this.add.sprite(0, 0, hairStyle).setScale(scale).setTint(randomColor())
-    ]);
+    const skinSprite = this.add.sprite(0, 0, "skin").setScale(scale);
+
+    // Determine clothing colors:
+    let pantsColor = randomColor();
+    let shirtColor = randomColor();
+
+    if (hairStyle === "hair_m" && Phaser.Math.Between(1, 100) <= 70) {
+      const darkPalette = [0x222222, 0x444444, 0x333366, 0x4b3621];
+      pantsColor = Phaser.Math.RND.pick(darkPalette);
+      shirtColor = Phaser.Math.RND.pick(darkPalette);
+    }
+
+    const pants = this.add.sprite(0, 0, "pants").setScale(scale).setTint(pantsColor);
+    const shirt = this.add.sprite(0, 0, "shirt").setScale(scale).setTint(shirtColor);
+    const hair = this.add.sprite(0, 0, hairStyle).setScale(scale).setTint(randomHairColor());
+
+    const visuals = this.add.container(px, py, [skinSprite, pants, shirt, hair]);
+
+    // Add subtle idle movement:
+    const isVertical = Phaser.Math.Between(0, 1) === 0;
+    const prop = isVertical ? 'y' : 'x';
+    const amount = isVertical ? 2 : 1;
+
+    this.tweens.add({
+      targets: skinSprite,
+      [prop]: { from: -amount, to: amount },
+      duration: Phaser.Math.Between(500, 1500),
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut',
+      delay: Phaser.Math.Between(0, 1000)
+    });
 
     base.visuals = visuals;
     crowdGroup.add(base);
   }
 }
+
+
+
+
+function randomHairColor() {
+  const naturalColors = [
+    0x2c2c2c, // black
+    0x5a3825, // brown
+    0xa0522d, // light brown
+    0xd2b48c, // blonde
+  ];
+
+  const purple = 0x800080;
+  const pink = 0xff69b4;
+  const blue = 0x1e90ff;
+  const green = 0x228b22;
+
+  const rand = Phaser.Math.Between(1, 100);
+
+  if (rand <= 85) {
+    return Phaser.Math.RND.pick(naturalColors);
+  } else if (rand <= 93) {
+    return purple;  // 8%
+  } else if (rand <= 97) {
+    return pink;  // 4%
+  } else if (rand <= 99) {
+    return blue;  // 2%
+  } else {
+    return green;  // 1%
+  }
+}
+
+
 
 function randomColor() {
   return Phaser.Display.Color.GetColor(

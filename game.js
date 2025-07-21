@@ -30,14 +30,14 @@ function preload() {
   this.load.image("pants", "sprites/crowd/pants.png");
   this.load.image("credit_card", "sprites/cc.png");
   this.load.image("briefcase", "sprites/case.png");
-  this.load.image("stage", "sprites/stage.png");  // <-- NEW LINE
+  this.load.image("stage", "sprites/stage.png");
 }
 
 function create() {
   cursors = this.input.keyboard.createCursorKeys();
   this.input.keyboard.on("keydown-SPACE", shootProjectile, this);
 
-  const stage = this.add.image(400, 20, "stage").setOrigin(0.48, 0.12).setScale(0.5);  // <-- NEW LINE
+  const stage = this.add.image(400, 20, "stage").setOrigin(0.48, 0.12).setScale(0.5);
 
   player = this.physics.add.sprite(100, 100, "ceo1").setScale(0.07);
   player.body.setCollideWorldBounds(true);
@@ -63,36 +63,43 @@ function create() {
 
 function generateCrowd() {
   const spacing = 35;
-  for (let y = 200; y < 470; y += spacing) {
-  for (let x = 0; x < 800; x += spacing) {
-    if (Phaser.Math.Between(0, 100) > 75) {
-      const px = x + Phaser.Math.Between(-5, 5);
-      let py = y + Phaser.Math.Between(-5, 5);
-      if (py < 120) py = 120;
-
-      const scale = 0.07;
-
-      const base = this.physics.add.sprite(px, py, "skin").setScale(scale);
-      base.setImmovable(true);
-      base.setVisible(false);
-
-      const hairStyle = Phaser.Math.RND.pick(["hair_f", "hair_m", "hat1"]);
-
-      const visuals = this.add.container(px, py, [
-        this.add.sprite(0, 0, "skin").setScale(scale),
-        this.add.sprite(0, 0, "pants").setScale(scale).setTint(randomColor()),
-        this.add.sprite(0, 0, "shirt").setScale(scale).setTint(randomColor()),
-        this.add.sprite(0, 0, hairStyle).setScale(scale).setTint(randomColor())
-      ]);
-
-      base.visuals = visuals;
-      crowdGroup.add(base);
+  for (let y = 20; y < 520; y += spacing) {
+    for (let x = 10; x < 800; x += spacing) {
+      spawnCrowdMember.call(this, x, y);
     }
   }
 }
+
+function spawnCrowdMember(x, y) {
+  // Exclusion zone: avoid green rectangle area
+  const insideStageBox = (x > 260 && x < 540 && y < 200);
+  if (insideStageBox) return;
+
+  // 3x denser crowd (increase spawn chance)
+  if (Phaser.Math.Between(0, 100) > 50) {
+    const px = x + Phaser.Math.Between(-5, 5);
+    let py = y + Phaser.Math.Between(-5, 5);
+    //if (py < 120) py = 120;
+
+    const scale = 0.07;
+
+    const base = this.physics.add.sprite(px, py, "skin").setScale(scale);
+    base.setImmovable(true);
+    base.setVisible(false);
+
+    const hairStyle = Phaser.Math.RND.pick(["hair_f", "hair_m", "hat1"]);
+
+    const visuals = this.add.container(px, py, [
+      this.add.sprite(0, 0, "skin").setScale(scale),
+      this.add.sprite(0, 0, "pants").setScale(scale).setTint(randomColor()),
+      this.add.sprite(0, 0, "shirt").setScale(scale).setTint(randomColor()),
+      this.add.sprite(0, 0, hairStyle).setScale(scale).setTint(randomColor())
+    ]);
+
+    base.visuals = visuals;
+    crowdGroup.add(base);
+  }
 }
-
-
 
 function randomColor() {
   return Phaser.Display.Color.GetColor(

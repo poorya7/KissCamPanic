@@ -236,4 +236,18 @@ function update() {
       }
     }
   });
+  
+  // Restrict player and HR from entering the stage rectangle (clean approach)
+if (player.x > 260 && player.x < 540 && player.y < 200) {
+  if (cursors.up.isDown) player.body.setVelocityY(0);
+  if (cursors.left.isDown && player.x >= 260) player.body.setVelocityX(0);
+  if (cursors.right.isDown && player.x <= 540) player.body.setVelocityX(0);
+}
+
+if (hr.x > 260 && hr.x < 540 && hr.y < 200) {
+  if (cursors.up.isDown) hr.body.setVelocityY(0);
+  if (cursors.left.isDown && hr.x >= 260) hr.body.setVelocityX(0);
+  if (cursors.right.isDown && hr.x <= 540) hr.body.setVelocityX(0);
+}
+
 }

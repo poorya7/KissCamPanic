@@ -100,8 +100,8 @@ function shootCreditCard() {
 
   card.startY = player.y;
 
-  const speed = 400; // total speed of throw
-  const angleDeg = facingRight ? -50 : 230; // launch angle
+  const speed = 400;
+  const angleDeg = facingRight ? -50 : 230;
   const angleRad = Phaser.Math.DegToRad(angleDeg);
 
   const velX = Math.cos(angleRad) * speed;
@@ -119,7 +119,6 @@ function shootCreditCard() {
     }
   });
 }
-
 
 function projectileHitsCrowd(card, crowd) {
   card.destroy();
@@ -167,7 +166,7 @@ function update() {
   hr.x = player.x - 10;
   hr.y = player.y + 10;
 
-  const chaseSpeed = 0;
+  const chaseSpeed = 80;
   kissCam.body.setVelocity(
     kissCam.x < player.x ? chaseSpeed : kissCam.x > player.x ? -chaseSpeed : 0,
     kissCam.y < player.y ? chaseSpeed : kissCam.y > player.y ? -chaseSpeed : 0
@@ -181,6 +180,14 @@ function update() {
   });
 
   projectiles.getChildren().forEach(card => {
+    // Spin around Z axis
+    card.rotation += 0.3;
+
+    // Fake 3D flip using scaleX oscillation
+    const flip = Math.abs(Math.sin(this.time.now * 0.02));
+    card.setScale(0.02 * flip, 0.02);
+
+    // Auto-destroy when falling below startY
     if (card.y > card.startY) {
       card.destroy();
     }

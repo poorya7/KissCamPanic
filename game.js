@@ -59,7 +59,18 @@ function create() {
   this.physics.add.collider(hr, crowdGroup);
   this.physics.add.collider(player, hr);
   this.physics.add.overlap(projectiles, crowdGroup, projectileHitsCrowd, null, this);
+
+  // 👉 Add proper invisible static collider to block stage area:
+  const stageCollider = this.add.rectangle(410, 0, 220, 190)  
+    .setOrigin(0.5, 0)
+    .setVisible(false);  // Set `true` for debug visualization
+
+  this.physics.add.existing(stageCollider, true);
+
+  this.physics.add.collider(player, stageCollider);
+  this.physics.add.collider(hr, stageCollider);
 }
+
 
 function generateCrowd() {
   const spacing = 35;
@@ -71,15 +82,12 @@ function generateCrowd() {
 }
 
 function spawnCrowdMember(x, y) {
-  // Exclusion zone: avoid green rectangle area
   const insideStageBox = (x > 260 && x < 540 && y < 200);
   if (insideStageBox) return;
 
-  // 3x denser crowd (increase spawn chance)
   if (Phaser.Math.Between(0, 100) > 50) {
     const px = x + Phaser.Math.Between(-5, 5);
     let py = y + Phaser.Math.Between(-5, 5);
-    //if (py < 120) py = 120;
 
     const scale = 0.07;
 
@@ -236,18 +244,4 @@ function update() {
       }
     }
   });
-  
-  // Restrict player and HR from entering the stage rectangle (clean approach)
-if (player.x > 260 && player.x < 540 && player.y < 200) {
-  if (cursors.up.isDown) player.body.setVelocityY(0);
-  if (cursors.left.isDown && player.x >= 260) player.body.setVelocityX(0);
-  if (cursors.right.isDown && player.x <= 540) player.body.setVelocityX(0);
-}
-
-if (hr.x > 260 && hr.x < 540 && hr.y < 200) {
-  if (cursors.up.isDown) hr.body.setVelocityY(0);
-  if (cursors.left.isDown && hr.x >= 260) hr.body.setVelocityX(0);
-  if (cursors.right.isDown && hr.x <= 540) hr.body.setVelocityX(0);
-}
-
 }

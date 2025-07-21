@@ -30,11 +30,14 @@ function preload() {
   this.load.image("pants", "sprites/crowd/pants.png");
   this.load.image("credit_card", "sprites/cc.png");
   this.load.image("briefcase", "sprites/case.png");
+  this.load.image("stage", "sprites/stage.png");  // <-- NEW LINE
 }
 
 function create() {
   cursors = this.input.keyboard.createCursorKeys();
   this.input.keyboard.on("keydown-SPACE", shootProjectile, this);
+
+  const stage = this.add.image(400, 20, "stage").setOrigin(0.48, 0.12).setScale(0.5);  // <-- NEW LINE
 
   player = this.physics.add.sprite(100, 100, "ceo1").setScale(0.07);
   player.body.setCollideWorldBounds(true);
@@ -60,32 +63,36 @@ function create() {
 
 function generateCrowd() {
   const spacing = 35;
-  for (let y = 0; y < 470; y += spacing) {
-    for (let x = 0; x < 800; x += spacing) {
-      if (Phaser.Math.Between(0, 100) > 75) {
-        const px = x + Phaser.Math.Between(-5, 5);
-        const py = y + Phaser.Math.Between(-5, 5);
-        const scale = 0.07;
+  for (let y = 200; y < 470; y += spacing) {
+  for (let x = 0; x < 800; x += spacing) {
+    if (Phaser.Math.Between(0, 100) > 75) {
+      const px = x + Phaser.Math.Between(-5, 5);
+      let py = y + Phaser.Math.Between(-5, 5);
+      if (py < 120) py = 120;
 
-        const base = this.physics.add.sprite(px, py, "skin").setScale(scale);
-        base.setImmovable(true);
-        base.setVisible(false);
+      const scale = 0.07;
 
-        const hairStyle = Phaser.Math.RND.pick(["hair_f", "hair_m", "hat1"]);
+      const base = this.physics.add.sprite(px, py, "skin").setScale(scale);
+      base.setImmovable(true);
+      base.setVisible(false);
 
-        const visuals = this.add.container(px, py, [
-          this.add.sprite(0, 0, "skin").setScale(scale),
-          this.add.sprite(0, 0, "pants").setScale(scale).setTint(randomColor()),
-          this.add.sprite(0, 0, "shirt").setScale(scale).setTint(randomColor()),
-          this.add.sprite(0, 0, hairStyle).setScale(scale).setTint(randomColor())
-        ]);
+      const hairStyle = Phaser.Math.RND.pick(["hair_f", "hair_m", "hat1"]);
 
-        base.visuals = visuals;
-        crowdGroup.add(base);
-      }
+      const visuals = this.add.container(px, py, [
+        this.add.sprite(0, 0, "skin").setScale(scale),
+        this.add.sprite(0, 0, "pants").setScale(scale).setTint(randomColor()),
+        this.add.sprite(0, 0, "shirt").setScale(scale).setTint(randomColor()),
+        this.add.sprite(0, 0, hairStyle).setScale(scale).setTint(randomColor())
+      ]);
+
+      base.visuals = visuals;
+      crowdGroup.add(base);
     }
   }
 }
+}
+
+
 
 function randomColor() {
   return Phaser.Display.Color.GetColor(
@@ -197,7 +204,7 @@ function update() {
   hr.x = player.x - 10;
   hr.y = player.y + 10;
 
-  const chaseSpeed = 20;
+  const chaseSpeed = 10;
   kissCam.body.setVelocity(
     kissCam.x < player.x ? chaseSpeed : kissCam.x > player.x ? -chaseSpeed : 0,
     kissCam.y < player.y ? chaseSpeed : kissCam.y > player.y ? -chaseSpeed : 0

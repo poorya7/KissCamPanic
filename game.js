@@ -30,7 +30,9 @@ function preload() {
   this.load.image("credit_card", "sprites/cc.png");
   this.load.image("briefcase", "sprites/case.png");
   this.load.image("stage", "sprites/stage.png");
-	this.load.image("kisscam", "sprites/kisscam.png");
+	this.load.image("kisscam1", "sprites/kisscam1.png");
+this.load.image("kisscam2", "sprites/kisscam2.png");
+
 
 }
 
@@ -40,7 +42,17 @@ function create() {
 
   const stage = this.add.image(400, 100, "stage").setOrigin(0.48, 0.12).setScale(0.5);
 
-  const kissCamFrame = this.add.image(400, 40, "kisscam").setScale(0.07).setDepth(1000);
+  let kissCamFrame = this.add.image(400, 40, "kisscam1").setScale(0.07).setDepth(1000);
+
+this.time.addEvent({
+  delay: 700, // 500 ms = switch every half second
+  loop: true,
+  callback: () => {
+    const currentTexture = kissCamFrame.texture.key;
+    kissCamFrame.setTexture(currentTexture === "kisscam1" ? "kisscam2" : "kisscam1");
+  }
+});
+
 
 
 

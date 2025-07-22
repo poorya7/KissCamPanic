@@ -14,14 +14,13 @@ const config = {
 
 const game = new Phaser.Game(config);
 
-let player, hr, cursors, kissCam, crowdGroup, projectiles, facingRight = true, shootToggle = false;
+let player, hr, cursors, crowdGroup, projectiles, facingRight = true, shootToggle = false;
 
 function preload() {
   this.load.image("ceo1", "sprites/ceo1.png");
   this.load.image("ceo2", "sprites/ceo2.png");
   this.load.image("hr1", "sprites/hr1.png");
   this.load.image("hr2", "sprites/hr2.png");
-  this.load.image("kisscam", "sprites/kisscam.png");
   this.load.image("skin", "sprites/crowd/skin.png");
   this.load.image("hair_f", "sprites/crowd/hair_f.png");
   this.load.image("hair_m", "sprites/crowd/hair_m.png");
@@ -31,13 +30,21 @@ function preload() {
   this.load.image("credit_card", "sprites/cc.png");
   this.load.image("briefcase", "sprites/case.png");
   this.load.image("stage", "sprites/stage.png");
+	this.load.image("kisscam", "sprites/kisscam.png");
+
 }
 
 function create() {
   cursors = this.input.keyboard.createCursorKeys();
   this.input.keyboard.on("keydown-SPACE", shootProjectile, this);
 
-  const stage = this.add.image(400, 20, "stage").setOrigin(0.48, 0.12).setScale(0.5);
+  const stage = this.add.image(400, 100, "stage").setOrigin(0.48, 0.12).setScale(0.5);
+
+  const kissCamFrame = this.add.image(400, 40, "kisscam").setScale(0.07).setDepth(1000);
+
+
+
+
 
   player = this.physics.add.sprite(100, 100, "ceo1").setScale(0.07);
   player.body.setCollideWorldBounds(true);
@@ -47,10 +54,9 @@ function create() {
   this.anims.create({ key: "ceo_run", frames: [{ key: "ceo1" }, { key: "ceo2" }], frameRate: 8, repeat: -1 });
   this.anims.create({ key: "hr_run", frames: [{ key: "hr1" }, { key: "hr2" }], frameRate: 8, repeat: -1 });
 
-  kissCam = this.physics.add.sprite(400, 235, "kisscam").setScale(0.07);
-  kissCam.body.setCollideWorldBounds(true);
   
-  spotlightMarker = this.add.circle(kissCam.x, kissCam.y, 30, 0xffffff, 0.3);
+  spotlightMarker = this.add.circle(player.x, player.y, 30, 0xffffff, 0.3);
+
 spotlightMarker.setDepth(1000);  // 🔥 Ensures it renders above all other sprites
 
 

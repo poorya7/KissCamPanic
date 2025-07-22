@@ -14,6 +14,7 @@ const config = {
 
 const game = new Phaser.Game(config);
 
+let stage;
 let player, hr, cursors, crowdGroup, projectiles, facingRight = true, shootToggle = false;
 
 function preload() {
@@ -40,7 +41,7 @@ function create() {
   cursors = this.input.keyboard.createCursorKeys();
   this.input.keyboard.on("keydown-SPACE", shootProjectile, this);
 
-  const stage = this.add.image(400, 100, "stage").setOrigin(0.48, 0.12).setScale(0.5);
+  stage = this.add.image(400, 100, "stage").setOrigin(0.48, 0.12).setScale(0.5);
 
   let kissCamFrame = this.add.image(400, 40, "kisscam1").setScale(0.07).setDepth(1000);
 
@@ -52,11 +53,6 @@ this.time.addEvent({
     kissCamFrame.setTexture(currentTexture === "kisscam1" ? "kisscam2" : "kisscam1");
   }
 });
-
-
-
-
-
 
   player = this.physics.add.sprite(100, 100, "ceo1").setScale(0.07);
   player.body.setCollideWorldBounds(true);
@@ -112,8 +108,7 @@ function generateCrowd() {
 
 
 function spawnCrowdMember(x, y) {
-  const insideStageBox = (x > 260 && x < 540 && y < 200);
-  if (insideStageBox) return;
+  if (isInsideStage(x, y) || isInsideKissCam(x, y)) return;
 
   if (Phaser.Math.Between(0, 100) > 50) {
     const px = x + Phaser.Math.Between(-5, 5);
@@ -164,6 +159,41 @@ function spawnCrowdMember(x, y) {
     crowdGroup.add(base);
   }
 }
+
+function isInsideStage(x, y) {
+	console.log(`stage pos (${stage.x}, ${stage.y}), size (${stage.width}x${stage.height}), scale (${stage.scaleX}, ${stage.scaleY})`);
+
+  const stageWidth = stage.width * stage.scaleX;
+  const stageHeight = stage.height * stage.scaleY;
+ 
+  const stageLeft = stage.x - stageWidth * 0.48;
+  const stageRight = stage.x + stageWidth * 0.52;
+  const stageTop = stage.y - stageHeight * 0.12-10;
+  const stageBottom = stage.y + stageHeight * 0.88;
+
+  return (x > stageLeft && x < stageRight && y > stageTop && y < stageBottom);
+}
+
+
+function isInsideKissCam(x, y) {
+  const kissCamX = 400;
+  const kissCamY = 40;
+  const nativeWidth = 512;  // adjust based on actual kisscam image size
+  const nativeHeight = 1024;
+  const scale = 0.07;
+
+  const width = nativeWidth * scale;
+  const height = nativeHeight * scale;
+
+  const left = (kissCamX - width / 2)-40;
+  const right = (kissCamX + width / 2)+40;
+  const topp = kissCamY - height / 2;
+  const bottom = kissCamY + height / 2;
+
+  return (x > left && x < right && y > topp && y < bottom);
+}
+
+
 
 
 

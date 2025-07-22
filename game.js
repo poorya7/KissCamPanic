@@ -49,6 +49,11 @@ function create() {
 
   kissCam = this.physics.add.sprite(400, 235, "kisscam").setScale(0.07);
   kissCam.body.setCollideWorldBounds(true);
+  
+  spotlightMarker = this.add.circle(kissCam.x, kissCam.y, 30, 0xffffff, 0.3);
+spotlightMarker.setDepth(1000);  // 🔥 Ensures it renders above all other sprites
+
+
 
   crowdGroup = this.physics.add.group({ immovable: true, allowGravity: false });
   generateCrowd.call(this);
@@ -285,11 +290,13 @@ function update() {
   hr.x = player.x - 10;
   hr.y = player.y + 10;
 
-  const chaseSpeed = 10;
-  kissCam.body.setVelocity(
-    kissCam.x < player.x ? chaseSpeed : kissCam.x > player.x ? -chaseSpeed : 0,
-    kissCam.y < player.y ? chaseSpeed : kissCam.y > player.y ? -chaseSpeed : 0
-  );
+  const chaseSpeed = 0.5;
+if (spotlightMarker.x < player.x) spotlightMarker.x += chaseSpeed;
+else if (spotlightMarker.x > player.x) spotlightMarker.x -= chaseSpeed;
+
+if (spotlightMarker.y < player.y) spotlightMarker.y += chaseSpeed;
+else if (spotlightMarker.y > player.y) spotlightMarker.y -= chaseSpeed;
+
 
   crowdGroup.getChildren().forEach(base => {
     if (base.visuals) {

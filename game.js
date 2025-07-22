@@ -108,7 +108,7 @@ function generateCrowd() {
 
 
 function spawnCrowdMember(x, y) {
-  if (isInsideStage(x, y) || isInsideKissCam(x, y)) return;
+  if (isInsideStage(x, y, 0) || isInsideKissCam(x, y, 0)) return;
 
   if (Phaser.Math.Between(0, 100) > 50) {
     const px = x + Phaser.Math.Between(-5, 5);
@@ -160,40 +160,36 @@ function spawnCrowdMember(x, y) {
   }
 }
 
-function isInsideStage(x, y) {
-	console.log(`stage pos (${stage.x}, ${stage.y}), size (${stage.width}x${stage.height}), scale (${stage.scaleX}, ${stage.scaleY})`);
+function isBlockedArea(x, y) {
+  return isInsideStage(x, y, -10) || isInsideKissCam(x, y, -10);  // tighter for player movement
+}
 
+
+
+function isInsideStage(x, y, margin = 0) {
   const stageWidth = stage.width * stage.scaleX;
   const stageHeight = stage.height * stage.scaleY;
- 
-  const stageLeft = stage.x - stageWidth * 0.48;
-  const stageRight = stage.x + stageWidth * 0.52;
-  const stageTop = stage.y - stageHeight * 0.12-10;
-  const stageBottom = stage.y + stageHeight * 0.88;
-
-  return (x > stageLeft && x < stageRight && y > stageTop && y < stageBottom);
+  const left = stage.x - stageWidth * 0.48 - margin;
+  const right = stage.x + stageWidth * 0.52 + margin;
+  const top = stage.y - stageHeight * 0.12 - 10 - margin;
+  const bottom = stage.y + stageHeight * 0.88 + margin;
+  return (x > left && x < right && y > top && y < bottom);
 }
 
-
-function isInsideKissCam(x, y) {
+function isInsideKissCam(x, y, margin = 0) {
   const kissCamX = 400;
   const kissCamY = 40;
-  const nativeWidth = 512;  // adjust based on actual kisscam image size
+  const nativeWidth = 512;
   const nativeHeight = 1024;
   const scale = 0.07;
-
   const width = nativeWidth * scale;
   const height = nativeHeight * scale;
-
-  const left = (kissCamX - width / 2)-40;
-  const right = (kissCamX + width / 2)+40;
-  const topp = kissCamY - height / 2;
-  const bottom = kissCamY + height / 2;
-
+  const left = kissCamX - width / 2 - 40 - margin;
+  const right = kissCamX + width / 2 + 40 + margin;
+  const topp = kissCamY - height / 2 - margin;
+  const bottom = kissCamY + height / 2 + margin;
   return (x > left && x < right && y > topp && y < bottom);
 }
-
-
 
 
 
@@ -298,7 +294,11 @@ function projectileHitsCrowd(proj, crowd) {
   crowd.destroy();
 }
 
-function update() {
+
+// Modify your update() signature to accept time and delta:
+function update(time, delta) {
+  const dt = delta / 1000; // Convert from ms to seconds
+
   const speed = 200;
   let moving = false;
   player.body.setVelocity(0);
@@ -335,16 +335,22 @@ function update() {
     hr.setTexture("hr1");
   }
 
-  hr.x = player.x - 10;
-  hr.y = player.y + 10;
+  const nextX = player.x + player.body.velocity.x * dt;
+  const nextY = player.y + player.body.velocity.y * dt;
+
+  if (!isBlockedArea(nextX, nextY)) {
+    hr.x = nextX - 10;
+    hr.y = nextY + 10;
+  } else {
+    player.body.setVelocity(0);
+  }
 
   const chaseSpeed = 0.5;
-if (spotlightMarker.x < player.x) spotlightMarker.x += chaseSpeed;
-else if (spotlightMarker.x > player.x) spotlightMarker.x -= chaseSpeed;
+  if (spotlightMarker.x < player.x) spotlightMarker.x += chaseSpeed;
+  else if (spotlightMarker.x > player.x) spotlightMarker.x -= chaseSpeed;
 
-if (spotlightMarker.y < player.y) spotlightMarker.y += chaseSpeed;
-else if (spotlightMarker.y > player.y) spotlightMarker.y -= chaseSpeed;
-
+  if (spotlightMarker.y < player.y) spotlightMarker.y += chaseSpeed;
+  else if (spotlightMarker.y > player.y) spotlightMarker.y -= chaseSpeed;
 
   crowdGroup.getChildren().forEach(base => {
     if (base.visuals) {

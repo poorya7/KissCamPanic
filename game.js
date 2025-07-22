@@ -87,6 +87,7 @@ function generateCrowd() {
 
 
 
+
 function spawnCrowdMember(x, y) {
   const insideStageBox = (x > 260 && x < 540 && y < 200);
   if (insideStageBox) return;

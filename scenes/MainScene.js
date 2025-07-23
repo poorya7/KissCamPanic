@@ -49,6 +49,27 @@ export default class MainScene extends Phaser.Scene {
     this.kissCamFeed = this.add.renderTexture(365, 20, 70, 70);
     this.kissCamFeed.setDepth(999);
     this.kissCamFeed.setOrigin(0, 0);
+	
+	// === Create oval mask for kiss cam feed ===
+const maskGraphics = this.make.graphics({ x: 0, y: 0, add: true }); // 👈 add: true!
+
+maskGraphics.fillStyle(0xffffff);
+
+
+
+const ellipse = new Phaser.Geom.Ellipse(400, 54, 40, 56);
+
+
+
+
+maskGraphics.fillEllipseShape(ellipse);
+
+// Create geometry mask from it
+const kissCamMask = maskGraphics.createGeometryMask();
+this.kissCamFeed.setMask(kissCamMask);
+
+maskGraphics.visible = false;
+
 
     this.player = new Player(this, 100, 100, "ceo1");
     this.hr = this.physics.add.sprite(90, 110, "hr1").setScale(0.07);
@@ -92,81 +113,105 @@ export default class MainScene extends Phaser.Scene {
     this.physics.add.collider(this.player, kissCamBlocker);
   }
 
+  
+  
+  
   update() {
-    this.player.move(this.cursors);
+  this.player.move(this.cursors);
 
-    if (Phaser.Input.Keyboard.JustDown(this.spaceBar)) {
-      this.player.shoot();
-    }
-
-    const followSpeed = 0.1;
-    this.spotlightMarker.x += (this.player.x - this.spotlightMarker.x) * followSpeed;
-    this.spotlightMarker.y += (this.player.y - this.spotlightMarker.y) * followSpeed;
-
-    this.crowdGroup.getChildren().forEach(base => {
-      if (base.visuals) {
-        base.visuals.x = base.x;
-        base.visuals.y = base.y;
-      }
-    });
-
-    this.projectiles.getChildren().forEach(proj => {
-      if (proj.type === "credit_card") {
-        proj.rotation += 0.3;
-        const flip = Math.abs(Math.sin(this.time.now * 0.02));
-        proj.setScale(0.015 * flip, 0.015);
-        if (proj.y > proj.startY) proj.destroy();
-      } else if (proj.type === "briefcase") {
-        if (proj.y >= proj.throwerY + 5) proj.destroy();
-      }
-    });
-
-    // ==== Kiss Cam Live Feed ====
-    this.kissCamFeed.clear();
-
-    const feedSize = 70;
-    const zoom = 2;
-    const radius = feedSize / (2 * zoom);
-    const sx = this.spotlightMarker.x;
-    const sy = this.spotlightMarker.y;
-
-    const drawIfInside = (sprite) => {
-  const dx = sprite.x - sx;
-  const dy = sprite.y - sy;
-  if (Math.abs(dx) < radius && Math.abs(dy) < radius) {
-    this.kissCamFeed.draw(
-      sprite,
-      feedSize / 2 + dx * zoom,  // ✅ NO MORE MIRRORING X
-      feedSize / 2 + dy * zoom,  // ✅ KEEP Y NORMAL
-      zoom
-    );
+  if (Phaser.Input.Keyboard.JustDown(this.spaceBar)) {
+    this.player.shoot();
   }
-};
 
+  // === Smooth spotlight that eases + speed caps ===
+  const maxSpeed = 2;
+  const lerpStrength = 0.1;
+
+  const targetX = this.player.x;
+  const targetY = this.player.y;
+
+  let nextX = Phaser.Math.Linear(this.spotlightMarker.x, targetX, lerpStrength);
+  let nextY = Phaser.Math.Linear(this.spotlightMarker.y, targetY, lerpStrength);
+
+  const dx = nextX - this.spotlightMarker.x;
+  const dy = nextY - this.spotlightMarker.y;
+  const dist = Math.sqrt(dx * dx + dy * dy);
+
+  if (dist > maxSpeed) {
+    const angle = Math.atan2(dy, dx);
+    nextX = this.spotlightMarker.x + Math.cos(angle) * maxSpeed;
+    nextY = this.spotlightMarker.y + Math.sin(angle) * maxSpeed;
+  }
+
+  this.spotlightMarker.x = nextX;
+  this.spotlightMarker.y = nextY;
+
+  // === Sync crowd visuals with base physics objects ===
+  this.crowdGroup.getChildren().forEach(base => {
+    if (base.visuals) {
+      base.visuals.x = base.x;
+      base.visuals.y = base.y;
+    }
+  });
+
+  // === Projectiles behavior ===
+  this.projectiles.getChildren().forEach(proj => {
+    if (proj.type === "credit_card") {
+      proj.rotation += 0.3;
+      const flip = Math.abs(Math.sin(this.time.now * 0.02));
+      proj.setScale(0.015 * flip, 0.015);
+      if (proj.y > proj.startY) proj.destroy();
+    } else if (proj.type === "briefcase") {
+      if (proj.y >= proj.throwerY + 5) proj.destroy();
+    }
+  });
+
+  // === Kiss Cam Live Feed ===
+  this.kissCamFeed.clear();
+
+  const feedSize = 70;
+  const zoom = 2;
+  const radius = feedSize / (2 * zoom);
+  const sx = this.spotlightMarker.x;
+  const sy = this.spotlightMarker.y;
+
+  const drawIfInside = (sprite) => {
+    const dx = sprite.x - sx;
+    const dy = sprite.y - sy;
+    if (Math.abs(dx) < radius && Math.abs(dy) < radius) {
+      this.kissCamFeed.draw(
+        sprite,
+        Math.floor(feedSize / 2 + dx * zoom),
+        Math.floor(feedSize / 2 + dy * zoom),
+        zoom
+      );
+    }
+  };
+
+  drawIfInside(this.hr);     // Girl first
+  drawIfInside(this.player); // Guy second
+
+  this.crowdGroup.getChildren().forEach(base => {
+    if (!base.visuals) return;
+    base.visuals.list.forEach(part => {
+      const dx = part.x - sx;
+      const dy = part.y - sy;
+      if (Math.abs(dx) < radius && Math.abs(dy) < radius) {
+        this.kissCamFeed.draw(
+          part,
+          Math.floor(feedSize / 2 + dx * zoom),
+          Math.floor(feedSize / 2 + dy * zoom),
+          zoom
+        );
+      }
+    });
+  });
+}
 
   
-
-    drawIfInside(this.hr);     // Girl first
-    drawIfInside(this.player); // Guy second
-
- 
-
-    this.crowdGroup.getChildren().forEach(base => {
-      if (!base.visuals) return;
-      base.visuals.list.forEach(part => {
-        const dx = part.x - sx;
-        const dy = part.y - sy;
-        if (Math.abs(dx) < radius && Math.abs(dy) < radius) {
-          this.kissCamFeed.draw(
-            part,
-            feedSize / 2 - dx * zoom,
-            feedSize / 2 - dy * zoom,
-            zoom
-          );
-        }
-      });
-    });
-  }
+  
+  
+  
 
   projectileHitsCrowd(proj, crowd) {
     proj.destroy();

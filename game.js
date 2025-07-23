@@ -35,22 +35,20 @@ function preload() {
   this.load.image("kisscam2", "sprites/kisscam2.png");
 }
 
+
 function create() {
-	
-	//remember to remove this for production	
-	this.input.keyboard.on("keydown-C", () => {
-  this.physics.world.colliders.getActive().forEach(c => {
-    if (
-      (c.object1 === player && c.object2 === crowdGroup) ||
-      (c.object1 === hr && c.object2 === crowdGroup)
-    ) {
-      c.active = !c.active;
-    }
+  // Toggle crowd collision for testing
+  this.input.keyboard.on("keydown-C", () => {
+    this.physics.world.colliders.getActive().forEach(c => {
+      if (
+        (c.object1 === player && c.object2 === crowdGroup) ||
+        (c.object1 === hr && c.object2 === crowdGroup)
+      ) {
+        c.active = !c.active;
+      }
+    });
+    console.log("Crowd collisions toggled.");
   });
-  console.log("Crowd collisions toggled.");
-});
-
-
 
   cursors = this.input.keyboard.createCursorKeys();
   this.input.keyboard.on("keydown-SPACE", shootProjectile, this);
@@ -88,6 +86,17 @@ function create() {
   this.physics.add.collider(hr, crowdGroup);
   this.physics.add.collider(player, hr);
   this.physics.add.overlap(projectiles, crowdGroup, projectileHitsCrowd, null, this);
+
+  // Add physical blockers for player only
+  const stageBlocker = this.add.rectangle(stage.x+10, stage.y -20, 230, 180)
+    .setOrigin(0.5, 0).setVisible(false);
+  this.physics.add.existing(stageBlocker, true);
+  this.physics.add.collider(player, stageBlocker);
+
+  const kissCamBlocker = this.add.rectangle(400, 40, 80, 80)
+    .setOrigin(0.5, 0.5).setVisible(false);
+  this.physics.add.existing(kissCamBlocker, true);
+  this.physics.add.collider(player, kissCamBlocker);
 }
 
 function generateCrowd() {
@@ -160,17 +169,6 @@ function isInsideKissCamForCrowd(x, y) {
   return isInsideKissCam(x, y, 0);
 }
 
-function isBlockedForPlayer(x, y) {
-  return isInsideStageForPlayer(x, y) || isInsideKissCamForPlayer(x, y);
-}
-
-function isInsideStageForPlayer(x, y) {
-  return isInsideStage(x, y, -10);
-}
-
-function isInsideKissCamForPlayer(x, y) {
-  return isInsideKissCam(x, y, -10);
-}
 
 function isInsideStage(x, y, margin = 0) {
   const stageWidth = stage.width * stage.scaleX;
@@ -251,24 +249,28 @@ function projectileHitsCrowd(proj, crowd) {
   crowd.destroy();
 }
 
+
+
+
+
 function update(time, delta) {
-  const dt = delta / 1000;
   const speed = 200;
   let moving = false;
+
   player.body.setVelocity(0);
 
   if (cursors.left.isDown) {
     player.body.setVelocityX(-speed);
     player.setFlipX(true);
     hr.setFlipX(true);
-    moving = true;
     facingRight = false;
+    moving = true;
   } else if (cursors.right.isDown) {
     player.body.setVelocityX(speed);
     player.setFlipX(false);
     hr.setFlipX(false);
-    moving = true;
     facingRight = true;
+    moving = true;
   }
 
   if (cursors.up.isDown) {
@@ -289,15 +291,8 @@ function update(time, delta) {
     hr.setTexture("hr1");
   }
 
-  const nextX = player.x + player.body.velocity.x * dt;
-  const nextY = player.y + player.body.velocity.y * dt;
-
-  if (!isBlockedForPlayer(nextX, nextY)) {
-    hr.x = nextX - 10;
-    hr.y = nextY + 10;
-  } else {
-    player.body.setVelocity(0);
-  }
+  hr.x = player.x - 10;
+  hr.y = player.y + 10;
 
   const chaseSpeed = 0.5;
   spotlightMarker.x += (player.x - spotlightMarker.x > 0) ? chaseSpeed : -chaseSpeed;

@@ -31,10 +31,8 @@ function preload() {
   this.load.image("credit_card", "sprites/cc.png");
   this.load.image("briefcase", "sprites/case.png");
   this.load.image("stage", "sprites/stage.png");
-	this.load.image("kisscam1", "sprites/kisscam1.png");
-this.load.image("kisscam2", "sprites/kisscam2.png");
-
-
+  this.load.image("kisscam1", "sprites/kisscam1.png");
+  this.load.image("kisscam2", "sprites/kisscam2.png");
 }
 
 function create() {
@@ -45,14 +43,14 @@ function create() {
 
   let kissCamFrame = this.add.image(400, 40, "kisscam1").setScale(0.07).setDepth(1000);
 
-this.time.addEvent({
-  delay: 700, // 500 ms = switch every half second
-  loop: true,
-  callback: () => {
-    const currentTexture = kissCamFrame.texture.key;
-    kissCamFrame.setTexture(currentTexture === "kisscam1" ? "kisscam2" : "kisscam1");
-  }
-});
+  this.time.addEvent({
+    delay: 700,
+    loop: true,
+    callback: () => {
+      const currentTexture = kissCamFrame.texture.key;
+      kissCamFrame.setTexture(currentTexture === "kisscam1" ? "kisscam2" : "kisscam1");
+    }
+  });
 
   player = this.physics.add.sprite(100, 100, "ceo1").setScale(0.07);
   player.body.setCollideWorldBounds(true);
@@ -62,12 +60,8 @@ this.time.addEvent({
   this.anims.create({ key: "ceo_run", frames: [{ key: "ceo1" }, { key: "ceo2" }], frameRate: 8, repeat: -1 });
   this.anims.create({ key: "hr_run", frames: [{ key: "hr1" }, { key: "hr2" }], frameRate: 8, repeat: -1 });
 
-  
   spotlightMarker = this.add.circle(player.x, player.y, 30, 0xffffff, 0.3);
-
-spotlightMarker.setDepth(1000);  // 🔥 Ensures it renders above all other sprites
-
-
+  spotlightMarker.setDepth(1000);
 
   crowdGroup = this.physics.add.group({ immovable: true, allowGravity: false });
   generateCrowd.call(this);
@@ -78,37 +72,22 @@ spotlightMarker.setDepth(1000);  // 🔥 Ensures it renders above all other spri
   this.physics.add.collider(hr, crowdGroup);
   this.physics.add.collider(player, hr);
   this.physics.add.overlap(projectiles, crowdGroup, projectileHitsCrowd, null, this);
-
-  // 👉 Add proper invisible static collider to block stage area:
-  const stageCollider = this.add.rectangle(410, 0, 220, 190)  
-    .setOrigin(0.5, 0)
-    .setVisible(false);  // Set `true` for debug visualization
-
-  this.physics.add.existing(stageCollider, true);
-
-  this.physics.add.collider(player, stageCollider);
-  this.physics.add.collider(hr, stageCollider);
 }
 
-
 function generateCrowd() {
-  const spacing = 25;  // Tighter general spacing for a packed feel
-
+  const spacing = 25;
   for (let y = 20; y < 520; y += spacing) {
     for (let x = 10; x < 800; x += spacing) {
       const densityFactor = Phaser.Math.Clamp(1.3 - (y / 470), 0.5, 1.0);
-      if (Phaser.Math.Between(0, 100) > 40 * densityFactor) {  // Lower threshold = more density at front
+      if (Phaser.Math.Between(0, 100) > 40 * densityFactor) {
         spawnCrowdMember.call(this, x, y);
       }
     }
   }
 }
 
-
-
-
 function spawnCrowdMember(x, y) {
-  if (isInsideStage(x, y, 0) || isInsideKissCam(x, y, 0)) return;
+  if (isInsideStageForCrowd(x, y) || isInsideKissCamForCrowd(x, y)) return;
 
   if (Phaser.Math.Between(0, 100) > 50) {
     const px = x + Phaser.Math.Between(-5, 5);
@@ -121,10 +100,8 @@ function spawnCrowdMember(x, y) {
     base.setVisible(false);
 
     const hairStyle = Phaser.Math.RND.pick(["hair_f", "hair_m", "hat1"]);
-
     const skinSprite = this.add.sprite(0, 0, "skin").setScale(scale);
 
-    // Determine clothing colors:
     let pantsColor = randomColor();
     let shirtColor = randomColor();
 
@@ -140,7 +117,6 @@ function spawnCrowdMember(x, y) {
 
     const visuals = this.add.container(px, py, [skinSprite, pants, shirt, hair]);
 
-    // Add subtle idle movement:
     const isVertical = Phaser.Math.Between(0, 1) === 0;
     const prop = isVertical ? 'y' : 'x';
     const amount = isVertical ? 2 : 1;
@@ -160,11 +136,25 @@ function spawnCrowdMember(x, y) {
   }
 }
 
-function isBlockedArea(x, y) {
-  return isInsideStage(x, y, -10) || isInsideKissCam(x, y, -10);  // tighter for player movement
+function isInsideStageForCrowd(x, y) {
+  return isInsideStage(x, y, 0);
 }
 
+function isInsideKissCamForCrowd(x, y) {
+  return isInsideKissCam(x, y, 0);
+}
 
+function isBlockedForPlayer(x, y) {
+  return isInsideStageForPlayer(x, y) || isInsideKissCamForPlayer(x, y);
+}
+
+function isInsideStageForPlayer(x, y) {
+  return isInsideStage(x, y, -10);
+}
+
+function isInsideKissCamForPlayer(x, y) {
+  return isInsideKissCam(x, y, -10);
+}
 
 function isInsideStage(x, y, margin = 0) {
   const stageWidth = stage.width * stage.scaleX;
@@ -191,38 +181,16 @@ function isInsideKissCam(x, y, margin = 0) {
   return (x > left && x < right && y > topp && y < bottom);
 }
 
-
-
-
 function randomHairColor() {
-  const naturalColors = [
-    0x2c2c2c, // black
-    0x5a3825, // brown
-    0xa0522d, // light brown
-    0xd2b48c, // blonde
-  ];
-
-  const purple = 0x800080;
-  const pink = 0xff69b4;
-  const blue = 0x1e90ff;
-  const green = 0x228b22;
-
+  const naturalColors = [0x2c2c2c, 0x5a3825, 0xa0522d, 0xd2b48c];
+  const purple = 0x800080, pink = 0xff69b4, blue = 0x1e90ff, green = 0x228b22;
   const rand = Phaser.Math.Between(1, 100);
-
-  if (rand <= 85) {
-    return Phaser.Math.RND.pick(naturalColors);
-  } else if (rand <= 93) {
-    return purple;  // 8%
-  } else if (rand <= 97) {
-    return pink;  // 4%
-  } else if (rand <= 99) {
-    return blue;  // 2%
-  } else {
-    return green;  // 1%
-  }
+  if (rand <= 85) return Phaser.Math.RND.pick(naturalColors);
+  if (rand <= 93) return purple;
+  if (rand <= 97) return pink;
+  if (rand <= 99) return blue;
+  return green;
 }
-
-
 
 function randomColor() {
   return Phaser.Display.Color.GetColor(
@@ -235,56 +203,29 @@ function randomColor() {
 function shootProjectile() {
   let type = shootToggle ? "credit_card" : "briefcase";
   shootToggle = !shootToggle;
-
-  let spawnX, spawnY;
-  let originY;
-
+  let spawnX, spawnY, originY;
   if (type === "credit_card") {
     const offsetX = facingRight ? 10 : -10;
     spawnX = player.x + offsetX;
-    spawnY = player.y;
-    originY = player.y;
+    spawnY = originY = player.y;
   } else {
     const offsetX = facingRight ? 8 : -8;
-    spawnX = hr.x + offsetX;
-    spawnY = hr.y;
-    originY = hr.y;
+    spawnX = player.x + offsetX;
+    spawnY = originY = hr.y;
   }
 
   const proj = projectiles.create(spawnX, spawnY, type).setScale(type === "credit_card" ? 0.015 : 0.06);
-  proj.startY = originY;
-  proj.throwerY = originY;
+  proj.startY = proj.throwerY = originY;
   proj.type = type;
-
-  if (type === "credit_card") {
-    const speed = 400;
-    const angleDeg = facingRight ? -50 : 230;
-    const angleRad = Phaser.Math.DegToRad(angleDeg);
-    const velX = Math.cos(angleRad) * speed;
-    const velY = Math.sin(angleRad) * speed;
-
-    proj.body.setVelocityX(velX);
-    proj.body.setVelocityY(velY);
-    proj.body.setAllowGravity(true);
-    proj.body.setGravityY(1300);
-  } else if (type === "briefcase") {
-    const speed = 400;
-    const angleDeg = facingRight ? -20 : 200;
-    const angleRad = Phaser.Math.DegToRad(angleDeg);
-    const velX = Math.cos(angleRad) * speed;
-    const velY = Math.sin(angleRad) * speed;
-
-    proj.body.setVelocityX(velX);
-    proj.body.setVelocityY(velY);
-    proj.body.setAllowGravity(true);
-    proj.body.setGravityY(1300);
-  }
-
+  const angleDeg = (type === "credit_card") ? (facingRight ? -50 : 230) : (facingRight ? -20 : 200);
+  const angleRad = Phaser.Math.DegToRad(angleDeg);
+  const speed = 400;
+  proj.body.setVelocity(Math.cos(angleRad) * speed, Math.sin(angleRad) * speed);
+  proj.body.setAllowGravity(true);
+  proj.body.setGravityY(1300);
   proj.body.onWorldBounds = true;
   proj.body.world.on("worldbounds", body => {
-    if (body.gameObject === proj) {
-      proj.destroy();
-    }
+    if (body.gameObject === proj) proj.destroy();
   });
 }
 
@@ -294,11 +235,8 @@ function projectileHitsCrowd(proj, crowd) {
   crowd.destroy();
 }
 
-
-// Modify your update() signature to accept time and delta:
 function update(time, delta) {
-  const dt = delta / 1000; // Convert from ms to seconds
-
+  const dt = delta / 1000;
   const speed = 200;
   let moving = false;
   player.body.setVelocity(0);
@@ -338,7 +276,7 @@ function update(time, delta) {
   const nextX = player.x + player.body.velocity.x * dt;
   const nextY = player.y + player.body.velocity.y * dt;
 
-  if (!isBlockedArea(nextX, nextY)) {
+  if (!isBlockedForPlayer(nextX, nextY)) {
     hr.x = nextX - 10;
     hr.y = nextY + 10;
   } else {
@@ -346,11 +284,8 @@ function update(time, delta) {
   }
 
   const chaseSpeed = 0.5;
-  if (spotlightMarker.x < player.x) spotlightMarker.x += chaseSpeed;
-  else if (spotlightMarker.x > player.x) spotlightMarker.x -= chaseSpeed;
-
-  if (spotlightMarker.y < player.y) spotlightMarker.y += chaseSpeed;
-  else if (spotlightMarker.y > player.y) spotlightMarker.y -= chaseSpeed;
+  spotlightMarker.x += (player.x - spotlightMarker.x > 0) ? chaseSpeed : -chaseSpeed;
+  spotlightMarker.y += (player.y - spotlightMarker.y > 0) ? chaseSpeed : -chaseSpeed;
 
   crowdGroup.getChildren().forEach(base => {
     if (base.visuals) {
@@ -366,9 +301,7 @@ function update(time, delta) {
       proj.setScale(0.015 * flip, 0.015);
       if (proj.y > proj.startY) proj.destroy();
     } else if (proj.type === "briefcase") {
-      if (proj.y >= proj.throwerY + 5) {
-        proj.destroy();
-      }
+      if (proj.y >= proj.throwerY + 5) proj.destroy();
     }
   });
 }

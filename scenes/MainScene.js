@@ -46,8 +46,13 @@ export default class MainScene extends Phaser.Scene {
       }
     });
 
+    this.kissCamFeed = this.add.renderTexture(365, 20, 70, 70);
+    this.kissCamFeed.setDepth(999);
+    this.kissCamFeed.setOrigin(0, 0);
+
     this.player = new Player(this, 100, 100, "ceo1");
     this.hr = this.physics.add.sprite(90, 110, "hr1").setScale(0.07);
+    this.player.hr = this.hr;
     this.hr.setCollideWorldBounds(true);
 
     this.anims.create({ key: "ceo_run", frames: [{ key: "ceo1" }, { key: "ceo2" }], frameRate: 8, repeat: -1 });
@@ -63,11 +68,8 @@ export default class MainScene extends Phaser.Scene {
     this.player.projectiles = this.projectiles;
 
     this.crowdGroup = this.physics.add.group({ immovable: true, allowGravity: false });
-    
-	this.crowdSpawner = new CrowdSpawner(this, this.crowdGroup, this.stage);
-	this.crowdSpawner.spawnCrowd();
-
-
+    this.crowdSpawner = new CrowdSpawner(this, this.crowdGroup, this.stage);
+    this.crowdSpawner.spawnCrowd();
 
     this.physics.add.collider(this.player, this.crowdGroup);
     this.physics.add.collider(this.hr, this.crowdGroup);
@@ -81,13 +83,11 @@ export default class MainScene extends Phaser.Scene {
       this
     );
 
-    const stageBlocker = this.add.rectangle(this.stage.x + 10, this.stage.y - 20, 230, 180)
-      .setOrigin(0.5, 0).setVisible(false);
+    const stageBlocker = this.add.rectangle(this.stage.x + 10, this.stage.y - 20, 230, 180).setOrigin(0.5, 0).setVisible(false);
     this.physics.add.existing(stageBlocker, true);
     this.physics.add.collider(this.player, stageBlocker);
 
-    const kissCamBlocker = this.add.rectangle(400, 40, 80, 80)
-      .setOrigin(0.5, 0.5).setVisible(false);
+    const kissCamBlocker = this.add.rectangle(400, 40, 80, 80).setOrigin(0.5, 0.5).setVisible(false);
     this.physics.add.existing(kissCamBlocker, true);
     this.physics.add.collider(this.player, kissCamBlocker);
   }
@@ -99,12 +99,9 @@ export default class MainScene extends Phaser.Scene {
       this.player.shoot();
     }
 
-    this.hr.x = this.player.x - 10;
-    this.hr.y = this.player.y + 10;
-
-    const chaseSpeed = 0.5;
-    this.spotlightMarker.x += (this.player.x - this.spotlightMarker.x > 0) ? chaseSpeed : -chaseSpeed;
-    this.spotlightMarker.y += (this.player.y - this.spotlightMarker.y > 0) ? chaseSpeed : -chaseSpeed;
+    const followSpeed = 0.1;
+    this.spotlightMarker.x += (this.player.x - this.spotlightMarker.x) * followSpeed;
+    this.spotlightMarker.y += (this.player.y - this.spotlightMarker.y) * followSpeed;
 
     this.crowdGroup.getChildren().forEach(base => {
       if (base.visuals) {
@@ -123,9 +120,53 @@ export default class MainScene extends Phaser.Scene {
         if (proj.y >= proj.throwerY + 5) proj.destroy();
       }
     });
+
+    // ==== Kiss Cam Live Feed ====
+    this.kissCamFeed.clear();
+
+    const feedSize = 70;
+    const zoom = 2;
+    const radius = feedSize / (2 * zoom);
+    const sx = this.spotlightMarker.x;
+    const sy = this.spotlightMarker.y;
+
+    const drawIfInside = (sprite) => {
+  const dx = sprite.x - sx;
+  const dy = sprite.y - sy;
+  if (Math.abs(dx) < radius && Math.abs(dy) < radius) {
+    this.kissCamFeed.draw(
+      sprite,
+      feedSize / 2 + dx * zoom,  // ✅ NO MORE MIRRORING X
+      feedSize / 2 + dy * zoom,  // ✅ KEEP Y NORMAL
+      zoom
+    );
   }
+};
+
 
   
+
+    drawIfInside(this.hr);     // Girl first
+    drawIfInside(this.player); // Guy second
+
+ 
+
+    this.crowdGroup.getChildren().forEach(base => {
+      if (!base.visuals) return;
+      base.visuals.list.forEach(part => {
+        const dx = part.x - sx;
+        const dy = part.y - sy;
+        if (Math.abs(dx) < radius && Math.abs(dy) < radius) {
+          this.kissCamFeed.draw(
+            part,
+            feedSize / 2 - dx * zoom,
+            feedSize / 2 - dy * zoom,
+            zoom
+          );
+        }
+      });
+    });
+  }
 
   projectileHitsCrowd(proj, crowd) {
     proj.destroy();

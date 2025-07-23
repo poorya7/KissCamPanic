@@ -38,6 +38,7 @@ export default class CrowdSpawner {
 
       const hairStyle = Phaser.Math.RND.pick(["hair_f", "hair_m", "hat1"]);
       const skinSprite = this.scene.add.sprite(0, 0, "skin").setScale(scale);
+      skinSprite.originalScale = scale;
 
       let pantsColor = randomColor();
       let shirtColor = randomColor();
@@ -51,6 +52,11 @@ export default class CrowdSpawner {
       const pants = this.scene.add.sprite(0, 0, "pants").setScale(scale).setTint(pantsColor);
       const shirt = this.scene.add.sprite(0, 0, "shirt").setScale(scale).setTint(shirtColor);
       const hair = this.scene.add.sprite(0, 0, hairStyle).setScale(scale).setTint(randomHairColor());
+
+      // Store originalScale for zoom rendering
+      pants.originalScale = scale;
+      shirt.originalScale = scale;
+      hair.originalScale = scale;
 
       const visuals = this.scene.add.container(px, py, [skinSprite, pants, shirt, hair]);
 

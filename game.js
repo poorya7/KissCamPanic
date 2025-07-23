@@ -36,6 +36,22 @@ function preload() {
 }
 
 function create() {
+	
+	//remember to remove this for production	
+	this.input.keyboard.on("keydown-C", () => {
+  this.physics.world.colliders.getActive().forEach(c => {
+    if (
+      (c.object1 === player && c.object2 === crowdGroup) ||
+      (c.object1 === hr && c.object2 === crowdGroup)
+    ) {
+      c.active = !c.active;
+    }
+  });
+  console.log("Crowd collisions toggled.");
+});
+
+
+
   cursors = this.input.keyboard.createCursorKeys();
   this.input.keyboard.on("keydown-SPACE", shootProjectile, this);
 

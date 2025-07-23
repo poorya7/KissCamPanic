@@ -33,6 +33,8 @@ export default class MainScene extends Phaser.Scene {
     this.load.image("kisscam2", "sprites/kisscam2.png");
   }
 
+
+
   create() {
     this.stage = this.add.image(400, 100, "stage").setOrigin(0.48, 0.12).setScale(0.5);
 
@@ -79,7 +81,8 @@ maskGraphics.visible = false;
     this.anims.create({ key: "ceo_run", frames: [{ key: "ceo1" }, { key: "ceo2" }], frameRate: 8, repeat: -1 });
     this.anims.create({ key: "hr_run", frames: [{ key: "hr1" }, { key: "hr2" }], frameRate: 8, repeat: -1 });
 
-    this.spotlightMarker = this.add.circle(this.player.x, this.player.y, 30, 0xffffff, 0.3);
+	this.spotlightMarker = this.add.circle(800, 0, 30, 0xffffff, 0.3); // top-right corner
+
     this.spotlightMarker.setDepth(1000);
 
     this.cursors = this.input.keyboard.createCursorKeys();

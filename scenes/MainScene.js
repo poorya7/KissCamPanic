@@ -32,12 +32,61 @@ export default class MainScene extends Phaser.Scene {
     this.load.image("kisscam1", "sprites/kisscam1.png");
     this.load.image("kisscam2", "sprites/kisscam2.png");
 	this.load.image("poof", "sprites/poof.png");
+	this.load.image("background", "sprites/background.png");
+   this.load.image("floor", "sprites/floor.png");
+this.load.image("fence", "sprites/fence.png");
+this.load.image("post", "sprites/post.png");
+
 
   }
 
 
 
+
+spawnFence() {
+  const FENCE_SCALE = 0.15;
+  const y = 470; // tweak this to align just under the stage
+
+  this.fenceGroup = this.add.group();
+
+  // Lay out fences from left to right
+  for (let x = 50; x <= 900; x += 130) {
+    const fence = this.add.image(x, y, "fence")
+      .setScale(FENCE_SCALE)
+      .setDepth(5);
+    this.fenceGroup.add(fence);
+  }
+}
+
+
+initScoreUI() {
+  this.score = 0;
+
+this.scoreText = this.add.text(12, 0, "score: 0000000", {
+  fontFamily: "C64",
+  fontSize: "16px",
+  color: "#ffffcc",
+  stroke: "#000000",
+  strokeThickness: 3
+}).setScrollFactor(0).setDepth(100);
+
+
+
+}
+
+
+
   create() {
+	  this.add.image(400, 235, "background").setDepth(-10);
+/*this.floor = this.add.tileSprite(400, 235, 800, 470, "floor")
+  .setDepth(-5)
+  .setTileScale(0.5); // ← This makes each tile 32x32 instead of 16x16 visually*/
+
+this.spawnFence();
+
+	this.initScoreUI();
+
+
     this.stage = this.add.image(400, 100, "stage").setOrigin(0.48, 0.12).setScale(0.5);
 
     this.kissCamFrame = this.add.image(400, 40, "kisscam1").setScale(0.07).setDepth(1000);
@@ -121,10 +170,36 @@ this.maxCrowdSize = this.crowdGroup.getLength(); // move this AFTER spawn
     this.physics.add.collider(this.player, kissCamBlocker);
   }
 
-  
+
+
+
+
+updateScoreDisplay() {
+  // Fast score increase (300 per second)
+  this.score += this.game.loop.delta / 10 * 3;
+
+  // Round down to integer (no decimal)
+  const raw = Math.floor(this.score);
+
+  // Pad to 7 digits with leading zeros
+  const display = raw.toString().padStart(7, "0");
+
+  // Show score
+  this.scoreText.setText("score: " + display);
+}
+
+
+
+
+
   
   
   update() {
+this.updateScoreDisplay();
+
+
+
+
   this.player.move(this.cursors);
 
   if (Phaser.Input.Keyboard.JustDown(this.spaceBar)) {

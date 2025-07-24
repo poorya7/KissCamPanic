@@ -31,6 +31,8 @@ export default class MainScene extends Phaser.Scene {
     this.load.image("stage", "sprites/stage.png");
     this.load.image("kisscam1", "sprites/kisscam1.png");
     this.load.image("kisscam2", "sprites/kisscam2.png");
+	this.load.image("poof", "sprites/poof.png");
+
   }
 
 
@@ -92,8 +94,11 @@ maskGraphics.visible = false;
     this.player.projectiles = this.projectiles;
 
     this.crowdGroup = this.physics.add.group({ immovable: true, allowGravity: false });
-    this.crowdSpawner = new CrowdSpawner(this, this.crowdGroup, this.stage);
-    this.crowdSpawner.spawnCrowd();
+
+this.crowdSpawner = new CrowdSpawner(this, this.crowdGroup, this.stage);
+this.crowdSpawner.spawnCrowd();
+
+this.maxCrowdSize = this.crowdGroup.getLength(); // move this AFTER spawn
 
     this.physics.add.collider(this.player, this.crowdGroup);
     this.physics.add.collider(this.hr, this.crowdGroup);
@@ -209,9 +214,32 @@ maskGraphics.visible = false;
       }
     });
   });
+  
+ if (this.crowdGroup.getLength() < this.maxCrowdSize && !this._spawnCooldown) {
+  this._spawnCooldown = true;
+
+  this.time.delayedCall(Phaser.Math.Between(200, 400), () => {
+    this.crowdSpawner.spawnAtRandomValidLocation();
+    this._spawnCooldown = false;
+  });
+}
+
+
 }
 
   
+playPoof(x, y) {
+  const poof = this.add.image(x, y, "poof").setDepth(10).setScale(0.05);
+
+  this.tweens.add({
+    targets: poof,
+    scale: 0,
+    alpha: 0,
+    duration: 300,
+    ease: "power1",
+    onComplete: () => poof.destroy()
+  });
+}
 
 
 
@@ -219,22 +247,17 @@ maskGraphics.visible = false;
 projectileHitsCrowd(proj, crowd) {
   proj.destroy();
 
+  this.playPoof(crowd.x, crowd.y);
+
   if (crowd.visuals) {
     crowd.visuals.destroy();
   }
 
-  const spawnDelay = Phaser.Math.Between(1000, 3000); // 1–3 second delay
-
-  // Save this so we can call spawnCrowdMember with the scene context
-  const scene = this;
-
-  this.time.delayedCall(spawnDelay, () => {
-    scene.crowdSpawner.spawnAtRandomValidLocation();
-  });
+  
 
   crowd.destroy();
 }
-  
+
   
   
 

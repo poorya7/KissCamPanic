@@ -84,7 +84,7 @@ this.hr.y = this.y + 5;
     const angleDeg =
       type === "credit_card"
         ? this.facingRight ? -50 : 230
-        : this.facingRight ? -20 : 200;
+        : this.facingRight ? 10 : 170;
 
     const angleRad = Phaser.Math.DegToRad(angleDeg);
     const speed = 400;

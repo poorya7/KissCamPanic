@@ -1,5 +1,9 @@
 import CrowdSpawner from "../entities/CrowdSpawner.js";
 import Player from "../entities/Player.js";
+import ScoreUI from "../entities/ScoreUI.js";
+import KissCamFeedRenderer from "../entities/KissCamFeedRenderer.js";
+import ProjectileManager from "../entities/ProjectileManager.js";
+
 import {
   isInsideStage,
   isInsideKissCam,
@@ -12,6 +16,9 @@ export default class MainScene extends Phaser.Scene {
     super("MainScene");
   }
 
+  // ───────────────────────────────
+  // ▶ preload
+  // ───────────────────────────────
   preload() {
     this.load.image("ceo1", "sprites/ceo1.png");
     this.load.image("ceo2", "sprites/ceo2.png");
@@ -31,65 +38,47 @@ export default class MainScene extends Phaser.Scene {
     this.load.image("stage", "sprites/stage.png");
     this.load.image("kisscam1", "sprites/kisscam1.png");
     this.load.image("kisscam2", "sprites/kisscam2.png");
-	this.load.image("poof", "sprites/poof.png");
-	this.load.image("background", "sprites/background.png");
-   this.load.image("floor", "sprites/floor.png");
-this.load.image("fence", "sprites/fence.png");
-this.load.image("post", "sprites/post.png");
-
-
+    this.load.image("poof", "sprites/poof.png");
+    this.load.image("background", "sprites/background.png");
+    this.load.image("floor", "sprites/floor.png");
+    this.load.image("fence", "sprites/fence.png");
+    this.load.image("post", "sprites/post.png");
   }
 
+  // ───────────────────────────────
+  // ▶ spawnFence
+  // ───────────────────────────────
+  spawnFence() {
+    const FENCE_SCALE = 0.15;
+    const y = 470;
 
+    this.fenceGroup = this.add.group();
 
-
-spawnFence() {
-  const FENCE_SCALE = 0.15;
-  const y = 470; // tweak this to align just under the stage
-
-  this.fenceGroup = this.add.group();
-
-  // Lay out fences from left to right
-  for (let x = 50; x <= 900; x += 130) {
-    const fence = this.add.image(x, y, "fence")
-      .setScale(FENCE_SCALE)
-      .setDepth(5);
-    this.fenceGroup.add(fence);
+    for (let x = 50; x <= 900; x += 130) {
+      const fence = this.add.image(x, y, "fence")
+        .setScale(FENCE_SCALE)
+        .setDepth(5);
+      this.fenceGroup.add(fence);
+    }
   }
-}
 
-
-initScoreUI() {
-  this.score = 0;
-
-this.scoreText = this.add.text(12, 0, "score: 0000000", {
-  fontFamily: "C64",
-  fontSize: "16px",
-  color: "#ffffcc",
-  stroke: "#000000",
-  strokeThickness: 3
-}).setScrollFactor(0).setDepth(100);
-
-
-
-}
-
-
-
+  // ───────────────────────────────
+  // ▶ create
+  // ───────────────────────────────
   create() {
-	  this.add.image(400, 235, "background").setDepth(-10);
-/*this.floor = this.add.tileSprite(400, 235, 800, 470, "floor")
-  .setDepth(-5)
-  .setTileScale(0.5); // ← This makes each tile 32x32 instead of 16x16 visually*/
+    this.add.image(400, 235, "background").setDepth(-10);
 
-this.spawnFence();
+    this.scoreUI = new ScoreUI(this);
+    this.spawnFence();
 
-	this.initScoreUI();
+    this.stage = this.add.image(400, 100, "stage")
+      .setOrigin(0.48, 0.12)
+      .setScale(0.5);
 
+    this.kissCamFrame = this.add.image(400, 40, "kisscam1")
+      .setScale(0.07)
+      .setDepth(1000);
 
-    this.stage = this.add.image(400, 100, "stage").setOrigin(0.48, 0.12).setScale(0.5);
-
-    this.kissCamFrame = this.add.image(400, 40, "kisscam1").setScale(0.07).setDepth(1000);
     this.time.addEvent({
       delay: 700,
       loop: true,
@@ -99,30 +88,17 @@ this.spawnFence();
       }
     });
 
-    this.kissCamFeed = this.add.renderTexture(365, 20, 70, 70);
-    this.kissCamFeed.setDepth(999);
-    this.kissCamFeed.setOrigin(0, 0);
-	
-	// === Create oval mask for kiss cam feed ===
-const maskGraphics = this.make.graphics({ x: 0, y: 0, add: true }); // 👈 add: true!
+    this.kissCamFeed = this.add.renderTexture(365, 20, 70, 70)
+      .setDepth(999)
+      .setOrigin(0, 0);
 
-maskGraphics.fillStyle(0xffffff);
-
-
-
-const ellipse = new Phaser.Geom.Ellipse(400, 54, 40, 56);
-
-
-
-
-maskGraphics.fillEllipseShape(ellipse);
-
-// Create geometry mask from it
-const kissCamMask = maskGraphics.createGeometryMask();
-this.kissCamFeed.setMask(kissCamMask);
-
-maskGraphics.visible = false;
-
+    const maskGraphics = this.make.graphics({ x: 0, y: 0, add: true });
+    maskGraphics.fillStyle(0xffffff);
+    const ellipse = new Phaser.Geom.Ellipse(400, 54, 40, 56);
+    maskGraphics.fillEllipseShape(ellipse);
+    const kissCamMask = maskGraphics.createGeometryMask();
+    this.kissCamFeed.setMask(kissCamMask);
+    maskGraphics.visible = false;
 
     this.player = new Player(this, 100, 100, "ceo1");
     this.hr = this.physics.add.sprite(90, 110, "hr1").setScale(0.07);
@@ -132,22 +108,29 @@ maskGraphics.visible = false;
     this.anims.create({ key: "ceo_run", frames: [{ key: "ceo1" }, { key: "ceo2" }], frameRate: 8, repeat: -1 });
     this.anims.create({ key: "hr_run", frames: [{ key: "hr1" }, { key: "hr2" }], frameRate: 8, repeat: -1 });
 
-	this.spotlightMarker = this.add.circle(800, 0, 30, 0xffffff, 0.3); // top-right corner
-
-    this.spotlightMarker.setDepth(1000);
+    this.spotlightMarker = this.add.circle(800, 0, 30, 0xffffff, 0.3)
+      .setDepth(1000);
 
     this.cursors = this.input.keyboard.createCursorKeys();
     this.spaceBar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 
     this.projectiles = this.physics.add.group();
+    this.projectileManager = new ProjectileManager(this, this.projectiles);
     this.player.projectiles = this.projectiles;
 
     this.crowdGroup = this.physics.add.group({ immovable: true, allowGravity: false });
+    this.crowdSpawner = new CrowdSpawner(this, this.crowdGroup, this.stage);
+    this.crowdSpawner.spawnCrowd();
+    this.maxCrowdSize = this.crowdGroup.getLength();
 
-this.crowdSpawner = new CrowdSpawner(this, this.crowdGroup, this.stage);
-this.crowdSpawner.spawnCrowd();
-
-this.maxCrowdSize = this.crowdGroup.getLength(); // move this AFTER spawn
+    this.kissCamRenderer = new KissCamFeedRenderer(
+      this,
+      this.kissCamFeed,
+      this.spotlightMarker,
+      this.crowdGroup,
+      this.player,
+      this.hr
+    );
 
     this.physics.add.collider(this.player, this.crowdGroup);
     this.physics.add.collider(this.hr, this.crowdGroup);
@@ -161,180 +144,89 @@ this.maxCrowdSize = this.crowdGroup.getLength(); // move this AFTER spawn
       this
     );
 
-    const stageBlocker = this.add.rectangle(this.stage.x + 10, this.stage.y - 20, 230, 180).setOrigin(0.5, 0).setVisible(false);
+    const stageBlocker = this.add.rectangle(this.stage.x + 10, this.stage.y - 20, 230, 180)
+      .setOrigin(0.5, 0)
+      .setVisible(false);
     this.physics.add.existing(stageBlocker, true);
     this.physics.add.collider(this.player, stageBlocker);
 
-    const kissCamBlocker = this.add.rectangle(400, 40, 80, 80).setOrigin(0.5, 0.5).setVisible(false);
+    const kissCamBlocker = this.add.rectangle(400, 40, 80, 80)
+      .setOrigin(0.5, 0.5)
+      .setVisible(false);
     this.physics.add.existing(kissCamBlocker, true);
     this.physics.add.collider(this.player, kissCamBlocker);
   }
 
-
-
-
-
-updateScoreDisplay() {
-  // Fast score increase (300 per second)
-  this.score += this.game.loop.delta / 10 * 3;
-
-  // Round down to integer (no decimal)
-  const raw = Math.floor(this.score);
-
-  // Pad to 7 digits with leading zeros
-  const display = raw.toString().padStart(7, "0");
-
-  // Show score
-  this.scoreText.setText("score: " + display);
-}
-
-
-
-
-
-  
-  
+  // ───────────────────────────────
+  // ▶ update
+  // ───────────────────────────────
   update() {
-this.updateScoreDisplay();
+    this.scoreUI.update();
+    this.player.move(this.cursors);
 
-
-
-
-  this.player.move(this.cursors);
-
-  if (Phaser.Input.Keyboard.JustDown(this.spaceBar)) {
-    this.player.shoot();
-  }
-
-  // === Smooth spotlight that eases + speed caps ===
-  const maxSpeed = 1.8;
-  const lerpStrength = 0.1;
-
-  const targetX = this.player.x;
-  const targetY = this.player.y;
-
-  let nextX = Phaser.Math.Linear(this.spotlightMarker.x, targetX, lerpStrength);
-  let nextY = Phaser.Math.Linear(this.spotlightMarker.y, targetY, lerpStrength);
-
-  const dx = nextX - this.spotlightMarker.x;
-  const dy = nextY - this.spotlightMarker.y;
-  const dist = Math.sqrt(dx * dx + dy * dy);
-
-  if (dist > maxSpeed) {
-    const angle = Math.atan2(dy, dx);
-    nextX = this.spotlightMarker.x + Math.cos(angle) * maxSpeed;
-    nextY = this.spotlightMarker.y + Math.sin(angle) * maxSpeed;
-  }
-
-  this.spotlightMarker.x = nextX;
-  this.spotlightMarker.y = nextY;
-
-  // === Sync crowd visuals with base physics objects ===
-  this.crowdGroup.getChildren().forEach(base => {
-    if (base.visuals) {
-      base.visuals.x = base.x;
-      base.visuals.y = base.y;
+    if (Phaser.Input.Keyboard.JustDown(this.spaceBar)) {
+      this.player.shoot();
     }
-  });
 
-  // === Projectiles behavior ===
-  this.projectiles.getChildren().forEach(proj => {
-    if (proj.type === "credit_card") {
-      proj.rotation += 0.3;
-      const flip = Math.abs(Math.sin(this.time.now * 0.02));
-      proj.setScale(0.015 * flip, 0.015);
-      if (proj.y > proj.startY) proj.destroy();
-    } else if (proj.type === "briefcase") {
-      if (proj.y >= proj.throwerY + 15) proj.destroy();
+    const maxSpeed = 1.8;
+    const lerpStrength = 0.1;
+    const targetX = this.player.x;
+    const targetY = this.player.y;
+
+    let nextX = Phaser.Math.Linear(this.spotlightMarker.x, targetX, lerpStrength);
+    let nextY = Phaser.Math.Linear(this.spotlightMarker.y, targetY, lerpStrength);
+
+    const dx = nextX - this.spotlightMarker.x;
+    const dy = nextY - this.spotlightMarker.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+
+    if (dist > maxSpeed) {
+      const angle = Math.atan2(dy, dx);
+      nextX = this.spotlightMarker.x + Math.cos(angle) * maxSpeed;
+      nextY = this.spotlightMarker.y + Math.sin(angle) * maxSpeed;
     }
-  });
 
-  // === Kiss Cam Live Feed ===
-  this.kissCamFeed.clear();
+    this.spotlightMarker.x = nextX;
+    this.spotlightMarker.y = nextY;
 
-  const feedSize = 70;
-  const zoom = 2;
-  const radius = feedSize / (2 * zoom);
-  const sx = this.spotlightMarker.x;
-  const sy = this.spotlightMarker.y;
-
-  const drawIfInside = (sprite) => {
-    const dx = sprite.x - sx;
-    const dy = sprite.y - sy;
-    if (Math.abs(dx) < radius && Math.abs(dy) < radius) {
-      this.kissCamFeed.draw(
-        sprite,
-        Math.floor(feedSize / 2 + dx * zoom),
-        Math.floor(feedSize / 2 + dy * zoom),
-        zoom
-      );
-    }
-  };
-
-  drawIfInside(this.hr);     // Girl first
-  drawIfInside(this.player); // Guy second
-
-  this.crowdGroup.getChildren().forEach(base => {
-    if (!base.visuals) return;
-    base.visuals.list.forEach(part => {
-      const dx = part.x - sx;
-      const dy = part.y - sy;
-      if (Math.abs(dx) < radius && Math.abs(dy) < radius) {
-        this.kissCamFeed.draw(
-          part,
-          Math.floor(feedSize / 2 + dx * zoom),
-          Math.floor(feedSize / 2 + dy * zoom),
-          zoom
-        );
+    this.crowdGroup.getChildren().forEach(base => {
+      if (base.visuals) {
+        base.visuals.x = base.x;
+        base.visuals.y = base.y;
       }
     });
-  });
-  
- if (this.crowdGroup.getLength() < this.maxCrowdSize && !this._spawnCooldown) {
-  this._spawnCooldown = true;
 
-  this.time.delayedCall(Phaser.Math.Between(200, 400), () => {
-    this.crowdSpawner.spawnAtRandomValidLocation();
-    this._spawnCooldown = false;
-  });
-}
-
-
-}
-
-  
-playPoof(x, y) {
-  const poof = this.add.image(x, y, "poof").setDepth(10).setScale(0.05);
-
-  this.tweens.add({
-    targets: poof,
-    scale: 0,
-    alpha: 0,
-    duration: 300,
-    ease: "power1",
-    onComplete: () => poof.destroy()
-  });
-}
-
-
-
-
-projectileHitsCrowd(proj, crowd) {
-  proj.destroy();
-
-  this.playPoof(crowd.x, crowd.y);
-
-  if (crowd.visuals) {
-    crowd.visuals.destroy();
+    this.kissCamRenderer.render();
+    this.projectileManager.update();
   }
 
-  
+  // ───────────────────────────────
+  // ▶ playPoof
+  // ───────────────────────────────
+  playPoof(x, y) {
+    const poof = this.add.image(x, y, "poof").setDepth(10).setScale(0.05);
 
-  crowd.destroy();
-}
+    this.tweens.add({
+      targets: poof,
+      scale: 0,
+      alpha: 0,
+      duration: 300,
+      ease: "power1",
+      onComplete: () => poof.destroy()
+    });
+  }
 
-  
-  
+  // ───────────────────────────────
+  // ▶ projectileHitsCrowd
+  // ───────────────────────────────
+  projectileHitsCrowd(proj, crowd) {
+    proj.destroy();
+    this.playPoof(crowd.x, crowd.y);
 
+    if (crowd.visuals) {
+      crowd.visuals.destroy();
+    }
 
+    crowd.destroy();
+  }
 }

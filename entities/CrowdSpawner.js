@@ -78,4 +78,20 @@ export default class CrowdSpawner {
       this.group.add(base);
     }
   }
+  
+  spawnAtRandomValidLocation() {
+  let x, y;
+  const attempts = 20;
+
+  for (let i = 0; i < attempts; i++) {
+    x = Phaser.Math.Between(10, 790);
+    y = Phaser.Math.Between(20, 460);
+
+    if (!isInsideStage(x, y, 0) && !isInsideKissCam(x, y, 0)) {
+      this.spawnCrowdMember(x, y);
+      return;
+    }
+  }
+}
+
 }

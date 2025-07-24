@@ -212,13 +212,31 @@ maskGraphics.visible = false;
 }
 
   
+
+
+
+
+projectileHitsCrowd(proj, crowd) {
+  proj.destroy();
+
+  if (crowd.visuals) {
+    crowd.visuals.destroy();
+  }
+
+  const spawnDelay = Phaser.Math.Between(1000, 3000); // 1–3 second delay
+
+  // Save this so we can call spawnCrowdMember with the scene context
+  const scene = this;
+
+  this.time.delayedCall(spawnDelay, () => {
+    scene.crowdSpawner.spawnAtRandomValidLocation();
+  });
+
+  crowd.destroy();
+}
   
   
   
 
-  projectileHitsCrowd(proj, crowd) {
-    proj.destroy();
-    if (crowd.visuals) crowd.visuals.destroy();
-    crowd.destroy();
-  }
+
 }

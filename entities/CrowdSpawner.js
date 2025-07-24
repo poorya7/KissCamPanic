@@ -14,7 +14,7 @@ export default class CrowdSpawner {
 
   spawnCrowd() {
     const spacing = 25;
-    for (let y = 20; y < 520; y += spacing) {
+    for (let y = 20; y < 460; y += spacing) {
       for (let x = 10; x < 800; x += spacing) {
         const densityFactor = Phaser.Math.Clamp(1.3 - (y / 470), 0.5, 1.0);
         if (Phaser.Math.Between(0, 100) > 40 * densityFactor) {

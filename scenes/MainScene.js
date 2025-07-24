@@ -132,7 +132,7 @@ this.maxCrowdSize = this.crowdGroup.getLength(); // move this AFTER spawn
   }
 
   // === Smooth spotlight that eases + speed caps ===
-  const maxSpeed = 2;
+  const maxSpeed = 1.8;
   const lerpStrength = 0.1;
 
   const targetX = this.player.x;
@@ -170,7 +170,7 @@ this.maxCrowdSize = this.crowdGroup.getLength(); // move this AFTER spawn
       proj.setScale(0.015 * flip, 0.015);
       if (proj.y > proj.startY) proj.destroy();
     } else if (proj.type === "briefcase") {
-      if (proj.y >= proj.throwerY + 5) proj.destroy();
+      if (proj.y >= proj.throwerY + 15) proj.destroy();
     }
   });
 

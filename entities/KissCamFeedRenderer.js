@@ -33,8 +33,13 @@ export default class KissCamFeedRenderer {
       }
     };
 
-    drawIfInside(this.hr);     // Girl first
-    drawIfInside(this.player); // Guy second
+    // Sync HR position to player before drawing
+this.hr.x = this.player.x - 5;
+this.hr.y = this.player.y + 5;
+
+drawIfInside(this.hr);     // Girl first
+drawIfInside(this.player); // Guy second
+
 
     this.crowdGroup.getChildren().forEach(base => {
       if (!base.visuals) return;

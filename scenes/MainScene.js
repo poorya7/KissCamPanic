@@ -3,6 +3,9 @@ import Player from "../entities/Player.js";
 import ScoreUI from "../entities/ScoreUI.js";
 import KissCamFeedRenderer from "../entities/KissCamFeedRenderer.js";
 import ProjectileManager from "../entities/ProjectileManager.js";
+import SpotlightHandler from "../entities/SpotlightHandler.js";
+import GameOverDialog from "../entities/GameOverDialog.js";
+
 
 import {
   isInsideStage,
@@ -10,6 +13,9 @@ import {
   randomHairColor,
   randomColor
 } from "../utils/CrowdUtils.js";
+
+
+
 
 export default class MainScene extends Phaser.Scene {
   constructor() {
@@ -43,7 +49,8 @@ export default class MainScene extends Phaser.Scene {
     this.load.image("floor", "sprites/floor.png");
     this.load.image("fence", "sprites/fence.png");
     this.load.image("post", "sprites/post.png");
-	this.load.image("flash", "sprites/flash.png");
+    this.load.image("flash", "sprites/flash.png");
+    this.load.image("dialog_end", "sprites/dialog_end.png");
   }
 
   // ───────────────────────────────
@@ -67,21 +74,45 @@ export default class MainScene extends Phaser.Scene {
   // ▶ create
   // ───────────────────────────────
   create() {
-	  this.flashOverlay = this.add.image(400, 235, "flash")
-  .setScale(4)
-  .setDepth(9999)
-  .setAlpha(0);
+    this.createFlashOverlay();
+    this.createBackgroundAndStage();
+    this.createKissCamUI();
+    this.createPlayerAndHR();
+    this.createControlsAndProjectiles();
+    this.createCrowdAndColliders();
+    this.createKissCamRenderer();
+    this.createBlockers();
+    this.createGameOverDialog();
+	this.createSpotlightHandler(); 
+  }
 
+  // ───────────────────────────────
+  // ▶ createFlashOverlay
+  // ───────────────────────────────
+  createFlashOverlay() {
+    this.flashOverlay = this.add.image(400, 235, "flash")
+      .setScale(4)
+      .setDepth(9999)
+      .setAlpha(0);
+  }
 
+  // ───────────────────────────────
+  // ▶ createBackgroundAndStage
+  // ───────────────────────────────
+  createBackgroundAndStage() {
     this.add.image(400, 235, "background").setDepth(-10);
-
     this.scoreUI = new ScoreUI(this);
     this.spawnFence();
 
     this.stage = this.add.image(400, 100, "stage")
       .setOrigin(0.48, 0.12)
       .setScale(0.5);
+  }
 
+  // ───────────────────────────────
+  // ▶ createKissCamUI
+  // ───────────────────────────────
+  createKissCamUI() {
     this.kissCamFrame = this.add.image(400, 40, "kisscam1")
       .setScale(0.07)
       .setDepth(1000);
@@ -106,38 +137,69 @@ export default class MainScene extends Phaser.Scene {
     const kissCamMask = maskGraphics.createGeometryMask();
     this.kissCamFeed.setMask(kissCamMask);
     maskGraphics.visible = false;
+  }
+  
+  // ───────────────────────────────
+  // ▶ createSpotlightHandler
+  // ───────────────────────────────
+  
+  createSpotlightHandler() {
+  this.spotlightHandler = new SpotlightHandler(
+    this,
+    this.spotlightMarker,
+    this.player,
+    () => this.handlePlayerCaught()
+  );
+  }
 
+
+  // ───────────────────────────────
+  // ▶ createPlayerAndHR
+  // ───────────────────────────────
+  createPlayerAndHR() {
     this.player = new Player(this, 100, 100, "ceo1");
     this.hr = this.physics.add.sprite(90, 110, "hr1").setScale(0.07);
     this.player.hr = this.hr;
     this.hr.setCollideWorldBounds(true);
 
-    this.anims.create({ key: "ceo_run", frames: [{ key: "ceo1" }, { key: "ceo2" }], frameRate: 8, repeat: -1 });
-    this.anims.create({ key: "hr_run", frames: [{ key: "hr1" }, { key: "hr2" }], frameRate: 8, repeat: -1 });
+    this.anims.create({
+      key: "ceo_run",
+      frames: [{ key: "ceo1" }, { key: "ceo2" }],
+      frameRate: 8,
+      repeat: -1
+    });
+
+    this.anims.create({
+      key: "hr_run",
+      frames: [{ key: "hr1" }, { key: "hr2" }],
+      frameRate: 8,
+      repeat: -1
+    });
 
     this.spotlightMarker = this.add.circle(800, 0, 30, 0xffffff, 0.3)
       .setDepth(1000);
+  }
 
+  // ───────────────────────────────
+  // ▶ createControlsAndProjectiles
+  // ───────────────────────────────
+  createControlsAndProjectiles() {
     this.cursors = this.input.keyboard.createCursorKeys();
     this.spaceBar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 
     this.projectiles = this.physics.add.group();
     this.projectileManager = new ProjectileManager(this, this.projectiles);
     this.player.projectiles = this.projectiles;
+  }
 
+  // ───────────────────────────────
+  // ▶ createCrowdAndColliders
+  // ───────────────────────────────
+  createCrowdAndColliders() {
     this.crowdGroup = this.physics.add.group({ immovable: true, allowGravity: false });
     this.crowdSpawner = new CrowdSpawner(this, this.crowdGroup, this.stage);
     this.crowdSpawner.spawnCrowd();
     this.maxCrowdSize = this.crowdGroup.getLength();
-
-    this.kissCamRenderer = new KissCamFeedRenderer(
-      this,
-      this.kissCamFeed,
-      this.spotlightMarker,
-      this.crowdGroup,
-      this.player,
-      this.hr
-    );
 
     this.physics.add.collider(this.player, this.crowdGroup);
     this.physics.add.collider(this.hr, this.crowdGroup);
@@ -150,7 +212,26 @@ export default class MainScene extends Phaser.Scene {
       null,
       this
     );
+  }
 
+  // ───────────────────────────────
+  // ▶ createKissCamRenderer
+  // ───────────────────────────────
+  createKissCamRenderer() {
+    this.kissCamRenderer = new KissCamFeedRenderer(
+      this,
+      this.kissCamFeed,
+      this.spotlightMarker,
+      this.crowdGroup,
+      this.player,
+      this.hr
+    );
+  }
+
+  // ───────────────────────────────
+  // ▶ createBlockers
+  // ───────────────────────────────
+  createBlockers() {
     const stageBlocker = this.add.rectangle(this.stage.x + 10, this.stage.y - 20, 230, 180)
       .setOrigin(0.5, 0)
       .setVisible(false);
@@ -163,99 +244,89 @@ export default class MainScene extends Phaser.Scene {
     this.physics.add.existing(kissCamBlocker, true);
     this.physics.add.collider(this.player, kissCamBlocker);
   }
-  
-    // ───────────────────────────────
-  // ▶ triggerFlash
+
   // ───────────────────────────────
-  
-  triggerFlash() {
-  this.flashOverlay.setAlpha(1);
-
-  this.tweens.add({
-    targets: this.flashOverlay,
-    alpha: 0,
-    duration: 200,
-    ease: "quad.out"
-  });
-}
-
-  
+  // ▶ createGameOverDialog
   // ───────────────────────────────
-  // ▶ updateSpotlight
-  // ───────────────────────────────
-  
-  updateSpotlight() {
-  const maxSpeed = 1.8;
-  const lerpStrength = 0.1;
+createGameOverDialog() {
+  this.dialog = new GameOverDialog(this, 400, 235);
+  this.input.keyboard.on("keydown", (event) => {
+  if (!this.dialog.visible) return;
 
-  const targetX = this.player.x;
-  const targetY = this.player.y;
+  const key = event.key;
 
-  let nextX = Phaser.Math.Linear(this.spotlightMarker.x, targetX, lerpStrength);
-  let nextY = Phaser.Math.Linear(this.spotlightMarker.y, targetY, lerpStrength);
-
-  const dx = nextX - this.spotlightMarker.x;
-  const dy = nextY - this.spotlightMarker.y;
-  const dist = Math.sqrt(dx * dx + dy * dy);
-
-  if (dist > maxSpeed) {
-    const angle = Math.atan2(dy, dx);
-    nextX = this.spotlightMarker.x + Math.cos(angle) * maxSpeed;
-    nextY = this.spotlightMarker.y + Math.sin(angle) * maxSpeed;
+  if (/^[a-z0-9]$/i.test(key) && this.dialog.enteredName.length < 8) {
+    this.dialog.enteredName += key.toUpperCase();
+  } else if (key === "Backspace") {
+    this.dialog.enteredName = this.dialog.enteredName.slice(0, -1);
   }
 
-  this.spotlightMarker.x = nextX;
-  this.spotlightMarker.y = nextY;
-
-  // Freeze player if 50% or more inside the light
-  const spotlightRadius = this.spotlightMarker.radius || 30;
-  const distToLight = Phaser.Math.Distance.Between(
-    this.player.x, this.player.y,
-    this.spotlightMarker.x, this.spotlightMarker.y
-  );
-
-  const isCaught = distToLight < spotlightRadius * 0.5;
-
-if (isCaught && !this.player.disableMovement) {
-  this.time.delayedCall(700, () => {
-    this.triggerFlash();
-  });
-}
-
-
-this.player.disableMovement = isCaught;
-
+  this.dialog.updateNameDisplay();
+});
 
 }
 
+  // ───────────────────────────────
+  // ▶ triggerFlash
+  // ───────────────────────────────
+  triggerFlash() {
+    this.flashOverlay.setAlpha(1);
+
+    this.tweens.add({
+      targets: this.flashOverlay,
+      alpha: 0,
+      duration: 200,
+      ease: "quad.out"
+    });
+  }
+
+  // ───────────────────────────────
+  // ▶ handlePlayerCaught
+  // ───────────────────────────────
+  handlePlayerCaught() {
+    this.time.delayedCall(700, () => {
+      this.triggerFlash();
+
+      this.time.delayedCall(600, () => {
+        this.showGameOverDialog();
+      });
+    });
+  }
+
+  // ───────────────────────────────
+  // ▶ showGameOverDialog
+  // ───────────────────────────────
+showGameOverDialog() {
+  const score = Math.floor(this.scoreUI.score);
+  this.dialog.show(score); // you can also pass a fake rank here
+}
 
   // ───────────────────────────────
   // ▶ update
   // ───────────────────────────────
   update() {
-	  
-	  if (!this.player.disableMovement) {
-  this.scoreUI.update();
-}
-
-  this.player.move(this.cursors);
-
-  if (Phaser.Input.Keyboard.JustDown(this.spaceBar)) {
-    this.player.shoot();
-  }
-
-  this.updateSpotlight(); // ← spotlight logic moved here
-
-  this.crowdGroup.getChildren().forEach(base => {
-    if (base.visuals) {
-      base.visuals.x = base.x;
-      base.visuals.y = base.y;
+    if (!this.player.disableMovement) {
+      this.scoreUI.update();
     }
-  });
 
-  this.kissCamRenderer.render();
-  this.projectileManager.update();
-	}
+    this.player.move(this.cursors);
+
+    if (Phaser.Input.Keyboard.JustDown(this.spaceBar)) {
+      this.player.shoot();
+    }
+
+    this.spotlightHandler.update();
+
+    this.crowdGroup.getChildren().forEach(base => {
+      if (base.visuals) {
+        base.visuals.x = base.x;
+        base.visuals.y = base.y;
+      }
+    });
+
+    this.kissCamRenderer.render();
+    this.projectileManager.update();
+  }
 
   // ───────────────────────────────
   // ▶ playPoof

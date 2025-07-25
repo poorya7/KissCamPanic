@@ -6,16 +6,12 @@ import ProjectileManager from "../entities/ProjectileManager.js";
 import SpotlightHandler from "../entities/SpotlightHandler.js";
 import GameOverDialog from "../entities/GameOverDialog.js";
 
-
 import {
   isInsideStage,
   isInsideKissCam,
   randomHairColor,
   randomColor
 } from "../utils/CrowdUtils.js";
-
-
-
 
 export default class MainScene extends Phaser.Scene {
   constructor() {
@@ -250,21 +246,9 @@ export default class MainScene extends Phaser.Scene {
   // ───────────────────────────────
 createGameOverDialog() {
   this.dialog = new GameOverDialog(this, 400, 235);
-  this.input.keyboard.on("keydown", (event) => {
-  if (!this.dialog.visible) return;
-
-  const key = event.key;
-
-  if (/^[a-z0-9]$/i.test(key) && this.dialog.enteredName.length < 8) {
-    this.dialog.enteredName += key.toUpperCase();
-  } else if (key === "Backspace") {
-    this.dialog.enteredName = this.dialog.enteredName.slice(0, -1);
-  }
-
-  this.dialog.updateNameDisplay();
-});
-
+  this.dialog.enableKeyboardInput();
 }
+
 
   // ───────────────────────────────
   // ▶ triggerFlash

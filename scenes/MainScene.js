@@ -241,31 +241,26 @@ export default class MainScene extends Phaser.Scene {
     this.physics.add.collider(this.player, kissCamBlocker);
   }
 
-  // ───────────────────────────────
-  // ▶ createGameOverDialog
-  // ───────────────────────────────
+
+// ───────────────────────────────
+// ▶ createGameOverDialog
+// ───────────────────────────────
 createGameOverDialog() {
   this.dialog = new GameOverDialog(this, 400, 235);
-<<<<<<< HEAD
-  this.input.keyboard.on("keydown", (event) => {
-  if (!this.dialog.visible) return;
-
-  const key = event.key;
-
-
-  if (/^[a-z0-9 ]$/i.test(key) && this.dialog.enteredName.length < 30) {
-    this.dialog.enteredName += key.toUpperCase();
-  } else if (key === "Backspace") {
-    this.dialog.enteredName = this.dialog.enteredName.slice(0, -1);
-  }
-
-  this.dialog.updateNameDisplay();
-});
-
-=======
   this.dialog.enableKeyboardInput();
->>>>>>> cb4779b8e0af1750be3e79326807063bd3e273b8
+
+  // Define handlers for SAVE and CANCEL
+  this.onSaveName = (name) => {
+    console.log("Saved name:", name);
+    this.scene.restart(); // or switch to leaderboard, etc.
+  };
+
+  this.onCancelName = () => {
+    console.log("Player canceled name entry");
+    this.scene.restart(); // or skip save and restart
+  };
 }
+
 
 
   // ───────────────────────────────

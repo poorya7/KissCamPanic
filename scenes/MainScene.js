@@ -43,6 +43,7 @@ export default class MainScene extends Phaser.Scene {
     this.load.image("floor", "sprites/floor.png");
     this.load.image("fence", "sprites/fence.png");
     this.load.image("post", "sprites/post.png");
+	this.load.image("flash", "sprites/flash.png");
   }
 
   // ───────────────────────────────
@@ -66,6 +67,12 @@ export default class MainScene extends Phaser.Scene {
   // ▶ create
   // ───────────────────────────────
   create() {
+	  this.flashOverlay = this.add.image(400, 235, "flash")
+  .setScale(4)
+  .setDepth(9999)
+  .setAlpha(0);
+
+
     this.add.image(400, 235, "background").setDepth(-10);
 
     this.scoreUI = new ScoreUI(this);
@@ -157,6 +164,21 @@ export default class MainScene extends Phaser.Scene {
     this.physics.add.collider(this.player, kissCamBlocker);
   }
   
+    // ───────────────────────────────
+  // ▶ triggerFlash
+  // ───────────────────────────────
+  
+  triggerFlash() {
+  this.flashOverlay.setAlpha(1);
+
+  this.tweens.add({
+    targets: this.flashOverlay,
+    alpha: 0,
+    duration: 200,
+    ease: "quad.out"
+  });
+}
+
   
   // ───────────────────────────────
   // ▶ updateSpotlight
@@ -192,7 +214,18 @@ export default class MainScene extends Phaser.Scene {
     this.spotlightMarker.x, this.spotlightMarker.y
   );
 
-  this.player.disableMovement = distToLight < spotlightRadius * 0.5;
+  const isCaught = distToLight < spotlightRadius * 0.5;
+
+if (isCaught && !this.player.disableMovement) {
+  this.time.delayedCall(700, () => {
+    this.triggerFlash();
+  });
+}
+
+
+this.player.disableMovement = isCaught;
+
+
 }
 
 

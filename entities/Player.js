@@ -14,6 +14,8 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     this.projectiles = scene.physics.add.group();
     this.scene = scene;
 
+	this.disableMovement = false;
+
     this.hr = null; // ✅ assigned later from MainScene
   }
 
@@ -70,6 +72,7 @@ this.hr.y = this.y + 5;
   }
 
   shoot() {
+  if (this.disableMovement) return;
     const type = this.shootToggle ? "credit_card" : "briefcase";
     this.shootToggle = !this.shootToggle;
 

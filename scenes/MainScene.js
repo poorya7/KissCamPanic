@@ -156,49 +156,73 @@ export default class MainScene extends Phaser.Scene {
     this.physics.add.existing(kissCamBlocker, true);
     this.physics.add.collider(this.player, kissCamBlocker);
   }
+  
+  
+  // ───────────────────────────────
+  // ▶ updateSpotlight
+  // ───────────────────────────────
+  
+  updateSpotlight() {
+  const maxSpeed = 1.8;
+  const lerpStrength = 0.1;
+
+  const targetX = this.player.x;
+  const targetY = this.player.y;
+
+  let nextX = Phaser.Math.Linear(this.spotlightMarker.x, targetX, lerpStrength);
+  let nextY = Phaser.Math.Linear(this.spotlightMarker.y, targetY, lerpStrength);
+
+  const dx = nextX - this.spotlightMarker.x;
+  const dy = nextY - this.spotlightMarker.y;
+  const dist = Math.sqrt(dx * dx + dy * dy);
+
+  if (dist > maxSpeed) {
+    const angle = Math.atan2(dy, dx);
+    nextX = this.spotlightMarker.x + Math.cos(angle) * maxSpeed;
+    nextY = this.spotlightMarker.y + Math.sin(angle) * maxSpeed;
+  }
+
+  this.spotlightMarker.x = nextX;
+  this.spotlightMarker.y = nextY;
+
+  // Freeze player if 50% or more inside the light
+  const spotlightRadius = this.spotlightMarker.radius || 30;
+  const distToLight = Phaser.Math.Distance.Between(
+    this.player.x, this.player.y,
+    this.spotlightMarker.x, this.spotlightMarker.y
+  );
+
+  this.player.disableMovement = distToLight < spotlightRadius * 0.5;
+}
+
 
   // ───────────────────────────────
   // ▶ update
   // ───────────────────────────────
   update() {
-    this.scoreUI.update();
-    this.player.move(this.cursors);
+	  
+	  if (!this.player.disableMovement) {
+  this.scoreUI.update();
+}
 
-    if (Phaser.Input.Keyboard.JustDown(this.spaceBar)) {
-      this.player.shoot();
-    }
+  this.player.move(this.cursors);
 
-    const maxSpeed = 1.8;
-    const lerpStrength = 0.1;
-    const targetX = this.player.x;
-    const targetY = this.player.y;
-
-    let nextX = Phaser.Math.Linear(this.spotlightMarker.x, targetX, lerpStrength);
-    let nextY = Phaser.Math.Linear(this.spotlightMarker.y, targetY, lerpStrength);
-
-    const dx = nextX - this.spotlightMarker.x;
-    const dy = nextY - this.spotlightMarker.y;
-    const dist = Math.sqrt(dx * dx + dy * dy);
-
-    if (dist > maxSpeed) {
-      const angle = Math.atan2(dy, dx);
-      nextX = this.spotlightMarker.x + Math.cos(angle) * maxSpeed;
-      nextY = this.spotlightMarker.y + Math.sin(angle) * maxSpeed;
-    }
-
-    this.spotlightMarker.x = nextX;
-    this.spotlightMarker.y = nextY;
-
-    this.crowdGroup.getChildren().forEach(base => {
-      if (base.visuals) {
-        base.visuals.x = base.x;
-        base.visuals.y = base.y;
-      }
-    });
-
-    this.kissCamRenderer.render();
-    this.projectileManager.update();
+  if (Phaser.Input.Keyboard.JustDown(this.spaceBar)) {
+    this.player.shoot();
   }
+
+  this.updateSpotlight(); // ← spotlight logic moved here
+
+  this.crowdGroup.getChildren().forEach(base => {
+    if (base.visuals) {
+      base.visuals.x = base.x;
+      base.visuals.y = base.y;
+    }
+  });
+
+  this.kissCamRenderer.render();
+  this.projectileManager.update();
+	}
 
   // ───────────────────────────────
   // ▶ playPoof

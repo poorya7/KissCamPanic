@@ -18,6 +18,16 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   move(cursors, speed = 200) {
+  if (this.disableMovement) {
+    this.body.setVelocity(0);
+    this.anims.stop();
+    this.setTexture("ceo1");
+    if (this.hr) {
+      this.hr.anims.stop();
+      this.hr.setTexture("hr1");
+    }
+    return;
+  }
     let moving = false;
 
     this.body.setVelocity(0);

@@ -255,7 +255,8 @@ createGameOverDialog() {
 
   const key = event.key;
 
-  if (/^[a-z0-9]$/i.test(key) && this.dialog.enteredName.length < 8) {
+
+  if (/^[a-z0-9 ]$/i.test(key) && this.dialog.enteredName.length < 30) {
     this.dialog.enteredName += key.toUpperCase();
   } else if (key === "Backspace") {
     this.dialog.enteredName = this.dialog.enteredName.slice(0, -1);

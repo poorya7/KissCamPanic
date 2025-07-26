@@ -14,40 +14,35 @@ export default class GameOverDialog extends Phaser.GameObjects.Container {
     this.add(this.bg);
 
     // ───────────────────────────────
-    // ▶ Name Text (No Masking, Just Truncate)
+    // ▶ Name Label + Name Value
     // ───────────────────────────────
-  // ───────────────────────────────
-// ▶ Name Label + Name Value (separate)
-// ───────────────────────────────
-this.enteredName = "";
+    this.enteredName = "";
 
-// Value (dynamic input) — create first, always visible
-this.nameValue = this.scene.add.text(0, 30, "", {
-  fontFamily: "C64",
-  fontSize: "16px",
-  color: "#ffffff"
-}).setOrigin(0, 0.5);
-this.add(this.nameValue);
+    this.nameValue = this.scene.add.text(0, 30, "", {
+      fontFamily: "C64",
+      fontSize: "16px",
+      color: "#ffffff"
+    }).setOrigin(0, 0.5);
+    this.add(this.nameValue);
 
-// Delay creation of the label — gives browser time to load the font
-this.time = scene.time;
-this.time.delayedCall(100, () => {
-  this.nameLabel = this.scene.add.text(0, 30, "NAME:", {
-    fontFamily: "C64",
-    fontSize: "16px",
-    color: "#ffffff"
-  }).setOrigin(1, 0.5);
+    // ───────────────────────────────
+    // ▶ Delayed Name Label Setup
+    // ───────────────────────────────
+    this.time = scene.time;
+    this.time.delayedCall(100, () => {
+      this.nameLabel = this.scene.add.text(0, 30, "NAME:", {
+        fontFamily: "C64",
+        fontSize: "16px",
+        color: "#ffffff"
+      }).setOrigin(1, 0.5);
 
-  this.nameLabel.setX(Math.floor(-10)); // fixed position
-  this.nameLabel.setResolution(1);
-  this.add(this.nameLabel);
+      this.nameLabel.setX(Math.floor(-10));
+      this.nameLabel.setResolution(1);
+      this.add(this.nameLabel);
 
-  // Now that label exists, position value next to it
-  this.nameValue.setX(this.nameLabel.x + 4);
-  this.nameValue.setResolution(1);
-}, [], this);
-
-
+      this.nameValue.setX(this.nameLabel.x + 4);
+      this.nameValue.setResolution(1);
+    }, [], this);
 
     // ───────────────────────────────
     // ▶ Blinking Cursor Timer
@@ -126,9 +121,13 @@ this.time.delayedCall(100, () => {
     scene.add.existing(this);
   }
 
+  // ───────────────────────────────
+  // ▶ enableKeyboardInput
+  // ───────────────────────────────
   enableKeyboardInput() {
     this.scene.input.keyboard.on("keydown", (event) => {
       if (!this.visible) return;
+
       const key = event.key;
       if (/^[a-z0-9 ]$/i.test(key)) {
         if (this.enteredName.length < 30) {
@@ -144,6 +143,9 @@ this.time.delayedCall(100, () => {
     });
   }
 
+  // ───────────────────────────────
+  // ▶ show
+  // ───────────────────────────────
   show(score = 0, rank = "#58 / 321") {
     this.setVisible(true);
     this.setAlpha(0);
@@ -178,10 +180,11 @@ this.time.delayedCall(100, () => {
     });
   }
 
+  // ───────────────────────────────
+  // ▶ updateNameDisplay
+  // ───────────────────────────────
   updateNameDisplay() {
-  const cursor = this.cursorVisible ? "_" : " ";
-  this.nameValue.setText(this.enteredName + cursor);
-}
-
-
+    const cursor = this.cursorVisible ? "_" : " ";
+    this.nameValue.setText(this.enteredName + cursor);
+  }
 }

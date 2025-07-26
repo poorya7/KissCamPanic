@@ -111,56 +111,78 @@ export default class MainScene extends Phaser.Scene {
   // ▶ createBackgroundAndStage
   // ───────────────────────────────
   createBackgroundAndStage() {
-  this.background = this.add.tileSprite(0, 0, this.scale.width, this.scale.height, "background")
-  .setOrigin(0)
-  .setDepth(-20);
+  this.background = this.add.tileSprite(
+    0,
+    0,
+    this.scale.width,
+    this.scale.height,
+    "background"
+  )
+    .setOrigin(0)
+    .setDepth(-20);
 
-    this.scoreUI = new ScoreUI(this);
-    this.spawnFence();
+  this.scoreUI = new ScoreUI(this);
+  this.spawnFence();
 
+  const centerX = this.scale.width / 2;
+  const stageY = 100; // You can tweak this based on desired top spacing
 
-const centerX = this.scale.width / 2;
-const stageY = 100; // You can tweak this based on desired top spacing
-
-this.stage = this.add.image(centerX, stageY, "stage")
-  .setOrigin(0.48, 0.12)
-  .setScale(0.5);
-
-  }
+  this.stage = this.add.image(centerX, stageY, "stage")
+    .setOrigin(0.48, 0.12)
+    .setScale(0.5);
+}
 
   // ───────────────────────────────
   // ▶ createKissCamUI
   // ───────────────────────────────
-  createKissCamUI() {
-    
-	const camX = this.stage.x;      // horizontal center of the stage
-const camY = this.stage.y - 50; // vertical offset above the stage
+createKissCamUI() {
+  const camX = this.stage.x; // horizontal center of the stage
+  const camY = this.stage.y - 50; // vertical offset above the stage
+  const FEED_SIZE = 70;
+  const OFFSET_X = 10; // move left (-) or right (+)
+  const OFFSET_Y = 4;  // move up (-) or down (+)
 
-this.kissCamFrame = this.add.image(camX, camY, "kisscam1")
-  .setScale(0.07)
-  .setDepth(1000);
+  // Create feed texture first and make sure it's ABOVE the frame
+  this.kissCamFeed = this.add.renderTexture(
+    camX - FEED_SIZE / 2 + OFFSET_X,
+    camY - FEED_SIZE / 2 + OFFSET_Y,
+    FEED_SIZE,
+    FEED_SIZE
+  )
+    .setOrigin(0, 0)
+    .setDepth(1001); // must be above the frame
 
-    this.time.addEvent({
-      delay: 700,
-      loop: true,
-      callback: () => {
-        const key = this.kissCamFrame.texture.key;
-        this.kissCamFrame.setTexture(key === "kisscam1" ? "kisscam2" : "kisscam1");
-      }
-    });
+  // Mask the feed to fit inside oval shape
+  const maskGraphics = this.make.graphics({ x: 0, y: 0, add: true });
+  maskGraphics.fillStyle(0xffffff);
+  const ellipse = new Phaser.Geom.Ellipse(
+    this.kissCamFeed.x + this.kissCamFeed.width / 2,
+    this.kissCamFeed.y + this.kissCamFeed.height / 2,
+    40,
+    56
+  );
+  maskGraphics.fillEllipseShape(ellipse);
+  const kissCamMask = maskGraphics.createGeometryMask();
+  this.kissCamFeed.setMask(kissCamMask);
+  maskGraphics.visible = false;
 
-    this.kissCamFeed = this.add.renderTexture(365, 20, 70, 70)
-      .setDepth(999)
-      .setOrigin(0, 0);
+  // Then add the kiss cam oval sprite (frame) ABOVE the stage, BELOW the feed
+  this.kissCamFrame = this.add.image(camX, camY, "kisscam1")
+    .setScale(0.07)
+    .setDepth(1000); // below feed
 
-    const maskGraphics = this.make.graphics({ x: 0, y: 0, add: true });
-    maskGraphics.fillStyle(0xffffff);
-    const ellipse = new Phaser.Geom.Ellipse(400, 54, 40, 56);
-    maskGraphics.fillEllipseShape(ellipse);
-    const kissCamMask = maskGraphics.createGeometryMask();
-    this.kissCamFeed.setMask(kissCamMask);
-    maskGraphics.visible = false;
-  }
+  // Swap texture animation
+  this.time.addEvent({
+    delay: 700,
+    loop: true,
+    callback: () => {
+      const key = this.kissCamFrame.texture.key;
+      this.kissCamFrame.setTexture(key === "kisscam1" ? "kisscam2" : "kisscam1");
+    }
+  });
+}
+
+
   
   // ───────────────────────────────
   // ▶ createSpotlightHandler

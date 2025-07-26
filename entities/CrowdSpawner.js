@@ -13,19 +13,24 @@ export default class CrowdSpawner {
   }
 
   spawnCrowd() {
-    const spacing = 25;
-    for (let y = 20; y < 460; y += spacing) {
-      for (let x = 10; x < 800; x += spacing) {
-        const densityFactor = Phaser.Math.Clamp(1.3 - (y / 470), 0.5, 1.0);
-        if (Phaser.Math.Between(0, 100) > 40 * densityFactor) {
-          this.spawnCrowdMember(x, y);
-        }
+  const spacing = 25;
+  const screenW = this.scene.scale.width;
+  const screenH = this.scene.scale.height;
+
+  for (let y = 20; y < screenH - 10; y += spacing) {
+    for (let x = 10; x < screenW - 10; x += spacing) {
+      const densityFactor = Phaser.Math.Clamp(1.3 - (y / screenH), 0.5, 1.0);
+      if (Phaser.Math.Between(0, 100) > 40 * densityFactor) {
+        this.spawnCrowdMember(x, y);
       }
     }
   }
+}
+
 
   spawnCrowdMember(x, y) {
-    if (isInsideStage(this.stage, x, y, 0) || isInsideKissCam(x, y, 0)) return;
+	if (isInsideStage(this.stage, x, y, 0) || isInsideKissCam(this.scene.kissCamFrame, x, y, 0)) return;
+
 
     if (Phaser.Math.Between(0, 100) > 50) {
       const px = x + Phaser.Math.Between(-5, 5);

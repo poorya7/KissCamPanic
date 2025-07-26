@@ -2,8 +2,12 @@ import MainScene from "./scenes/MainScene.js";
 
 const config = {
   type: Phaser.AUTO,
-  width: 800,
-  height: 470,
+  scale: {
+    mode: Phaser.Scale.RESIZE, // dynamically fit screen
+    autoCenter: Phaser.Scale.CENTER_BOTH,
+    width: window.innerWidth,
+    height: window.innerHeight
+  },
   physics: {
     default: "arcade",
     arcade: {

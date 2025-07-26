@@ -8,20 +8,18 @@ export function isInsideStage(stage, x, y, margin = 0) {
   return x > left && x < right && y > top && y < bottom;
 }
 
-export function isInsideKissCam(x, y, margin = 0) {
-  const kissCamX = 400;
-  const kissCamY = 40;
-  const nativeWidth = 512;
-  const nativeHeight = 1024;
-  const scale = 0.07;
-  const width = nativeWidth * scale;
-  const height = nativeHeight * scale;
-  const left = kissCamX - width / 2 - 40 - margin;
-  const right = kissCamX + width / 2 + 40 + margin;
-  const top = kissCamY - height / 2 - margin;
-  const bottom = kissCamY + height / 2 + margin;
+export function isInsideKissCam(kissCamFrame, x, y, margin = 0) {
+  const width = kissCamFrame.width * kissCamFrame.scaleX;
+  const height = kissCamFrame.height * kissCamFrame.scaleY;
+
+  const left = kissCamFrame.x - width / 2 - 40 - margin;
+  const right = kissCamFrame.x + width / 2 + 40 + margin;
+  const top = kissCamFrame.y - height / 2 - margin;
+  const bottom = kissCamFrame.y + height / 2 + margin;
+
   return x > left && x < right && y > top && y < bottom;
 }
+
 
 export function randomHairColor() {
   const naturalColors = [0x2c2c2c, 0x5a3825, 0xa0522d, 0xd2b48c];

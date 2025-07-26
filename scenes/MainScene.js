@@ -80,7 +80,22 @@ export default class MainScene extends Phaser.Scene {
     this.createBlockers();
     this.createGameOverDialog();
 	this.createSpotlightHandler(); 
+	this.registerResizeHandler();
   }
+  
+   // ───────────────────────────────
+  // ▶ registerResizeHandler
+  // ───────────────────────────────
+    registerResizeHandler() {
+  this.scale.on('resize', (gameSize) => {
+    const width = gameSize.width;
+    const height = gameSize.height;
+
+    if (this.background) {
+      this.background.setSize(width, height);
+    }
+  });
+}
 
   // ───────────────────────────────
   // ▶ createFlashOverlay
@@ -96,22 +111,34 @@ export default class MainScene extends Phaser.Scene {
   // ▶ createBackgroundAndStage
   // ───────────────────────────────
   createBackgroundAndStage() {
-    this.add.image(400, 235, "background").setDepth(-10);
+  this.background = this.add.tileSprite(0, 0, this.scale.width, this.scale.height, "background")
+  .setOrigin(0)
+  .setDepth(-20);
+
     this.scoreUI = new ScoreUI(this);
     this.spawnFence();
 
-    this.stage = this.add.image(400, 100, "stage")
-      .setOrigin(0.48, 0.12)
-      .setScale(0.5);
+
+const centerX = this.scale.width / 2;
+const stageY = 100; // You can tweak this based on desired top spacing
+
+this.stage = this.add.image(centerX, stageY, "stage")
+  .setOrigin(0.48, 0.12)
+  .setScale(0.5);
+
   }
 
   // ───────────────────────────────
   // ▶ createKissCamUI
   // ───────────────────────────────
   createKissCamUI() {
-    this.kissCamFrame = this.add.image(400, 40, "kisscam1")
-      .setScale(0.07)
-      .setDepth(1000);
+    
+	const camX = this.stage.x;      // horizontal center of the stage
+const camY = this.stage.y - 50; // vertical offset above the stage
+
+this.kissCamFrame = this.add.image(camX, camY, "kisscam1")
+  .setScale(0.07)
+  .setDepth(1000);
 
     this.time.addEvent({
       delay: 700,
@@ -227,19 +254,53 @@ export default class MainScene extends Phaser.Scene {
   // ───────────────────────────────
   // ▶ createBlockers
   // ───────────────────────────────
-  createBlockers() {
-    const stageBlocker = this.add.rectangle(this.stage.x + 10, this.stage.y - 20, 230, 180)
-      .setOrigin(0.5, 0)
-      .setVisible(false);
-    this.physics.add.existing(stageBlocker, true);
-    this.physics.add.collider(this.player, stageBlocker);
 
-    const kissCamBlocker = this.add.rectangle(400, 40, 80, 80)
-      .setOrigin(0.5, 0.5)
-      .setVisible(false);
-    this.physics.add.existing(kissCamBlocker, true);
-    this.physics.add.collider(this.player, kissCamBlocker);
-  }
+
+createBlockers() {
+  // ───── Stage Blocker ─────
+  const stageWidth = this.stage.width * this.stage.scaleX;
+  const stageHeight = this.stage.height * this.stage.scaleY;
+
+  // Adjust for stage origin (0.48, 0.12)
+  const offsetX = (0.5 - 0.48) * stageWidth;
+  const offsetY = (0.5 - 0.12) * stageHeight;
+
+  // Manual tweaks (change these to fine-tune)
+  const manualOffsetX = 0.0;
+  const manualOffsetY = -30.0;
+  const extraWidth = -20.0;
+  const extraHeight = 0.0;
+
+  const stageBlocker = this.add.rectangle(
+    this.stage.x + offsetX + manualOffsetX,
+    this.stage.y + offsetY + manualOffsetY,
+    stageWidth + extraWidth,
+    stageHeight * 0.7 + extraHeight
+  )
+    .setOrigin(0.5, 0.5)
+    .setVisible(false); // Set to true for debug visuals
+
+  this.physics.add.existing(stageBlocker, true);
+  this.physics.add.collider(this.player, stageBlocker);
+
+  // ───── Kiss Cam Blocker ─────
+  const camWidth = this.kissCamFrame.width * this.kissCamFrame.scaleX + 40;
+  const camHeight = this.kissCamFrame.height * this.kissCamFrame.scaleY;
+
+  const kissCamBlocker = this.add.rectangle(
+    this.kissCamFrame.x,
+    this.kissCamFrame.y,
+    camWidth,
+    camHeight
+  )
+    .setOrigin(0.5, 0.5)
+    .setVisible(false); // Set to true for debug
+
+  this.physics.add.existing(kissCamBlocker, true);
+  this.physics.add.collider(this.player, kissCamBlocker);
+}
+
+
 
 
 // ───────────────────────────────

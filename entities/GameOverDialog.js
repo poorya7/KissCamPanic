@@ -1,6 +1,6 @@
 export default class GameOverDialog extends Phaser.GameObjects.Container {
-  constructor(scene, x, y) {
-    super(scene, x, y);
+  constructor(scene) {
+    super(scene, scene.cameras.main.centerX, scene.cameras.main.centerY);
     this.scene = scene;
     this.setDepth(10000);
     this.setScale(1);
@@ -10,7 +10,7 @@ export default class GameOverDialog extends Phaser.GameObjects.Container {
     // ───────────────────────────────
     // ▶ Background
     // ───────────────────────────────
-    this.bg = scene.add.image(0, 0, "dialog_end");
+    this.bg = scene.add.image(0, 0, "dialog_end").setScale(0.3);
     this.add(this.bg);
 
     // ───────────────────────────────
@@ -78,7 +78,6 @@ export default class GameOverDialog extends Phaser.GameObjects.Container {
       }
     }).setOrigin(0.5).setInteractive();
 
-    // ▶ Hover Effects
     [this.saveBtn, this.cancelBtn].forEach(button => {
       button.on("pointerover", () => {
         button.setAlpha(0.85);
@@ -90,7 +89,6 @@ export default class GameOverDialog extends Phaser.GameObjects.Container {
       });
     });
 
-    // ▶ Button Actions
     this.saveBtn.on("pointerdown", () => {
       this.scene.onSaveName?.(this.enteredName);
     });
@@ -100,22 +98,13 @@ export default class GameOverDialog extends Phaser.GameObjects.Container {
     });
 
     this.add([this.saveBtn, this.cancelBtn]);
-
-    // ───────────────────────────────
-    // ▶ Add to Scene
-    // ───────────────────────────────
     scene.add.existing(this);
   }
 
-  // ───────────────────────────────
-  // ▶ Enable keyboard input
-  // ───────────────────────────────
   enableKeyboardInput() {
     this.scene.input.keyboard.on("keydown", (event) => {
       if (!this.visible) return;
-
       const key = event.key;
-
       if (/^[a-z0-9 ]$/i.test(key)) {
         if (this.enteredName.length < 30) {
           this.enteredName += key.toUpperCase();
@@ -130,9 +119,6 @@ export default class GameOverDialog extends Phaser.GameObjects.Container {
     });
   }
 
-  // ───────────────────────────────
-  // ▶ Show dialog
-  // ───────────────────────────────
   show(score = 0, rank = "#58 / 321") {
     this.setVisible(true);
     this.setAlpha(0);
@@ -157,7 +143,6 @@ export default class GameOverDialog extends Phaser.GameObjects.Container {
     }).setOrigin(0.5);
 
     this.nameText.setY(30);
-
     this.add([title, scoreText, rankText]);
 
     this.scene.tweens.add({
@@ -169,9 +154,6 @@ export default class GameOverDialog extends Phaser.GameObjects.Container {
     });
   }
 
-  // ───────────────────────────────
-  // ▶ Update blinking name display
-  // ───────────────────────────────
   updateNameDisplay() {
     const cursor = this.cursorVisible ? "_" : " ";
     const display = this.enteredName + cursor;

@@ -323,8 +323,6 @@ createBlockers() {
 }
 
 
-
-
 // ───────────────────────────────
 // ▶ createGameOverDialog
 // ───────────────────────────────
@@ -332,17 +330,17 @@ createGameOverDialog() {
   this.dialog = new GameOverDialog(this, 400, 235);
   this.dialog.enableKeyboardInput();
 
-  // Define handlers for SAVE and CANCEL
   this.onSaveName = (name) => {
     console.log("Saved name:", name);
-    this.scene.restart(); // or switch to leaderboard, etc.
+    this.scene.restart();
   };
 
   this.onCancelName = () => {
     console.log("Player canceled name entry");
-    this.scene.restart(); // or skip save and restart
+    this.scene.restart();
   };
 }
+
 
 
 
@@ -379,6 +377,7 @@ createGameOverDialog() {
 showGameOverDialog() {
   const score = Math.floor(this.scoreUI.score);
   this.dialog.show(score); // you can also pass a fake rank here
+  
 }
 
   // ───────────────────────────────

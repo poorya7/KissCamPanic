@@ -327,6 +327,12 @@ createBlockers() {
 // ▶ createGameOverDialog
 // ───────────────────────────────
 createGameOverDialog() {
+  // Wait until C64 font is fully loaded
+  if (!window.fontsReady) {
+    this.time.delayedCall(50, () => this.createGameOverDialog(), [], this);
+    return;
+  }
+
   this.dialog = new GameOverDialog(this, 400, 235);
   this.dialog.enableKeyboardInput();
 

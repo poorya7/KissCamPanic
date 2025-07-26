@@ -2,6 +2,7 @@ import MainScene from "./scenes/MainScene.js";
 
 const config = {
   type: Phaser.AUTO,
+  pixelArt: true,
   scale: {
     mode: Phaser.Scale.RESIZE, // dynamically fit screen
     autoCenter: Phaser.Scale.CENTER_BOTH,

@@ -14,15 +14,40 @@ export default class GameOverDialog extends Phaser.GameObjects.Container {
     this.add(this.bg);
 
     // ───────────────────────────────
-    // ▶ Name Text
+    // ▶ Name Text (No Masking, Just Truncate)
     // ───────────────────────────────
-    this.enteredName = "";
-    this.nameText = this.scene.add.text(0, 30, "NAME: ", {
-      fontFamily: "C64",
-      fontSize: "16px",
-      color: "#ffffff"
-    }).setOrigin(0.5);
-    this.add(this.nameText);
+  // ───────────────────────────────
+// ▶ Name Label + Name Value (separate)
+// ───────────────────────────────
+this.enteredName = "";
+
+// Value (dynamic input) — create first, always visible
+this.nameValue = this.scene.add.text(0, 30, "", {
+  fontFamily: "C64",
+  fontSize: "16px",
+  color: "#ffffff"
+}).setOrigin(0, 0.5);
+this.add(this.nameValue);
+
+// Delay creation of the label — gives browser time to load the font
+this.time = scene.time;
+this.time.delayedCall(100, () => {
+  this.nameLabel = this.scene.add.text(0, 30, "NAME:", {
+    fontFamily: "C64",
+    fontSize: "16px",
+    color: "#ffffff"
+  }).setOrigin(1, 0.5);
+
+  this.nameLabel.setX(Math.floor(-10)); // fixed position
+  this.nameLabel.setResolution(1);
+  this.add(this.nameLabel);
+
+  // Now that label exists, position value next to it
+  this.nameValue.setX(this.nameLabel.x + 4);
+  this.nameValue.setResolution(1);
+}, [], this);
+
+
 
     // ───────────────────────────────
     // ▶ Blinking Cursor Timer
@@ -142,7 +167,6 @@ export default class GameOverDialog extends Phaser.GameObjects.Container {
       color: "#00ffcc"
     }).setOrigin(0.5);
 
-    this.nameText.setY(30);
     this.add([title, scoreText, rankText]);
 
     this.scene.tweens.add({
@@ -155,8 +179,9 @@ export default class GameOverDialog extends Phaser.GameObjects.Container {
   }
 
   updateNameDisplay() {
-    const cursor = this.cursorVisible ? "_" : " ";
-    const display = this.enteredName + cursor;
-    this.nameText.setText(`NAME: ${display}`);
-  }
+  const cursor = this.cursorVisible ? "_" : " ";
+  this.nameValue.setText(this.enteredName + cursor);
+}
+
+
 }

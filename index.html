@@ -4,39 +4,52 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>KissCamPanic</title>
-<link rel="preload" href="fonts/c64.ttf" as="font" type="font/ttf" crossorigin="anonymous">
-<script>
-  document.fonts.ready.then(() => {
-    window.fontsReady = true;
-  });
-</script>
 
-  <style>
-    @font-face {
-      font-family: 'C64';
-      src: url('fonts/c64.ttf') format('truetype');
-    }
+  <!-- Font preload -->
+  <link rel="preload" href="fonts/c64.ttf" as="font" type="font/ttf" crossorigin="anonymous" />
 
-    html, body {
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      background: #000;
-      width: 100%;
-      height: 100%;
-    }
+  <!-- External CSS -->
+  <link rel="stylesheet" href="styles.css" />
 
-    canvas {
-      display: block;
-      width: 100vw;
-      height: 100vh;
-      border: none;
-    }
-  </style>
-
+  <!-- Phaser -->
   <script src="https://cdn.jsdelivr.net/npm/phaser@3.90.0/dist/phaser.js"></script>
+
+  <!-- Font ready flag -->
+  <script>
+    document.fonts.ready.then(() => {
+      window.fontsReady = true;
+    });
+  </script>
+
+  <!-- Game boot -->
   <script type="module" src="game.js"></script>
 </head>
 <body>
+  <div id="layout">
+    <!-- LEFT SIDE -->
+    <div id="left-column">
+      <div id="top-left-title">KISS CAM PANIC</div>
+
+      <div id="game-wrapper"></div>
+
+      <div id="bottom-bar">
+        <div id="socials">
+          <img src="sprites/icons/insta.png" class="social-icon" alt="Instagram" />
+          <img src="sprites/icons/youtube.png" class="social-icon" alt="YouTube" />
+          <img src="sprites/icons/twitter.png" class="social-icon" alt="Twitter" />
+          <img src="sprites/icons/linkedin.png" class="social-icon" alt="LinkedIn" />
+        </div>
+        <div id="live-counter">● LIVE 20488</div>
+      </div>
+    </div>
+
+    <!-- RIGHT SIDE -->
+    <div id="right-sidebar">
+      <div id="highscores">
+        <div id="highscore-title">Highscores</div>
+        <div id="highscore-list">Loading scores...</div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

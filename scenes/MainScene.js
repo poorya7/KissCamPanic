@@ -146,10 +146,9 @@ this.wallTop = this.add.tileSprite(
 
 // ───── Speaker Stack on Right Side ─────
 this.speaker = this.add.image(0, this.scale.height, "speaker")
-  .setOrigin(-0.2, 1.1)   // bottom-left anchor
+  .setOrigin(-0.05, 1.1)   // bottom-left anchor
   .setDepth(-9)
-  .setScale(0.3);    // adjust if too big or small
-
+  .setScale(0.6);    // adjust if too big or small
 
 
 this.cameraGuy = this.add.image(this.scale.width, 0, "cameraguy")
@@ -164,7 +163,7 @@ this.vip = this.add.image(this.scale.width, this.scale.height / 2, "vip")
   .setScale(0.15);        // adjust scale to fit your layout
 
 this.curtain = this.add.image(0, 0, "curtain")
-  .setOrigin(-0.2, -0.13)       // top-left of image aligns with top-left of screen
+  .setOrigin(-1, -0.13)       // top-left of image aligns with top-left of screen
   .setDepth(-9)
   .setScale(0.18);        // tweak as needed
 

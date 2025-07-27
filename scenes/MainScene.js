@@ -41,31 +41,15 @@ export default class MainScene extends Phaser.Scene {
     this.load.image("kisscam1", "sprites/kisscam1.png");
     this.load.image("kisscam2", "sprites/kisscam2.png");
     this.load.image("poof", "sprites/poof.png");
-    this.load.image("background", "sprites/background.png");
-    this.load.image("floor", "sprites/floor.png");
-    this.load.image("fence", "sprites/fence.png");
+    this.load.image("background", "sprites/tile.png");
     this.load.image("post", "sprites/post.png");
     this.load.image("flash", "sprites/flash.png");
     this.load.image("dialog_end", "sprites/dialog_end.png");
+	this.load.image("exitdoor", "sprites/props/exitdoor.png");
+	this.load.image("wall_top", "sprites/props/wall_top.png");
   }
 
-  // ───────────────────────────────
-  // ▶ spawnFence
-  // ───────────────────────────────
-  spawnFence() {
-    const FENCE_SCALE = 0.15;
-    const y = 470;
-
-    this.fenceGroup = this.add.group();
-
-    for (let x = 50; x <= 900; x += 130) {
-      const fence = this.add.image(x, y, "fence")
-        .setScale(FENCE_SCALE)
-        .setDepth(5);
-      this.fenceGroup.add(fence);
-    }
-  }
-
+  
   // ───────────────────────────────
   // ▶ create
   // ───────────────────────────────
@@ -94,6 +78,8 @@ export default class MainScene extends Phaser.Scene {
     if (this.background) {
       this.background.setSize(width, height);
     }
+	
+
   });
 }
 
@@ -107,10 +93,12 @@ export default class MainScene extends Phaser.Scene {
       .setAlpha(0);
   }
 
+
   // ───────────────────────────────
-  // ▶ createBackgroundAndStage
-  // ───────────────────────────────
-  createBackgroundAndStage() {
+// ▶ createBackgroundAndStage
+// ───────────────────────────────
+createBackgroundAndStage() {
+  // Background base
   this.background = this.add.tileSprite(
     0,
     0,
@@ -122,15 +110,37 @@ export default class MainScene extends Phaser.Scene {
     .setDepth(-20);
 
   this.scoreUI = new ScoreUI(this);
-  this.spawnFence();
 
   const centerX = this.scale.width / 2;
-  const stageY = 100; // You can tweak this based on desired top spacing
+  const stageY = 100;
 
   this.stage = this.add.image(centerX, stageY, "stage")
     .setOrigin(0.48, 0.12)
     .setScale(0.5);
+	
+	// ───── Exit Door (top-right) ─────
+this.exitDoor = this.add.image(this.scale.width - 10, 0, "exitdoor")
+  .setOrigin(.9, 0)
+  .setDepth(-10)
+  .setDisplaySize(233,128);
+
+
+// ───── Top Wall Connecting to Exit Door ─────
+
+this.wallTop = this.add.tileSprite(
+  0,
+  0,
+  this.exitDoor.x - 20,
+  128, // Match door height
+  "wall_top"
+)
+.setOrigin(0, 0)
+.setDepth(-11)
+.setTileScale(0.5, 0.5); // Downscale the tile to match door size
+
+
 }
+
 
   // ───────────────────────────────
   // ▶ createKissCamUI
@@ -202,7 +212,7 @@ createKissCamUI() {
   // ▶ createPlayerAndHR
   // ───────────────────────────────
   createPlayerAndHR() {
-    this.player = new Player(this, 100, 100, "ceo1");
+    this.player = new Player(this, 100, 200, "ceo1");
     this.hr = this.physics.add.sprite(90, 110, "hr1").setScale(0.07);
     this.player.hr = this.hr;
     this.hr.setCollideWorldBounds(true);

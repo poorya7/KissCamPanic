@@ -30,7 +30,7 @@ export default class CrowdSpawner {
 
   spawnCrowdMember(x, y) {
 	if (isInsideStage(this.stage, x, y, 0) || isInsideKissCam(this.scene.kissCamFrame, x, y, 0)) return;
-
+	if (y < 120) return;
 
     if (Phaser.Math.Between(0, 100) > 50) {
       const px = x + Phaser.Math.Between(-5, 5);

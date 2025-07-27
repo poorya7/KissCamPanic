@@ -47,14 +47,16 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
       this.facingRight = true;
       moving = true;
     }
+	if (cursors.up.isDown && this.y >= 130) {
+  this.body.setVelocityY(-speed);
+  moving = true;
+} else if (cursors.down.isDown) {
+  this.body.setVelocityY(speed);
+  moving = true;
+}
 
-    if (cursors.up.isDown) {
-      this.body.setVelocityY(-speed);
-      moving = true;
-    } else if (cursors.down.isDown) {
-      this.body.setVelocityY(speed);
-      moving = true;
-    }
+
+
 
     if (moving) {
       if (!this.anims.isPlaying) this.play("ceo_run");

@@ -295,8 +295,8 @@ this.hr = this.add.sprite(90, 110, "hr1").setScale(0.07);
     this.maxCrowdSize = this.crowdGroup.getLength();
 
     this.physics.add.collider(this.player, this.crowdGroup);
-    this.physics.add.collider(this.hr, this.crowdGroup);
-    this.physics.add.collider(this.player, this.hr);
+    //this.physics.add.collider(this.hr, this.crowdGroup);
+    //this.physics.add.collider(this.player, this.hr);
 
     this.physics.add.overlap(
       this.projectiles,

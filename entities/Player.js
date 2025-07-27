@@ -19,7 +19,14 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     this.hr = null; // ✅ assigned later from MainScene
   }
 
-  move(cursors, speed = 200) {
+
+
+
+
+
+
+
+move(cursors, speed = 200) {
   if (this.disableMovement) {
     this.body.setVelocity(0);
     this.anims.stop();
@@ -30,48 +37,57 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     }
     return;
   }
-    let moving = false;
 
-    this.body.setVelocity(0);
+  let moving = false;
+  this.body.setVelocity(0);
 
-    if (cursors.left.isDown) {
-      this.body.setVelocityX(-speed);
-      this.setFlipX(true);
-      this.hr.setFlipX(true);
-      this.facingRight = false;
-      moving = true;
-    } else if (cursors.right.isDown) {
-      this.body.setVelocityX(speed);
-      this.setFlipX(false);
-      this.hr.setFlipX(false);
-      this.facingRight = true;
-      moving = true;
+  // Horizontal Movement
+  if (cursors.left.isDown) {
+    this.body.setVelocityX(-speed);
+    this.setFlipX(true);
+    if (this.hr) this.hr.setFlipX(true);
+    this.facingRight = false;
+    moving = true;
+  } else if (cursors.right.isDown) {
+    this.body.setVelocityX(speed);
+    this.setFlipX(false);
+    if (this.hr) this.hr.setFlipX(false);
+    this.facingRight = true;
+    moving = true;
+  }
+
+  // Vertical Movement
+  if (cursors.up.isDown && this.y >= 130) {
+    this.body.setVelocityY(-speed);
+    moving = true;
+  } else if (cursors.down.isDown) {
+    this.body.setVelocityY(speed);
+    moving = true;
+  }
+
+  // Animation
+  if (moving) {
+    if (!this.anims.isPlaying) this.play("ceo_run");
+    if (this.hr && !this.hr.anims.isPlaying) this.hr.play("hr_run");
+  } else {
+    this.anims.stop();
+    this.setTexture("ceo1");
+    if (this.hr) {
+      this.hr.anims.stop();
+      this.hr.setTexture("hr1");
     }
-	if (cursors.up.isDown && this.y >= 130) {
-  this.body.setVelocityY(-speed);
-  moving = true;
-} else if (cursors.down.isDown) {
-  this.body.setVelocityY(speed);
-  moving = true;
+  }
+
+  // ✅ Smooth HR Sync — Avoid Jitter
+  if (this.hr) {
+    this.hr.setPosition(this.x - 5, this.y + 5);
+  }
 }
 
 
 
 
-    if (moving) {
-      if (!this.anims.isPlaying) this.play("ceo_run");
-      if (!this.hr.anims.isPlaying) this.hr.play("hr_run");
-    } else {
-      this.anims.stop();
-      this.setTexture("ceo1");
-      this.hr.anims.stop();
-      this.hr.setTexture("hr1");
-    }
-
-    this.hr.x = this.x - 5;
-this.hr.y = this.y + 5;
-
-  }
+	
 
   shoot() {
   if (this.disableMovement) return;

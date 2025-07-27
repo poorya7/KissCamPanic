@@ -248,9 +248,12 @@ createKissCamUI() {
   // ───────────────────────────────
   createPlayerAndHR() {
     this.player = new Player(this, 100, 200, "ceo1");
-    this.hr = this.physics.add.sprite(90, 110, "hr1").setScale(0.07);
+    // ✅ New line (visual-only HR — no physics = no jitter)
+this.hr = this.add.sprite(90, 110, "hr1").setScale(0.07);
+
+
     this.player.hr = this.hr;
-    this.hr.setCollideWorldBounds(true);
+    
 
     this.anims.create({
       key: "ceo_run",

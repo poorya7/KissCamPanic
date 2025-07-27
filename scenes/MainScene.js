@@ -51,7 +51,7 @@ export default class MainScene extends Phaser.Scene {
 	this.load.image("cameraguy", "sprites/props/cameraguy.png");
 	this.load.image("vip", "sprites/props/vip.png");
 	this.load.image("curtain", "sprites/props/curtain.png");
-
+	this.load.image("plant", "sprites/props/plant.png");
   }
 
   
@@ -124,10 +124,10 @@ createBackgroundAndStage() {
     .setScale(0.5);
 	
 	// ───── Exit Door (top-right) ─────
-this.exitDoor = this.add.image(this.scale.width - 10, 0, "exitdoor")
+this.exitDoor = this.add.image(this.scale.width - 20, 0, "exitdoor")
   .setOrigin(.9, 0)
   .setDepth(-10)
-  .setDisplaySize(340,128);
+  .setDisplaySize(325,128);
 
 
 // ───── Top Wall Connecting to Exit Door ─────
@@ -145,10 +145,10 @@ this.wallTop = this.add.tileSprite(
 
 
 // ───── Speaker Stack on Right Side ─────
-this.speaker = this.add.image(0, this.scale.height, "speaker")
+/*this.speaker = this.add.image(0, this.scale.height, "speaker")
   .setOrigin(-0.05, 1.1)   // bottom-left anchor
   .setDepth(-9)
-  .setScale(0.6);    // adjust if too big or small
+  .setScale(0.6);    // adjust if too big or small*/
 
 
 this.cameraGuy = this.add.image(this.scale.width, 0, "cameraguy")
@@ -167,6 +167,11 @@ this.curtain = this.add.image(0, 0, "curtain")
   .setDepth(-9)
   .setScale(0.18);        // tweak as needed
 
+this.plant = this.add.image(0, 0, "plant")
+   .setOrigin(-2.0, -0.4)  
+  .setDepth(-10)
+  .setDisplaySize(124,256)
+	.setScale(0.4);
 
 
 }

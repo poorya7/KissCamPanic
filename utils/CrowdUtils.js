@@ -1,35 +1,54 @@
+
+import { CAMERA_BLOCKER } from "../utils/BlockerZones.js";
+import { VIP_BLOCKER } from "./BlockerZones.js";
+
 export function isInsideStage(stage, x, y, margin = 0) {
   const stageWidth = stage.width * stage.scaleX;
   const stageHeight = stage.height * stage.scaleY;
-  const left = stage.x - stageWidth * 0.48 - margin;
-  const right = stage.x + stageWidth * 0.52 + margin;
-  const top = stage.y - stageHeight * 0.12 - 10 - margin;
-  const bottom = stage.y + stageHeight * 0.88 + margin;
+  const left = stage.x - stageWidth * stage.originX - margin;
+const right = stage.x + stageWidth * (1 - stage.originX) + margin;
+const top = stage.y - stageHeight * stage.originY - 10 - margin;
+const bottom = stage.y + stageHeight * (1 - stage.originY) + margin;
+
   return x > left && x < right && y > top && y < bottom;
 }
 
 export function isInsideKissCam(kissCamFrame, x, y, margin = 0) {
-  const width = kissCamFrame.width * kissCamFrame.scaleX;
-  const height = kissCamFrame.height * kissCamFrame.scaleY;
+  if (!kissCamFrame) return false;
 
-  const left = kissCamFrame.x - width / 2 - 40 - margin;
-  const right = kissCamFrame.x + width / 2 + 40 + margin;
-  const top = kissCamFrame.y - height / 2 - margin;
-  const bottom = kissCamFrame.y + height / 2 + margin;
+  const left = kissCamFrame.x - kissCamFrame.width * 0.5 - margin;
+  const right = kissCamFrame.x + kissCamFrame.width * 0.5 + margin;
+  const top = kissCamFrame.y - kissCamFrame.height * 0.5 - margin;
+  const bottom = kissCamFrame.y + kissCamFrame.height * 0.5 + margin;
 
-  return x > left && x < right && y > top && y < bottom;
+  return x >= left && x <= right && y >= top && y <= bottom;
 }
 
-export function isInsideCameraArea(x, y) {
-  // These values are based on the image you shared
-  const camLeft = 810;
-  const camRight = 810 + 110;
-  const camTop = 60;
-  const camBottom = 60 + 200;
+
+export function isInsideCameraArea(x, y, cameraGuy) {
+  const visualX = cameraGuy.x - cameraGuy.displayWidth * (cameraGuy.originX - 0.5);
+  const visualY = cameraGuy.y - cameraGuy.displayHeight * (cameraGuy.originY - 0.5);
+
+  const camLeft = visualX + CAMERA_BLOCKER.OFFSET_X - CAMERA_BLOCKER.WIDTH / 2;
+  const camRight = visualX + CAMERA_BLOCKER.OFFSET_X + CAMERA_BLOCKER.WIDTH / 2;
+  const camTop = visualY + CAMERA_BLOCKER.OFFSET_Y - CAMERA_BLOCKER.HEIGHT / 2;
+  const camBottom = visualY + CAMERA_BLOCKER.OFFSET_Y + CAMERA_BLOCKER.HEIGHT / 2;
 
   return x >= camLeft && x <= camRight && y >= camTop && y <= camBottom;
 }
 
+
+export function isInsideVIPArea(x, y, vipSprite) {
+  const visualX = vipSprite.x - vipSprite.displayWidth * (vipSprite.originX - 0.5);
+  const visualY = vipSprite.y - vipSprite.displayHeight * (vipSprite.originY - 0.5);
+
+  const left = visualX + VIP_BLOCKER.OFFSET_X - VIP_BLOCKER.WIDTH / 2;
+  const right = visualX + VIP_BLOCKER.OFFSET_X + VIP_BLOCKER.WIDTH / 2;
+  const top = visualY + VIP_BLOCKER.OFFSET_Y - VIP_BLOCKER.HEIGHT / 2;
+  const bottom = visualY + VIP_BLOCKER.OFFSET_Y + VIP_BLOCKER.HEIGHT / 2;
+
+  return x >= left && x <= right && y >= top && y <= bottom;
+}
 
 
 export function randomHairColor() {

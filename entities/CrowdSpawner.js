@@ -1,11 +1,4 @@
-import {
-  isInsideStage,
-  isInsideKissCam,
-  isInsideCameraArea,
-  randomHairColor,
-  randomColor
-} from "../utils/CrowdUtils.js";
-
+import * as CrowdUtils from "../utils/CrowdUtils.js";
 
 export default class CrowdSpawner {
   constructor(scene, group, stage) {
@@ -15,29 +8,32 @@ export default class CrowdSpawner {
   }
 
   spawnCrowd() {
-  const spacing = 25;
-  const screenW = this.scene.scale.width;
-  const screenH = this.scene.scale.height;
+    const spacing = 25;
+    const screenW = this.scene.scale.width;
+    const screenH = this.scene.scale.height;
 
-  for (let y = 20; y < screenH - 10; y += spacing) {
-    for (let x = 10; x < screenW - 10; x += spacing) {
-      const densityFactor = Phaser.Math.Clamp(1.3 - (y / screenH), 0.5, 1.0);
-      if (Phaser.Math.Between(0, 100) > 40 * densityFactor) {
-        ;//this.spawnCrowdMember(x, y);
+    for (let y = 20; y < screenH - 10; y += spacing) {
+      for (let x = 10; x < screenW - 10; x += spacing) {
+        const densityFactor = Phaser.Math.Clamp(1.3 - (y / screenH), 0.5, 1.0);
+        if (Phaser.Math.Between(0, 100) > 40 * densityFactor) {
+          this.spawnCrowdMember(x, y);
+        }
       }
     }
   }
-}
-
 
   spawnCrowdMember(x, y) {
-	if (
-  isInsideStage(this.stage, x, y, 0) ||
-  isInsideKissCam(this.scene.kissCamFrame, x, y, 0) ||
-  isInsideCameraArea(x, y)
-) return;
+	  return;
+    if (y < 120) return;
 
-	if (y < 120) return;
+    if (
+      CrowdUtils.isInsideStage(this.scene.stage, x, y, 0) ||
+      CrowdUtils.isInsideKissCam(this.scene.kissCamFrame, x, y, 0) ||
+      CrowdUtils.isInsideCameraArea(x, y, this.scene.cameraGuy) ||
+      CrowdUtils.isInsideVIPArea(x, y, this.scene.vip)
+    ) {
+      return;
+    }
 
     if (Phaser.Math.Between(0, 100) > 50) {
       const px = x + Phaser.Math.Between(-5, 5);
@@ -52,8 +48,8 @@ export default class CrowdSpawner {
       const skinSprite = this.scene.add.sprite(0, 0, "skin").setScale(scale);
       skinSprite.originalScale = scale;
 
-      let pantsColor = randomColor();
-      let shirtColor = randomColor();
+      let pantsColor = CrowdUtils.randomColor();
+      let shirtColor = CrowdUtils.randomColor();
 
       if (hairStyle === "hair_m" && Phaser.Math.Between(1, 100) <= 70) {
         const darkPalette = [0x222222, 0x444444, 0x333366, 0x4b3621];
@@ -63,9 +59,8 @@ export default class CrowdSpawner {
 
       const pants = this.scene.add.sprite(0, 0, "pants").setScale(scale).setTint(pantsColor);
       const shirt = this.scene.add.sprite(0, 0, "shirt").setScale(scale).setTint(shirtColor);
-      const hair = this.scene.add.sprite(0, 0, hairStyle).setScale(scale).setTint(randomHairColor());
+      const hair = this.scene.add.sprite(0, 0, hairStyle).setScale(scale).setTint(CrowdUtils.randomHairColor());
 
-      // Store originalScale for zoom rendering
       pants.originalScale = scale;
       shirt.originalScale = scale;
       hair.originalScale = scale;
@@ -90,20 +85,24 @@ export default class CrowdSpawner {
       this.group.add(base);
     }
   }
-  
+
   spawnAtRandomValidLocation() {
-  let x, y;
-  const attempts = 20;
+    let x, y;
+    const attempts = 20;
 
-  for (let i = 0; i < attempts; i++) {
-    x = Phaser.Math.Between(10, 790);
-    y = Phaser.Math.Between(20, 460);
+    for (let i = 0; i < attempts; i++) {
+      x = Phaser.Math.Between(10, 790);
+      y = Phaser.Math.Between(20, 460);
 
-    if (!isInsideStage(x, y, 0) && !isInsideKissCam(x, y, 0)) {
-      this.spawnCrowdMember(x, y);
-      return;
+      if (
+        !CrowdUtils.isInsideStage(this.scene.stage, x, y, 0) &&
+        !CrowdUtils.isInsideKissCam(this.scene.kissCamFrame, x, y, 0) &&
+        !CrowdUtils.isInsideCameraArea(x, y, this.scene.cameraGuy) &&
+        !CrowdUtils.isInsideVIPArea(x, y, this.scene.vip)
+      ) {
+        this.spawnCrowdMember(x, y);
+        return;
+      }
     }
   }
-}
-
 }

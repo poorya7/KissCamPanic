@@ -5,6 +5,8 @@ import KissCamFeedRenderer from "../entities/KissCamFeedRenderer.js";
 import ProjectileManager from "../entities/ProjectileManager.js";
 import SpotlightHandler from "../entities/SpotlightHandler.js";
 import GameOverDialog from "../entities/GameOverDialog.js";
+import * as BLOCKERS from "../utils/BlockerZones.js";
+
 
 import {
   isInsideStage,
@@ -64,10 +66,10 @@ export default class MainScene extends Phaser.Scene {
   create() {
     this.createFlashOverlay();
     this.createBackgroundAndStage();
-    this.createKissCamUI();
     this.createPlayerAndHR();
     this.createControlsAndProjectiles();
     this.createCrowdAndColliders();
+	this.createKissCamUI();
     this.createKissCamRenderer();
     this.createBlockers();
     this.createGameOverDialog();
@@ -185,13 +187,19 @@ this.plant = this.add.image(0, 0, "plant")
   // ▶ createKissCamUI
   // ───────────────────────────────
 createKissCamUI() {
-  const camX = this.stage.x; // horizontal center of the stage
-  const camY = this.stage.y - 50; // vertical offset above the stage
-  const FEED_SIZE = 70;
-  const OFFSET_X = 10; // move left (-) or right (+)
-  const OFFSET_Y = 4;  // move up (-) or down (+)
+  const camX = this.stage.x - this.stage.displayWidth * (this.stage.originX - 0.5);
+const camY = this.stage.y - this.stage.displayHeight * (this.stage.originY - 0.5)-150;
 
-  // Create feed texture first and make sure it's ABOVE the frame
+
+  const FEED_SIZE = 70;
+  const OFFSET_X = 10;
+  const OFFSET_Y = 4;
+
+  if (!camX || !camY || FEED_SIZE <= 0) {
+    console.warn("🚨 Skipping kissCamFeed due to invalid camX or camY");
+    return;
+  }
+
   this.kissCamFeed = this.add.renderTexture(
     camX - FEED_SIZE / 2 + OFFSET_X,
     camY - FEED_SIZE / 2 + OFFSET_Y,
@@ -199,10 +207,9 @@ createKissCamUI() {
     FEED_SIZE
   )
     .setOrigin(0, 0)
-    .setDepth(1001); // must be above the frame
+    .setDepth(1001);
 
-  // Mask the feed to fit inside oval shape
-  const maskGraphics = this.make.graphics({ x: 0, y: 0, add: true });
+  const maskGraphics = this.make.graphics({ x: 0, y: 0, add: false });
   maskGraphics.fillStyle(0xffffff);
   const ellipse = new Phaser.Geom.Ellipse(
     this.kissCamFeed.x + this.kissCamFeed.width / 2,
@@ -213,14 +220,11 @@ createKissCamUI() {
   maskGraphics.fillEllipseShape(ellipse);
   const kissCamMask = maskGraphics.createGeometryMask();
   this.kissCamFeed.setMask(kissCamMask);
-  maskGraphics.visible = false;
 
-  // Then add the kiss cam oval sprite (frame) ABOVE the stage, BELOW the feed
   this.kissCamFrame = this.add.image(camX, camY, "kisscam1")
     .setScale(0.07)
-    .setDepth(1000); // below feed
+    .setDepth(1000);
 
-  // Swap texture animation
   this.time.addEvent({
     delay: 700,
     loop: true,
@@ -230,7 +234,6 @@ createKissCamUI() {
     }
   });
 }
-
 
   
   // ───────────────────────────────
@@ -332,30 +335,24 @@ this.hr = this.add.sprite(90, 110, "hr1").setScale(0.07);
 
 createBlockers() {
   // ───── Stage Blocker ─────
-  const stageWidth = this.stage.width * this.stage.scaleX;
-  const stageHeight = this.stage.height * this.stage.scaleY;
+	const stageVisualX = this.stage.x - this.stage.displayWidth * (this.stage.originX - 0.5);
+	const stageVisualY = this.stage.y - this.stage.displayHeight * (this.stage.originY - 0.5);
 
-  // Adjust for stage origin (0.48, 0.12)
-  const offsetX = (0.5 - 0.48) * stageWidth;
-  const offsetY = (0.5 - 0.12) * stageHeight;
+	const stageBlocker1 = this.add.rectangle(
+  stageVisualX + BLOCKERS.STAGE_BLOCKER.OFFSET_X,
+  stageVisualY + BLOCKERS.STAGE_BLOCKER.OFFSET_Y,
+  this.stage.displayWidth + BLOCKERS.STAGE_BLOCKER.EXTRA_WIDTH,
+  this.stage.displayHeight * BLOCKERS.STAGE_BLOCKER.HEIGHT_MULTIPLIER + BLOCKERS.STAGE_BLOCKER.EXTRA_HEIGHT,
+  0xff0000,
+  0.4
+)
+.setOrigin(0.5, 0.5)
+.setVisible(false);
 
-  // Manual tweaks (change these to fine-tune)
-  const manualOffsetX = 0.0;
-  const manualOffsetY = -30.0;
-  const extraWidth = -20.0;
-  const extraHeight = 0.0;
+	this.physics.add.existing(stageBlocker1, true);
+	this.physics.add.collider(this.player, stageBlocker1);
+	
 
-  const stageBlocker = this.add.rectangle(
-    this.stage.x + offsetX + manualOffsetX,
-    this.stage.y + offsetY + manualOffsetY,
-    stageWidth + extraWidth,
-    stageHeight * 0.7 + extraHeight
-  )
-    .setOrigin(0.5, 0.5)
-    .setVisible(false); // Set to true for debug visuals
-
-  this.physics.add.existing(stageBlocker, true);
-  this.physics.add.collider(this.player, stageBlocker);
 
   // ───── Kiss Cam Blocker ─────
   const camWidth = this.kissCamFrame.width * this.kissCamFrame.scaleX + 40;
@@ -377,19 +374,20 @@ createBlockers() {
   
   // ───── Cameraman + Fridge Blocker ─────
 
-const cameraGuyVisualX = this.cameraGuy.x - this.cameraGuy.displayWidth * (this.cameraGuy.originX - 0.5);
-const cameraGuyVisualY = this.cameraGuy.y - this.cameraGuy.displayHeight * (this.cameraGuy.originY - 0.5);
+const visualX = this.cameraGuy.x - this.cameraGuy.displayWidth * (this.cameraGuy.originX - 0.5);
+const visualY = this.cameraGuy.y - this.cameraGuy.displayHeight * (this.cameraGuy.originY - 0.5);
 
 const cameraFridgeBlocker = this.add.rectangle(
-  cameraGuyVisualX +5,
-  cameraGuyVisualY -10,
-  94,
-  110,
+  visualX + BLOCKERS.CAMERA_BLOCKER.OFFSET_X,
+  visualY + BLOCKERS.CAMERA_BLOCKER.OFFSET_Y,
+  BLOCKERS.CAMERA_BLOCKER.WIDTH,
+  BLOCKERS.CAMERA_BLOCKER.HEIGHT,
   0xff0000,
   0.4
 )
 .setOrigin(0.5, 0.5)
-.setVisible(false); // set to false when done debugging
+.setVisible(false);
+
 
 this.physics.add.existing(cameraFridgeBlocker, true);
 this.physics.add.collider(this.player, cameraFridgeBlocker);

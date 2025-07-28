@@ -10,7 +10,8 @@ export default class CrowdSpawner {
   spawnCrowd() {
     const spacing = 25;
     const screenW = this.scene.scale.width;
-    const screenH = this.scene.scale.height;
+	const screenH = this.scene.scale.height;
+	
 
     for (let y = 20; y < screenH - 10; y += spacing) {
       for (let x = 10; x < screenW - 10; x += spacing) {
@@ -23,7 +24,6 @@ export default class CrowdSpawner {
   }
 
   spawnCrowdMember(x, y) {
-	  return;
     if (y < 120) return;
 
     if (

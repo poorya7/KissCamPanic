@@ -448,14 +448,13 @@ createGameOverDialog() {
   this.dialog.enableKeyboardInput();
 
   this.onSaveName = (name) => {
-    console.log("Saved name:", name);
-    this.scene.restart();
-  };
+  window.location.reload();
+};
 
-  this.onCancelName = () => {
-    console.log("Player canceled name entry");
-    this.scene.restart();
-  };
+this.onCancelName = () => {
+  window.location.reload();
+};
+
 }
 
 

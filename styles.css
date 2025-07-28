@@ -30,7 +30,7 @@
 /* Top title bar */
 #top-left-title {
   width: 300px;
-  height: 100px; /* make taller */
+  height: 70px; /* make taller */
   background-image: url("sprites/title.png");
   background-repeat: no-repeat;
   background-size: contain;
@@ -38,6 +38,7 @@
   margin-top: -50px; /* pull up */
   margin-left: 20px; 
 }
+
 
 /* Game canvas wrapper */
 #game-wrapper {
@@ -49,7 +50,7 @@
 
 /* Bottom bar */
 #bottom-bar {
-  height: 40px;
+  height: 10px;
   color: #fff;
   display: flex;
   align-items: center;
@@ -65,6 +66,7 @@
 }
 
 .social-icon {
+ margin-top: 30px;
   width: 20px;
   height: 20px;
   opacity: 0.8;
@@ -76,9 +78,13 @@
   cursor: pointer;
 }
 
+#live-counter {
+  margin-top: 20px; 
+}
+
 /* RIGHT SIDEBAR */
 #right-sidebar {
-  flex: 0.8;
+  flex: 0.6;
   background: #000;
   display: flex;
   flex-direction: column;

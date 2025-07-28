@@ -167,11 +167,15 @@ export default class GameOverDialog extends Phaser.GameObjects.Container {
       color: "#ff5555"
     }).setOrigin(0.5);
 
-    const scoreText = this.scene.add.text(0, -50, `SCORE: ${score}`, {
-      fontFamily: "C64",
-      fontSize: "16px",
-      color: "#ffffaa"
-    }).setOrigin(0.5);
+    const rawScore = Math.floor(score / 10); // remove last digit
+const displayScore = rawScore.toString().padStart(8, "0"); // pad with extra zero
+
+const scoreText = this.scene.add.text(0, -50, `SCORE: ${displayScore}`, {
+  fontFamily: "C64",
+  fontSize: "16px",
+  color: "#ffffaa"
+}).setOrigin(0.5);
+
 
     const rankText = this.scene.add.text(0, -10, `YOU PLACED ${rank}`, {
       fontFamily: "C64",

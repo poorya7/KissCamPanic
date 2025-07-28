@@ -17,6 +17,8 @@ export default class GameOverDialog extends Phaser.GameObjects.Container {
     // ▶ Name Label + Name Value
     // ───────────────────────────────
     this.enteredName = "";
+	this.maxNameWidth = 180; // adjust as needed for your dialog width
+
 
     this.nameValue = this.scene.add.text(0, 30, "", {
       fontFamily: "C64",
@@ -125,23 +127,31 @@ export default class GameOverDialog extends Phaser.GameObjects.Container {
   // ▶ enableKeyboardInput
   // ───────────────────────────────
   enableKeyboardInput() {
-    this.scene.input.keyboard.on("keydown", (event) => {
-      if (!this.visible) return;
+  this.scene.input.keyboard.on("keydown", (event) => {
+    if (!this.visible) return;
 
-      const key = event.key;
-      if (/^[a-z0-9 ]$/i.test(key)) {
-        if (this.enteredName.length < 30) {
-          this.enteredName += key.toUpperCase();
-          this.updateNameDisplay();
-        }
-        event.preventDefault();
-      } else if (key === "Backspace") {
-        this.enteredName = this.enteredName.slice(0, -1);
+    const key = event.key;
+
+    if (/^[a-z0-9 ]$/i.test(key)) {
+      if (this.enteredName.length < 30) {
+        this.enteredName += key.toUpperCase();
         this.updateNameDisplay();
-        event.preventDefault();
       }
-    });
-  }
+      event.preventDefault();
+    } else if (key === "Backspace") {
+      this.enteredName = this.enteredName.slice(0, -1);
+      this.updateNameDisplay();
+      event.preventDefault();
+    } else if (key === "Enter") {
+      this.scene.onSaveName?.(this.enteredName);
+      event.preventDefault();
+    } else if (key === "Escape") {
+      this.scene.onCancelName?.();
+      event.preventDefault();
+    }
+  });
+}
+
 
   // ───────────────────────────────
   // ▶ show
@@ -184,7 +194,17 @@ export default class GameOverDialog extends Phaser.GameObjects.Container {
   // ▶ updateNameDisplay
   // ───────────────────────────────
   updateNameDisplay() {
-    const cursor = this.cursorVisible ? "_" : " ";
-    this.nameValue.setText(this.enteredName + cursor);
+  const cursor = this.cursorVisible ? "_" : " ";
+  this.nameValue.setText(this.enteredName + cursor);
+
+  // Reset scale before measuring
+  this.nameValue.setScale(1);
+
+  const actualWidth = this.nameValue.width;
+  if (actualWidth > this.maxNameWidth) {
+    const shrinkScale = this.maxNameWidth / actualWidth;
+    this.nameValue.setScale(shrinkScale);
   }
+}
+
 }

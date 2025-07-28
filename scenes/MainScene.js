@@ -52,7 +52,8 @@ export default class MainScene extends Phaser.Scene {
 	this.load.image("vip", "sprites/props/vip.png");
 	this.load.image("curtain", "sprites/props/curtain.png");
 	this.load.image("plant", "sprites/props/plant.png");
-
+	this.load.image('mute', 'sprites/UI/mute.png');
+	this.load.image('unmute', 'sprites/UI/unmute.png');
 	
   }
 
@@ -154,13 +155,13 @@ this.wallTop = this.add.tileSprite(
 
 
 this.cameraGuy = this.add.image(this.scale.width, 0, "cameraguy")
-  .setOrigin(1.3, -0.4)     
+  .setOrigin(1.3, -0.5)     
   .setDepth(-9)
   .setScale(0.2);
 
 
 this.vip = this.add.image(this.scale.width, this.scale.height / 2, "vip")
-  .setOrigin(1.2, 0.2)     // anchor to right edge, center vertically
+  .setOrigin(1.2, -0.7)     // anchor to right edge, center vertically
   .setDepth(-9)
   .setScale(0.15);        // adjust scale to fit your layout
 
@@ -375,19 +376,62 @@ createBlockers() {
   
   
   // ───── Cameraman + Fridge Blocker ─────
+
+const cameraGuyVisualX = this.cameraGuy.x - this.cameraGuy.displayWidth * (this.cameraGuy.originX - 0.5);
+const cameraGuyVisualY = this.cameraGuy.y - this.cameraGuy.displayHeight * (this.cameraGuy.originY - 0.5);
+
 const cameraFridgeBlocker = this.add.rectangle(
-  810 + 110 / 2, // center X
-  60 + 200 / 2,  // center Y
-  100,
-  170
+  cameraGuyVisualX +5,
+  cameraGuyVisualY -10,
+  94,
+  110,
+  0xff0000,
+  0.4
 )
-  .setOrigin(0.5, 0.5)
-    .setVisible(false);
- 
-  
+.setOrigin(0.5, 0.5)
+.setVisible(false); // set to false when done debugging
 
 this.physics.add.existing(cameraFridgeBlocker, true);
 this.physics.add.collider(this.player, cameraFridgeBlocker);
+
+
+
+// ───── VIP Blocker ─────
+const vipVisualX = this.vip.x - this.vip.displayWidth * (this.vip.originX - 0.5);
+const vipVisualY = this.vip.y - this.vip.displayHeight * (this.vip.originY - 0.5);
+
+const vipBlocker1 = this.add.rectangle(
+  vipVisualX + 4,  // tweak offsets as needed
+  vipVisualY - 42,
+  95,
+  10,
+  0xff0000,
+  0.4
+)
+.setOrigin(0.5, 0.5)
+.setVisible(false); // set to true for debug
+
+this.physics.add.existing(vipBlocker1, true);
+this.physics.add.collider(this.player, vipBlocker1);
+
+
+
+const vipBlocker2 = this.add.rectangle(
+  vipVisualX + 4,  // tweak offsets as needed
+  vipVisualY + 22,
+  100,
+  30,
+  0xff0000,
+  0.4
+)
+.setOrigin(0.5, 0.5)
+.setVisible(false); // set to true for debug
+
+this.physics.add.existing(vipBlocker2, true);
+this.physics.add.collider(this.player, vipBlocker2);
+
+
+
 
 }
 

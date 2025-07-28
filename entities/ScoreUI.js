@@ -48,7 +48,7 @@ export default class ScoreUI {
     this.score += this.scene.game.loop.delta / 10 * 3;
 
     const raw = Math.floor(this.score / 10); // drop last digit
-    const display = raw.toString().padStart(8, "0");
+    const display = raw.toString().padStart(7, "0");
 
     this.scoreValue.setText(display);
     this.rankValue.setText(this.rank.toString());

@@ -23,7 +23,7 @@ export default class CrowdSpawner {
     for (let x = 10; x < screenW - 10; x += spacing) {
       const densityFactor = Phaser.Math.Clamp(1.3 - (y / screenH), 0.5, 1.0);
       if (Phaser.Math.Between(0, 100) > 40 * densityFactor) {
-        this.spawnCrowdMember(x, y);
+        ;//this.spawnCrowdMember(x, y);
       }
     }
   }

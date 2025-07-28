@@ -3,7 +3,7 @@ export default class ScoreUI {
     this.scene = scene;
     this.score = 0;
 
-    this.scoreText = scene.add.text(12, 0, "score: 0000000", {
+    this.scoreText = scene.add.text(scene.scale.width - 210, 10, "score: 0000000", {
       fontFamily: "C64",
       fontSize: "16px",
       color: "#ffffcc",

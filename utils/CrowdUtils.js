@@ -20,6 +20,17 @@ export function isInsideKissCam(kissCamFrame, x, y, margin = 0) {
   return x > left && x < right && y > top && y < bottom;
 }
 
+export function isInsideCameraArea(x, y) {
+  // These values are based on the image you shared
+  const camLeft = 810;
+  const camRight = 810 + 110;
+  const camTop = 60;
+  const camBottom = 60 + 200;
+
+  return x >= camLeft && x <= camRight && y >= camTop && y <= camBottom;
+}
+
+
 
 export function randomHairColor() {
   const naturalColors = [0x2c2c2c, 0x5a3825, 0xa0522d, 0xd2b48c];

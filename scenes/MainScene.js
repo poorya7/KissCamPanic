@@ -52,6 +52,8 @@ export default class MainScene extends Phaser.Scene {
 	this.load.image("vip", "sprites/props/vip.png");
 	this.load.image("curtain", "sprites/props/curtain.png");
 	this.load.image("plant", "sprites/props/plant.png");
+
+	
   }
 
   
@@ -172,6 +174,7 @@ this.plant = this.add.image(0, 0, "plant")
   .setDepth(-10)
   .setDisplaySize(124,256)
 	.setScale(0.4);
+
 
 
 }
@@ -368,6 +371,24 @@ createBlockers() {
 
   this.physics.add.existing(kissCamBlocker, true);
   this.physics.add.collider(this.player, kissCamBlocker);
+  
+  
+  
+  // ───── Cameraman + Fridge Blocker ─────
+const cameraFridgeBlocker = this.add.rectangle(
+  810 + 110 / 2, // center X
+  60 + 200 / 2,  // center Y
+  100,
+  170
+)
+  .setOrigin(0.5, 0.5)
+    .setVisible(false);
+ 
+  
+
+this.physics.add.existing(cameraFridgeBlocker, true);
+this.physics.add.collider(this.player, cameraFridgeBlocker);
+
 }
 
 

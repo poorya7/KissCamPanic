@@ -1,9 +1,11 @@
 import {
   isInsideStage,
   isInsideKissCam,
+  isInsideCameraArea,
   randomHairColor,
   randomColor
 } from "../utils/CrowdUtils.js";
+
 
 export default class CrowdSpawner {
   constructor(scene, group, stage) {
@@ -29,7 +31,12 @@ export default class CrowdSpawner {
 
 
   spawnCrowdMember(x, y) {
-	if (isInsideStage(this.stage, x, y, 0) || isInsideKissCam(this.scene.kissCamFrame, x, y, 0)) return;
+	if (
+  isInsideStage(this.stage, x, y, 0) ||
+  isInsideKissCam(this.scene.kissCamFrame, x, y, 0) ||
+  isInsideCameraArea(x, y)
+) return;
+
 	if (y < 120) return;
 
     if (Phaser.Math.Between(0, 100) > 50) {

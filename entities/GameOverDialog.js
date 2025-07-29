@@ -210,57 +210,63 @@ enableKeyboardInput() {
 
 
 
+show(score = 0, rank = "#58 / 321") {
+  // 🔄 Remove old text objects if they exist
+  if (this.titleText) this.titleText.destroy();
+  if (this.scoreText) this.scoreText.destroy();
+  if (this.rankText) this.rankText.destroy();
 
-
-  
-	  show(score = 0, rank = "#58 / 321") {
   // ⏹ Reset core state
   this.enteredName = "";
   this.isSubmitting = false;
   this.keyboardEnabled = false;
   this.cursorVisible = true;
 
-	  
-	  
-    this.finalScore = Math.floor(score / 10);
+  this.finalScore = Math.floor(score / 10);
 
-    this.setVisible(true);
-    this.setAlpha(0);
-    this.setScale(0.8);
+  this.setVisible(true);
+  this.setAlpha(0);
+  this.setScale(0.8);
 
-    const title = this.scene.add.text(0, -90, "YOU WERE CAUGHT!", {
-      fontFamily: "C64",
-      fontSize: "24px",
-      color: "#ff5555"
-    }).setOrigin(0.5);
+  // 👇 Store refs to text for cleanup later
+  this.titleText = this.scene.add.text(0, -90, "YOU WERE CAUGHT!", {
+    fontFamily: "C64",
+    fontSize: "24px",
+    color: "#ff5555"
+  }).setOrigin(0.5);
 
-    const rawScore = Math.floor(score / 10);
-    const displayScore = rawScore.toString().padStart(8, "0");
+  const rawScore = Math.floor(score / 10);
+  const displayScore = rawScore.toString().padStart(8, "0");
 
-    const scoreText = this.scene.add.text(0, -50, `SCORE: ${displayScore}`, {
-      fontFamily: "C64",
-      fontSize: "16px",
-      color: "#ffffaa"
-    }).setOrigin(0.5);
+  this.scoreText = this.scene.add.text(0, -50, `SCORE: ${displayScore}`, {
+    fontFamily: "C64",
+    fontSize: "16px",
+    color: "#ffffaa"
+  }).setOrigin(0.5);
 
-    const rankText = this.scene.add.text(0, -10, `YOU PLACED ${rank}`, {
-      fontFamily: "C64",
-      fontSize: "16px",
-      color: "#00ffcc"
-    }).setOrigin(0.5);
+  this.rankText = this.scene.add.text(0, -10, `YOU PLACED ${rank}`, {
+    fontFamily: "C64",
+    fontSize: "16px",
+    color: "#00ffcc"
+  }).setOrigin(0.5);
 
-    this.add([title, scoreText, rankText]);
+  this.add([this.titleText, this.scoreText, this.rankText]);
 
-    this.scene.tweens.add({
-      targets: this,
-      alpha: 1,
-      scale: 1,
-      ease: "back.out",
-      duration: 400
-    });
+  this.scene.tweens.add({
+    targets: this,
+    alpha: 1,
+    scale: 1,
+    ease: "back.out",
+    duration: 400
+  });
 
-    this.enableKeyboardInput();
-  }
+  this.enableKeyboardInput();
+}
+
+
+
+
+
 
   updateNameDisplay() {
     const cursor = this.cursorVisible ? "_" : " ";

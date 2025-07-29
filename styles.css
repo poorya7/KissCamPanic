@@ -16,6 +16,16 @@
   padding: 0;
 }
 
+
+#highscore-list div {
+  font-family: "C64", monospace !important;
+  font-size: 10px !important;
+  color: white;
+  white-space: pre;
+  line-height: 1.6em;
+}
+
+
 /* LEFT COLUMN */
 #left-column {
   display: flex;

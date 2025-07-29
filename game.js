@@ -1,4 +1,5 @@
 import MainScene from "./scenes/MainScene.js";
+import ScoreService from "./services/ScoreService.js"; // ⬅️ add this at the top
 
 window.onload = () => {
   const wrapper = document.getElementById("game-wrapper");
@@ -16,10 +17,10 @@ window.onload = () => {
       height: wrapperSize.height,
       autoCenter: Phaser.Scale.CENTER_BOTH
     },
-	 render: {
-    pixelArt: true,         // <--- helps with sharp pixels
-    roundPixels: true       // <--- avoids subpixel jitter
-  },
+    render: {
+      pixelArt: true,
+      roundPixels: true
+    },
     physics: {
       default: "arcade",
       arcade: {
@@ -32,6 +33,15 @@ window.onload = () => {
   };
 
   const game = new Phaser.Game(config);
+
+  // ⬇️ Call this after game is created
+  if (window.fontsReady) {
+    ScoreService.getTopScores();
+  } else {
+    document.fonts.ready.then(() => {
+      ScoreService.getTopScores();
+    });
+  }
 
   const muteBtn = document.getElementById("mute-btn");
   let isMuted = false;

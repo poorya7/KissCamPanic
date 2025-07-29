@@ -16,6 +16,10 @@ window.onload = () => {
       height: wrapperSize.height,
       autoCenter: Phaser.Scale.CENTER_BOTH
     },
+	 render: {
+    pixelArt: true,         // <--- helps with sharp pixels
+    roundPixels: true       // <--- avoids subpixel jitter
+  },
     physics: {
       default: "arcade",
       arcade: {

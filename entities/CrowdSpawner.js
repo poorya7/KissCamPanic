@@ -10,8 +10,7 @@ export default class CrowdSpawner {
   spawnCrowd() {
     const spacing = 25;
     const screenW = this.scene.scale.width;
-	const screenH = this.scene.scale.height;
-	
+    const screenH = this.scene.scale.height;
 
     for (let y = 20; y < screenH - 10; y += spacing) {
       for (let x = 10; x < screenW - 10; x += spacing) {
@@ -40,49 +39,57 @@ export default class CrowdSpawner {
       const py = y + Phaser.Math.Between(-5, 5);
       const scale = 0.09;
 
-      const base = this.scene.physics.add.sprite(px, py, "skin").setScale(scale);
+      const variant = Phaser.Math.RND.pick(["adult", "teen"]);
+
+      const base = this.scene.physics.add
+        .sprite(px, py, `${variant}/skin`)
+        .setScale(scale);
       base.setImmovable(true);
       base.setVisible(false);
 
-      const hairStyle = Phaser.Math.RND.pick(["hair_f", "hair_m", "hat1"]);
-      const skinSprite = this.scene.add.sprite(0, 0, "skin").setScale(scale);
-      skinSprite.originalScale = scale;
+      const hairStyleKey = Phaser.Math.RND.pick(["hair_f", "hair_m"]);
+      const hairKey = `${variant}/${hairStyleKey}`;
+      const shirtKey = `${variant}/shirt`;
+      const pantsKey = `${variant}/pants`;
+      const skinKey = `${variant}/skin`;
 
-      let pantsColor = CrowdUtils.randomColor();
-      let shirtColor = CrowdUtils.randomColor();
+      const skinSprite = this.scene.add.sprite(0, 0, skinKey).setScale(scale);
+      const pants = this.scene.add.sprite(0, 0, pantsKey).setScale(scale).setTint(CrowdUtils.randomColor());
+      const shirt = this.scene.add.sprite(0, 0, shirtKey).setScale(scale).setTint(CrowdUtils.randomColor());
+      const hair = this.scene.add.sprite(0, 0, hairKey).setScale(scale).setTint(CrowdUtils.randomHairColor());
 
-      if (hairStyle === "hair_m" && Phaser.Math.Between(1, 100) <= 70) {
+      // Darker palette override
+      if (hairStyleKey === "hair_m" && Phaser.Math.Between(1, 100) <= 70) {
         const darkPalette = [0x222222, 0x444444, 0x333366, 0x4b3621];
-        pantsColor = Phaser.Math.RND.pick(darkPalette);
-        shirtColor = Phaser.Math.RND.pick(darkPalette);
+        pants.setTint(Phaser.Math.RND.pick(darkPalette));
+        shirt.setTint(Phaser.Math.RND.pick(darkPalette));
       }
 
-      const pants = this.scene.add.sprite(0, 0, "pants").setScale(scale).setTint(pantsColor);
-      const shirt = this.scene.add.sprite(0, 0, "shirt").setScale(scale).setTint(shirtColor);
-      const hair = this.scene.add.sprite(0, 0, hairStyle).setScale(scale).setTint(CrowdUtils.randomHairColor());
-
-      pants.originalScale = scale;
-      shirt.originalScale = scale;
-      hair.originalScale = scale;
-
-      const visuals = this.scene.add.container(px, py, [skinSprite, pants, shirt, hair]);
-
-      const isVertical = Phaser.Math.Between(0, 1) === 0;
-      const prop = isVertical ? 'y' : 'x';
-      const amount = isVertical ? 2 : 1;
-
-      this.scene.tweens.add({
-        targets: skinSprite,
-        [prop]: { from: -amount, to: amount },
-        duration: Phaser.Math.Between(500, 1500),
-        yoyo: true,
-        repeat: -1,
-        ease: 'Sine.easeInOut',
-        delay: Phaser.Math.Between(0, 1000)
+      // Round pixel rendering to avoid jitter
+      [skinSprite, pants, shirt, hair].forEach(s => {
+        s.originalScale = scale;
+        
       });
 
+      const visuals = this.scene.add.container(px, py, [skinSprite, pants, shirt, hair]);
       base.visuals = visuals;
       this.group.add(base);
+
+      // Animation
+      const isVertical = Phaser.Math.Between(0, 1) === 0;
+      const prop = isVertical ? "y" : "x";
+      const amount = isVertical ? 10 : 10;
+
+      this.scene.tweens.add({
+  targets: [skinSprite, pants, shirt, hair],
+  [prop]: `+=${amount}`,
+  duration: 1200,
+  yoyo: true,
+  repeat: -1,
+  ease: "Sine.easeInOut",
+  delay: Phaser.Math.Between(0, 800)
+});
+
     }
   }
 

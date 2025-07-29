@@ -29,12 +29,18 @@ export default class MainScene extends Phaser.Scene {
     this.load.image("hr1", "sprites/hr1.png");
     this.load.image("hr2", "sprites/hr2.png");
 
-    this.load.image("skin", "sprites/crowd/skin.png");
-    this.load.image("hair_f", "sprites/crowd/hair_f.png");
-    this.load.image("hair_m", "sprites/crowd/hair_m.png");
-    this.load.image("hat1", "sprites/crowd/hat1.png");
-    this.load.image("shirt", "sprites/crowd/shirt.png");
-    this.load.image("pants", "sprites/crowd/pants.png");
+    this.load.image("adult/skin", "sprites/crowd/adult/skin.png");
+	this.load.image("adult/shirt", "sprites/crowd/adult/shirt.png");
+	this.load.image("adult/pants", "sprites/crowd/adult/pants.png");
+	this.load.image("adult/hair_f", "sprites/crowd/adult/hair_f.png");
+	this.load.image("adult/hair_m", "sprites/crowd/adult/hair_m.png");
+
+	this.load.image("teen/skin", "sprites/crowd/teen/skin.png");
+	this.load.image("teen/shirt", "sprites/crowd/teen/shirt.png");
+	this.load.image("teen/pants", "sprites/crowd/teen/pants.png");
+	this.load.image("teen/hair_f", "sprites/crowd/teen/hair_f.png");
+	this.load.image("teen/hair_m", "sprites/crowd/teen/hair_m.png");
+
 
     this.load.image("credit_card", "sprites/cc.png");
     this.load.image("briefcase", "sprites/case.png");

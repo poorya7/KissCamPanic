@@ -512,17 +512,22 @@ createGameOverDialog() {
   // ▶ showGameOverDialog
   // ───────────────────────────────
 showGameOverDialog() {
-  const score = Math.floor(this.scoreUI.score);
   const rawScore = this.scoreUI.getRawScore();
-const totalPlayers = this.scoreUI.scoreList.length;
-const higherScores = this.scoreUI.scoreList.filter(s => s >= rawScore).length;
-const rank = higherScores + 1;
+  const scoreList = [...this.scoreUI.scoreList];
 
+  if (!scoreList.includes(rawScore)) {
+    scoreList.push(rawScore);
+  }
 
-this.dialog.show(score, `#${rank} / ${totalPlayers}`);
+  scoreList.sort((a, b) => b - a);
 
-  
+  const rank = scoreList.indexOf(rawScore) + 1;
+  const totalPlayers = scoreList.length;
+  const score = Math.floor(this.scoreUI.score);
+
+  this.dialog.show(score, `#${rank} / ${totalPlayers}`);
 }
+
 
   // ───────────────────────────────
   // ▶ update

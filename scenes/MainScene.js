@@ -57,8 +57,8 @@ export default class MainScene extends Phaser.Scene {
     this.load.image("post", "sprites/post.png");
     this.load.image("flash", "sprites/flash.png");
     this.load.image("dialog_end", "sprites/dialog_end.png");
-	this.load.image("exitdoor", "sprites/props/exitdoor.png");
-	this.load.image("wall_top", "sprites/props/wall_top.png");
+	this.load.image("exitdoor", "sprites/props/exitdoors.png");
+	this.load.image("wall_top", "sprites/props/wall_tops.png");
 	this.load.image("speaker", "sprites/props/speaker.png");
 	this.load.image("cameraguy", "sprites/props/cameraguy.png");
 	this.load.image("vip", "sprites/props/vip.png");

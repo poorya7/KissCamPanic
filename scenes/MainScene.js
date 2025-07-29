@@ -18,7 +18,10 @@ import {
 export default class MainScene extends Phaser.Scene {
   constructor() {
     super("MainScene");
+	this.blockers = [];
   }
+
+	
 
   // ───────────────────────────────
   // ▶ preload
@@ -87,6 +90,8 @@ export default class MainScene extends Phaser.Scene {
     this.createGameOverDialog();
 	this.createSpotlightHandler(); 
 	this.registerResizeHandler();
+	
+	this.resetKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R);
   }
   
    // ───────────────────────────────
@@ -311,7 +316,8 @@ this.hr = this.add.sprite(90, 110, "hr1").setScale(0.07);
     this.crowdGroup = this.physics.add.group({ immovable: true, allowGravity: false });
     this.crowdSpawner = new CrowdSpawner(this, this.crowdGroup, this.stage);
     this.crowdSpawner.spawnCrowd();
-    this.maxCrowdSize = this.crowdGroup.getLength();
+	
+	this.maxCrowdSize = this.crowdGroup.getLength();
 
     this.physics.add.collider(this.player, this.crowdGroup);
     //this.physics.add.collider(this.hr, this.crowdGroup);
@@ -346,6 +352,11 @@ this.hr = this.add.sprite(90, 110, "hr1").setScale(0.07);
 
 
 createBlockers() {
+	
+	// 🧹 Destroy existing blockers
+this.blockers.forEach(b => b.destroy());
+this.blockers = [];
+
   // ───── Stage Blocker ─────
 	const stageVisualX = this.stage.x - this.stage.displayWidth * (this.stage.originX - 0.5);
 	const stageVisualY = this.stage.y - this.stage.displayHeight * (this.stage.originY - 0.5);
@@ -441,7 +452,10 @@ this.physics.add.existing(vipBlocker2, true);
 this.physics.add.collider(this.player, vipBlocker2);
 
 
-
+this.blockers.push(stageBlocker1);
+this.blockers.push(kissCamBlocker);
+this.blockers.push(cameraFridgeBlocker);
+this.blockers.push(vipBlocker1, vipBlocker2);
 
 }
 
@@ -507,6 +521,11 @@ showGameOverDialog() {
     if (!this.player.disableMovement) {
       this.scoreUI.update();
     }
+	
+	if (Phaser.Input.Keyboard.JustDown(this.resetKey)) {
+  this.resetGame();
+}
+
 
     this.player.move(this.cursors);
 
@@ -542,6 +561,35 @@ showGameOverDialog() {
       onComplete: () => poof.destroy()
     });
   }
+  
+  // ───────────────────────────────
+  // ▶ resetGame
+  // ───────────────────────────────
+resetGame() {
+	this.createBlockers();
+
+  this.scoreUI.score = 0;
+  this.scoreUI.setRank(99999);
+
+  this.player.setPosition(100, 200);
+  this.player.disableMovement = false;
+
+  if (this.hr) this.hr.setPosition(90, 110);
+  if (this.spotlightMarker) this.spotlightMarker.setPosition(800, 0);
+
+  // 👇 Clear crowd visuals manually before clearing the group
+  this.crowdGroup.children.each(child => {
+    if (child.visuals) {
+      child.visuals.destroy(); // destroy visual container
+    }
+  });
+
+  this.crowdGroup.clear(true, true); // clear base sprites
+  this.crowdSpawner.spawnCrowd();
+  
+  
+}
+
 
   // ───────────────────────────────
   // ▶ projectileHitsCrowd

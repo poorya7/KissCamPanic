@@ -12,6 +12,8 @@ export default class GameOverDialog extends Phaser.GameObjects.Container {
     this.enteredName = "";
     this.finalScore = 0;
     this.keyboardEnabled = false;
+	this.isSubmitting = false;
+
     this.maxNameWidth = 180;
 
     // Background
@@ -119,41 +121,48 @@ export default class GameOverDialog extends Phaser.GameObjects.Container {
   }
 
   async doSave() {
+  if (this.isSubmitting) return;
+  this.isSubmitting = true;
+
   const name = this.enteredName.trim();
   const score = this.finalScore || 0;
 
   if (name.length === 0) {
     console.log("⏭️ No name entered, skipping save.");
-  } else {
-    console.log("✅ Saving score:", { name, score });
-    try {
-      await ScoreService.saveScore(name, score);
-      this.scene.onSaveName?.(name);
-    } catch (e) {
-      console.error("❌ Score save failed:", e.message);
-    }
+    this.hideWithAnimation();
+    return;
+  }
+
+  console.log("✅ Saving score:", { name, score });
+  try {
+    await ScoreService.saveScore(name, score);
+    this.scene.onSaveName?.(name);
+  } catch (e) {
+    console.error("❌ Score save failed:", e.message);
   }
 
   this.hideWithAnimation();
- 
 }
 
 
 
-    hideWithAnimation() {
-    this.scene.tweens.add({
-      targets: this,
-      y: this.y + 500, // drops down off screen
-      scale: 0.95,
-      ease: "Back.easeIn",
-      duration: 400,
-      onComplete: () => {
-        this.setVisible(false);
-        this.setScale(1);
-        this.y = this.scene.cameras.main.centerY; // reset position
-      }
-    });
-  }
+hideWithAnimation() {
+  this.scene.tweens.add({
+    targets: this,
+    y: this.y + 500, // drops down off screen
+    scale: 0.95,
+    ease: "Back.easeIn",
+    duration: 400,
+    onComplete: () => {
+      this.setVisible(false);
+      this.setScale(1);
+      this.y = this.scene.cameras.main.centerY; // reset position
+
+      this.scene.resetGame(); // 👈 add this
+    }
+  });
+}
+
 
 
 

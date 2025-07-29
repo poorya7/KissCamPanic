@@ -90,8 +90,6 @@ export default class MainScene extends Phaser.Scene {
     this.createGameOverDialog();
 	this.createSpotlightHandler(); 
 	this.registerResizeHandler();
-	
-	this.resetKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R);
   }
   
    // ───────────────────────────────
@@ -522,11 +520,6 @@ showGameOverDialog() {
       this.scoreUI.update();
     }
 	
-	if (Phaser.Input.Keyboard.JustDown(this.resetKey)) {
-  this.resetGame();
-}
-
-
     this.player.move(this.cursors);
 
     if (Phaser.Input.Keyboard.JustDown(this.spaceBar)) {
@@ -587,7 +580,8 @@ resetGame() {
   this.crowdGroup.clear(true, true); // clear base sprites
   this.crowdSpawner.spawnCrowd();
   
-  
+  this.createSpotlightHandler();
+
 }
 
 

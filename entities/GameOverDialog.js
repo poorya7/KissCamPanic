@@ -167,42 +167,61 @@ hideWithAnimation() {
 
 
 
-  enableKeyboardInput() {
-    if (this.keyboardEnabled) return;
-    this.keyboardEnabled = true;
 
-    this.keydownCallback = (event) => {
-      if (!this.visible) return;
 
-      const key = event.key;
-      if (/^[a-z0-9 ]$/i.test(key)) {
-        if (this.enteredName.length < 30) {
-          this.enteredName += key.toUpperCase();
-          this.updateNameDisplay();
-        }
-        event.preventDefault();
-      } else if (key === "Backspace") {
-        this.enteredName = this.enteredName.slice(0, -1);
-        this.updateNameDisplay();
-        event.preventDefault();
-      } else if (key === "Enter") {
-        this.doSave();
-        event.preventDefault();
-      } 
-	  
-	   else if (key === "Escape") {
-  this.scene.onCancelName?.();
-  this.hideWithAnimation();
-  event.preventDefault();
-}
 
-	  
-    };
 
-    this.scene.input.keyboard.on("keydown", this.keydownCallback);
+enableKeyboardInput() {
+  if (this.keyboardEnabled) return;
+  this.keyboardEnabled = true;
+
+  // Clean up old listener if exists
+  if (this.keydownCallback) {
+    this.scene.input.keyboard.off("keydown", this.keydownCallback);
   }
 
-  show(score = 0, rank = "#58 / 321") {
+  this.keydownCallback = (event) => {
+    if (!this.visible) return;
+
+    const key = event.key;
+    if (/^[a-z0-9 ]$/i.test(key)) {
+      if (this.enteredName.length < 30) {
+        this.enteredName += key.toUpperCase();
+        this.updateNameDisplay();
+      }
+      event.preventDefault();
+    } else if (key === "Backspace") {
+      this.enteredName = this.enteredName.slice(0, -1);
+      this.updateNameDisplay();
+      event.preventDefault();
+    } else if (key === "Enter") {
+      this.doSave();
+      event.preventDefault();
+    } else if (key === "Escape") {
+      this.scene.onCancelName?.();
+      this.hideWithAnimation();
+      event.preventDefault();
+    }
+  };
+
+  this.scene.input.keyboard.on("keydown", this.keydownCallback);
+}
+
+
+
+
+
+
+  
+	  show(score = 0, rank = "#58 / 321") {
+  // ⏹ Reset core state
+  this.enteredName = "";
+  this.isSubmitting = false;
+  this.keyboardEnabled = false;
+  this.cursorVisible = true;
+
+	  
+	  
     this.finalScore = Math.floor(score / 10);
 
     this.setVisible(true);

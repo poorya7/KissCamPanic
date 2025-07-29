@@ -40,6 +40,7 @@ export default class MainScene extends Phaser.Scene {
 	this.load.image("teen/pants", "sprites/crowd/teen/pants.png");
 	this.load.image("teen/hair_f", "sprites/crowd/teen/hair_f.png");
 	this.load.image("teen/hair_m", "sprites/crowd/teen/hair_m.png");
+	this.load.image("adult/sunglass", "sprites/crowd/adult/sunglass.png");
 
 
     this.load.image("credit_card", "sprites/cc.png");
@@ -62,6 +63,10 @@ export default class MainScene extends Phaser.Scene {
 	this.load.image("plant", "sprites/props/plant.png");
 	this.load.image('mute', 'sprites/UI/mute.png');
 	this.load.image('unmute', 'sprites/UI/unmute.png');
+	for (let i = 1; i <= 4; i++) {
+	this.load.image(`alien/a${i}`, `sprites/crowd/alien/a${i}.png`);
+}
+
 	
 	
   }

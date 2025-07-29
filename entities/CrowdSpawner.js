@@ -12,12 +12,64 @@ export default class CrowdSpawner {
     const screenW = this.scene.scale.width;
     const screenH = this.scene.scale.height;
 
+    // 🌀 Build and shuffle spawn points
+    const spawnPoints = [];
     for (let y = 20; y < screenH - 10; y += spacing) {
       for (let x = 10; x < screenW - 10; x += spacing) {
-        const densityFactor = Phaser.Math.Clamp(1.3 - (y / screenH), 0.5, 1.0);
-        if (Phaser.Math.Between(0, 100) > 40 * densityFactor) {
-          this.spawnCrowdMember(x, y);
-        }
+        spawnPoints.push({ x, y });
+      }
+    }
+
+    Phaser.Utils.Array.Shuffle(spawnPoints);
+
+    // 👽 Add exactly one of each alien (a1–a4)
+    const baseScale = 0.09;
+const alienFrames = ["a1", "a2", "a3", "a4"];
+let alienSpawned = 0;
+
+for (let i = 0; i < spawnPoints.length && alienSpawned < alienFrames.length; i++) {
+  const point = spawnPoints[i];
+
+  const blocked =
+    CrowdUtils.isInsideStage(this.scene.stage, point.x, point.y, 0) ||
+    CrowdUtils.isInsideKissCam(this.scene.kissCamFrame, point.x, point.y, 0) ||
+    CrowdUtils.isInsideCameraArea(point.x, point.y, this.scene.cameraGuy) ||
+    CrowdUtils.isInsideVIPArea(point.x, point.y, this.scene.vip);
+
+  if (blocked) continue; // ❌ skip this spawn point
+
+  const scaleX = baseScale * 2;
+  const scaleY = baseScale * 2.4;
+  const alienFrame = alienFrames[alienSpawned];
+
+  const alienSprite = this.scene.physics.add
+    .sprite(point.x, point.y, `alien/${alienFrame}`)
+    .setScale(scaleX, scaleY)
+    .setImmovable(true);
+
+  alienSprite.originalScale = { x: scaleX, y: scaleY };
+  this.group.add(alienSprite);
+
+  this.scene.tweens.add({
+    targets: alienSprite,
+    y: `+=5`,
+    duration: 1200,
+    yoyo: true,
+    repeat: -1,
+    ease: "Sine.easeInOut",
+    delay: Phaser.Math.Between(0, 800)
+  });
+
+  alienSpawned++;
+}
+
+
+    // 🧍 Fill the rest of the crowd
+    for (let i = alienFrames.length; i < spawnPoints.length; i++) {
+      const point = spawnPoints[i];
+      const densityFactor = Phaser.Math.Clamp(1.3 - (point.y / screenH), 0.5, 1.0);
+      if (Phaser.Math.Between(0, 100) > 40 * densityFactor) {
+        this.spawnCrowdMember(point.x, point.y);
       }
     }
   }
@@ -37,13 +89,15 @@ export default class CrowdSpawner {
     if (Phaser.Math.Between(0, 100) > 50) {
       const px = x + Phaser.Math.Between(-5, 5);
       const py = y + Phaser.Math.Between(-5, 5);
-      const scale = 0.09;
+      const baseScale = 0.09;
 
       const variant = Phaser.Math.RND.pick(["adult", "teen"]);
+      const scaleX = variant === "adult" ? baseScale * 0.85 : baseScale;
+      const scaleY = baseScale;
 
       const base = this.scene.physics.add
         .sprite(px, py, `${variant}/skin`)
-        .setScale(scale);
+        .setScale(scaleX, scaleY);
       base.setImmovable(true);
       base.setVisible(false);
 
@@ -53,43 +107,59 @@ export default class CrowdSpawner {
       const pantsKey = `${variant}/pants`;
       const skinKey = `${variant}/skin`;
 
-      const skinSprite = this.scene.add.sprite(0, 0, skinKey).setScale(scale);
-      const pants = this.scene.add.sprite(0, 0, pantsKey).setScale(scale).setTint(CrowdUtils.randomColor());
-      const shirt = this.scene.add.sprite(0, 0, shirtKey).setScale(scale).setTint(CrowdUtils.randomColor());
-      const hair = this.scene.add.sprite(0, 0, hairKey).setScale(scale).setTint(CrowdUtils.randomHairColor());
+      const skinSprite = this.scene.add.sprite(0, 0, skinKey).setScale(scaleX, scaleY);
+      const pants = this.scene.add
+        .sprite(0, 0, pantsKey)
+        .setScale(scaleX, scaleY)
+        .setTint(CrowdUtils.randomColor());
+      const shirt = this.scene.add
+        .sprite(0, 0, shirtKey)
+        .setScale(scaleX, scaleY)
+        .setTint(CrowdUtils.randomColor());
+      const hair = this.scene.add
+        .sprite(0, 0, hairKey)
+        .setScale(scaleX, scaleY)
+        .setTint(CrowdUtils.randomHairColor());
 
-      // Darker palette override
+      // 🕶️ Sunglasses for 1 in 4 adults
+      let sunglasses = null;
+      if (variant === "adult" && Phaser.Math.Between(1, 4) === 1) {
+        sunglasses = this.scene.add
+          .sprite(0, 0, "adult/sunglass")
+          .setScale(scaleX, scaleY);
+      }
+
+      // 🖤 Dark palette override
       if (hairStyleKey === "hair_m" && Phaser.Math.Between(1, 100) <= 70) {
         const darkPalette = [0x222222, 0x444444, 0x333366, 0x4b3621];
         pants.setTint(Phaser.Math.RND.pick(darkPalette));
         shirt.setTint(Phaser.Math.RND.pick(darkPalette));
       }
 
-      // Round pixel rendering to avoid jitter
-      [skinSprite, pants, shirt, hair].forEach(s => {
-        s.originalScale = scale;
-        
+      [skinSprite, pants, shirt, hair, sunglasses].forEach((s) => {
+        if (s) s.originalScale = { x: scaleX, y: scaleY };
       });
 
-      const visuals = this.scene.add.container(px, py, [skinSprite, pants, shirt, hair]);
+      const sprites = [skinSprite, pants, shirt, hair];
+      if (sunglasses) sprites.push(sunglasses);
+
+      const visuals = this.scene.add.container(px, py, sprites);
       base.visuals = visuals;
       this.group.add(base);
 
-      // Animation
       const isVertical = Phaser.Math.Between(0, 1) === 0;
       const prop = isVertical ? "y" : "x";
-      const amount = isVertical ? 10 : 10;
+      const amount = 5;
 
       this.scene.tweens.add({
-  targets: [skinSprite, pants, shirt, hair],
-  [prop]: `+=${amount}`,
-  duration: 1200,
-  yoyo: true,
-  repeat: -1,
-  ease: "Sine.easeInOut",
-  delay: Phaser.Math.Between(0, 800)
-});
-
+        targets: sprites,
+        [prop]: `+=${amount}`,
+        duration: 1200,
+        yoyo: true,
+        repeat: -1,
+        ease: "Sine.easeInOut",
+        delay: Phaser.Math.Between(0, 800)
+      });
     }
   }
 

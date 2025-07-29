@@ -7,6 +7,17 @@ export default class CrowdSpawner {
     this.stage = stage;
   }
 
+  isBlocked(x, y) {
+    if (y < 120) return true;
+
+    return (
+      CrowdUtils.isInsideStage(this.scene.stage, x, y, 0) ||
+      CrowdUtils.isInsideKissCam(this.scene.kissCamFrame, x, y, 0) ||
+      CrowdUtils.isInsideCameraArea(x, y, this.scene.cameraGuy) ||
+      CrowdUtils.isInsideVIPArea(x, y, this.scene.vip)
+    );
+  }
+
   spawnCrowd() {
     const spacing = 25;
     const screenW = this.scene.scale.width;
@@ -24,45 +35,38 @@ export default class CrowdSpawner {
 
     // 👽 Add exactly one of each alien (a1–a4)
     const baseScale = 0.09;
-const alienFrames = ["a1", "a2", "a3", "a4"];
-let alienSpawned = 0;
+    const alienFrames = ["a1", "a2", "a3", "a4"];
+    let alienSpawned = 0;
 
-for (let i = 0; i < spawnPoints.length && alienSpawned < alienFrames.length; i++) {
-  const point = spawnPoints[i];
+    for (let i = 0; i < spawnPoints.length && alienSpawned < alienFrames.length; i++) {
+      const point = spawnPoints[i];
 
-  const blocked =
-    CrowdUtils.isInsideStage(this.scene.stage, point.x, point.y, 0) ||
-    CrowdUtils.isInsideKissCam(this.scene.kissCamFrame, point.x, point.y, 0) ||
-    CrowdUtils.isInsideCameraArea(point.x, point.y, this.scene.cameraGuy) ||
-    CrowdUtils.isInsideVIPArea(point.x, point.y, this.scene.vip);
+      if (this.isBlocked(point.x, point.y)) continue;
 
-  if (blocked) continue; // ❌ skip this spawn point
+      const scaleX = baseScale * 2;
+      const scaleY = baseScale * 2.4;
+      const alienFrame = alienFrames[alienSpawned];
 
-  const scaleX = baseScale * 2;
-  const scaleY = baseScale * 2.4;
-  const alienFrame = alienFrames[alienSpawned];
+      const alienSprite = this.scene.physics.add
+        .sprite(point.x, point.y, `alien/${alienFrame}`)
+        .setScale(scaleX, scaleY)
+        .setImmovable(true);
 
-  const alienSprite = this.scene.physics.add
-    .sprite(point.x, point.y, `alien/${alienFrame}`)
-    .setScale(scaleX, scaleY)
-    .setImmovable(true);
+      alienSprite.originalScale = { x: scaleX, y: scaleY };
+      this.group.add(alienSprite);
 
-  alienSprite.originalScale = { x: scaleX, y: scaleY };
-  this.group.add(alienSprite);
+      this.scene.tweens.add({
+        targets: alienSprite,
+        y: `+=5`,
+        duration: 1200,
+        yoyo: true,
+        repeat: -1,
+        ease: "Sine.easeInOut",
+        delay: Phaser.Math.Between(0, 800)
+      });
 
-  this.scene.tweens.add({
-    targets: alienSprite,
-    y: `+=5`,
-    duration: 1200,
-    yoyo: true,
-    repeat: -1,
-    ease: "Sine.easeInOut",
-    delay: Phaser.Math.Between(0, 800)
-  });
-
-  alienSpawned++;
-}
-
+      alienSpawned++;
+    }
 
     // 🧍 Fill the rest of the crowd
     for (let i = alienFrames.length; i < spawnPoints.length; i++) {
@@ -75,16 +79,7 @@ for (let i = 0; i < spawnPoints.length && alienSpawned < alienFrames.length; i++
   }
 
   spawnCrowdMember(x, y) {
-    if (y < 120) return;
-
-    if (
-      CrowdUtils.isInsideStage(this.scene.stage, x, y, 0) ||
-      CrowdUtils.isInsideKissCam(this.scene.kissCamFrame, x, y, 0) ||
-      CrowdUtils.isInsideCameraArea(x, y, this.scene.cameraGuy) ||
-      CrowdUtils.isInsideVIPArea(x, y, this.scene.vip)
-    ) {
-      return;
-    }
+    if (this.isBlocked(x, y)) return;
 
     if (Phaser.Math.Between(0, 100) > 50) {
       const px = x + Phaser.Math.Between(-5, 5);
@@ -171,12 +166,7 @@ for (let i = 0; i < spawnPoints.length && alienSpawned < alienFrames.length; i++
       x = Phaser.Math.Between(10, 790);
       y = Phaser.Math.Between(20, 460);
 
-      if (
-        !CrowdUtils.isInsideStage(this.scene.stage, x, y, 0) &&
-        !CrowdUtils.isInsideKissCam(this.scene.kissCamFrame, x, y, 0) &&
-        !CrowdUtils.isInsideCameraArea(x, y, this.scene.cameraGuy) &&
-        !CrowdUtils.isInsideVIPArea(x, y, this.scene.vip)
-      ) {
+      if (!this.isBlocked(x, y)) {
         this.spawnCrowdMember(x, y);
         return;
       }

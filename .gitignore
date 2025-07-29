@@ -1,0 +1,8 @@
+# Don't track Supabase secrets
+# Don't track Supabase secrets
+services/supabaseConfig.js
+
+
+# Ignore all env/config files
+.env
+.env.*

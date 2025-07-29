@@ -127,32 +127,35 @@ export default class GameOverDialog extends Phaser.GameObjects.Container {
   }
 
   enableKeyboardInput() {
-    if (this.keyboardEnabled) return;
-    this.keyboardEnabled = true;
+  if (this.keyboardEnabled) return;
+  this.keyboardEnabled = true;
 
-    this.scene.input.keyboard.on("keydown", (event) => {
-      if (!this.visible) return;
+  this.keydownCallback = (event) => {
+    if (!this.visible) return;
 
-      const key = event.key;
-      if (/^[a-z0-9 ]$/i.test(key)) {
-        if (this.enteredName.length < 30) {
-          this.enteredName += key.toUpperCase();
-          this.updateNameDisplay();
-        }
-        event.preventDefault();
-      } else if (key === "Backspace") {
-        this.enteredName = this.enteredName.slice(0, -1);
+    const key = event.key;
+    if (/^[a-z0-9 ]$/i.test(key)) {
+      if (this.enteredName.length < 30) {
+        this.enteredName += key.toUpperCase();
         this.updateNameDisplay();
-        event.preventDefault();
-      } else if (key === "Enter") {
-        this.saveBtn.emit("pointerup");
-        event.preventDefault();
-      } else if (key === "Escape") {
-        this.cancelBtn.emit("pointerup");
-        event.preventDefault();
       }
-    });
-  }
+      event.preventDefault();
+    } else if (key === "Backspace") {
+      this.enteredName = this.enteredName.slice(0, -1);
+      this.updateNameDisplay();
+      event.preventDefault();
+    } else if (key === "Enter") {
+      this.saveBtn.emit("pointerup");
+      event.preventDefault();
+    } else if (key === "Escape") {
+      this.cancelBtn.emit("pointerup");
+      event.preventDefault();
+    }
+  };
+
+  this.scene.input.keyboard.on("keydown", this.keydownCallback);
+}
+
 
   show(score = 0, rank = "#58 / 321") {
     this.finalScore = Math.floor(score / 10);

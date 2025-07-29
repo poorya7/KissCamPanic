@@ -19,11 +19,38 @@
 
 #highscore-list div {
   font-family: "C64", monospace !important;
-  font-size: 10px !important;
-  color: white;
+  font-size: 12px !important;
+  line-height: 1.8em;
   white-space: pre;
-  line-height: 1.6em;
+  padding: 1px 0;
+  text-shadow: 0 0 4px rgba(255, 255, 255, 0.3);
 }
+
+/* Twitch-style alternating colors */
+#highscore-list div:nth-child(odd) {
+  color: #a970ff; /* Twitch purple */
+}
+
+#highscore-list div:nth-child(even) {
+  color: #00ffe1; /* Neon cyan */
+}
+
+#highscore-list {
+  background-color: transparent;
+  overflow-y: auto;
+  max-height: 600px;
+  scrollbar-width: none; /* Firefox */
+}
+
+/* Hide scrollbar - Chrome/Safari */
+#highscore-list::-webkit-scrollbar {
+  display: none;
+}
+
+
+
+
+
 
 
 /* LEFT COLUMN */

@@ -38,8 +38,49 @@ export default class ScoreService {
       data.forEach((entry, index) => {
         const div = document.createElement("div");
         div.textContent = `${index + 1}. ${entry.name} - ${entry.score}`;
+
+        const color = getUserColor(entry.name);
+        div.style.color = color;
+        div.style.textShadow = "0 0 4px rgba(255, 255, 255, 0.3)";
+        div.style.fontFamily = '"C64", monospace';
+        div.style.fontSize = "14px";
+        div.style.lineHeight = "1.8em";
+
         listEl.appendChild(div);
       });
     }
   }
+}
+
+// ⬇️ Move this outside the class
+function getUserColor(name) {
+  const colors = [
+  "#FFD700", // Gold
+  "#1E90FF", // Dodger Blue
+  "#FF1493", // Deep Pink
+  "#00FA9A", // Medium Spring Green
+  "#FF4500", // Orange Red
+  "#ADFF2F", // Green Yellow
+  "#00CED1", // Dark Turquoise
+  "#DA70D6", // Orchid
+  "#7FFF00", // Chartreuse
+  "#FF69B4", // Hot Pink
+  "#40E0D0", // Turquoise
+  "#FFA500", // Orange
+  "#8A2BE2", // Blue Violet
+  "#00FF7F", // Spring Green
+  "#DC143C", // Crimson
+  "#00BFFF", // Deep Sky Blue
+  "#FF6347", // Tomato
+  "#00FFFF", // Aqua
+  "#FF00FF", // Magenta
+  "#7CFC00"  // Lawn Green
+];
+
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash) % colors.length;
+  return colors[index];
 }

@@ -103,18 +103,10 @@ export default class GameOverDialog extends Phaser.GameObjects.Container {
       });
     });
 
-    this.saveBtn.on("pointerup", () => {
-      const name = this.enteredName || "Anonymous";
-      const score = this.finalScore || 0;
+    this.saveBtn.on("pointerup", async () => {
+  await this.doSave();
+});
 
-      console.log("✅ Saving score:", { name, score });
-
-      ScoreService.saveScore(name, score);
-      this.scene.onSaveName?.(this.enteredName);
-
-      this.setVisible(false);
-      this.scene.scene.restart();
-    });
 
     this.cancelBtn.on("pointerup", () => {
       this.scene.onCancelName?.();
@@ -126,36 +118,56 @@ export default class GameOverDialog extends Phaser.GameObjects.Container {
     scene.add.existing(this);
   }
 
-  enableKeyboardInput() {
-  if (this.keyboardEnabled) return;
-  this.keyboardEnabled = true;
+  async doSave() {
+  const name = this.enteredName || "Anonymous";
+  const score = this.finalScore || 0;
 
-  this.keydownCallback = (event) => {
-    if (!this.visible) return;
+  console.log("✅ Saving score:", { name, score });
 
-    const key = event.key;
-    if (/^[a-z0-9 ]$/i.test(key)) {
-      if (this.enteredName.length < 30) {
-        this.enteredName += key.toUpperCase();
-        this.updateNameDisplay();
-      }
-      event.preventDefault();
-    } else if (key === "Backspace") {
-      this.enteredName = this.enteredName.slice(0, -1);
-      this.updateNameDisplay();
-      event.preventDefault();
-    } else if (key === "Enter") {
-      this.saveBtn.emit("pointerup");
-      event.preventDefault();
-    } else if (key === "Escape") {
-      this.cancelBtn.emit("pointerup");
-      event.preventDefault();
-    }
-  };
+  try {
+    await ScoreService.saveScore(name, score);
+    this.scene.onSaveName?.(this.enteredName);
+  } catch (e) {
+    console.error("❌ Score save failed:", e.message);
+  }
 
-  this.scene.input.keyboard.on("keydown", this.keydownCallback);
+  this.setVisible(false);
+
+  this.scene.time.delayedCall(200, () => {
+    this.scene.scene.restart();
+  });
 }
 
+
+  enableKeyboardInput() {
+    if (this.keyboardEnabled) return;
+    this.keyboardEnabled = true;
+
+    this.keydownCallback = (event) => {
+      if (!this.visible) return;
+
+      const key = event.key;
+      if (/^[a-z0-9 ]$/i.test(key)) {
+        if (this.enteredName.length < 30) {
+          this.enteredName += key.toUpperCase();
+          this.updateNameDisplay();
+        }
+        event.preventDefault();
+      } else if (key === "Backspace") {
+        this.enteredName = this.enteredName.slice(0, -1);
+        this.updateNameDisplay();
+        event.preventDefault();
+      } else if (key === "Enter") {
+        this.doSave();
+        event.preventDefault();
+      } else if (key === "Escape") {
+        this.cancelBtn.emit("pointerup");
+        event.preventDefault();
+      }
+    };
+
+    this.scene.input.keyboard.on("keydown", this.keydownCallback);
+  }
 
   show(score = 0, rank = "#58 / 321") {
     this.finalScore = Math.floor(score / 10);

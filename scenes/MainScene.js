@@ -90,7 +90,19 @@ export default class MainScene extends Phaser.Scene {
     this.createGameOverDialog();
 	this.createSpotlightHandler(); 
 	this.registerResizeHandler();
+	this.gameStarted = false;
+	this.showStartDialog();
   }
+  
+   // ───────────────────────────────
+  // ▶ startGame
+  // ───────────────────────────────
+  startGame() {
+  this.gameStarted = true;
+
+  // You can put any other startup logic here if needed later
+}
+
   
    // ───────────────────────────────
   // ▶ registerResizeHandler
@@ -138,6 +150,8 @@ createBackgroundAndStage() {
   
   ScoreService.getAllScores().then((allScores) => {
   this.scoreUI.setScoreList(allScores);
+  const totalPlayers = allScores.length;
+  this.scoreUI.rankValue.setText(`${totalPlayers + 1}`);
 });
 
 
@@ -201,6 +215,66 @@ this.plant = this.add.image(0, 0, "plant")
 
 
 }
+
+
+  // ───────────────────────────────
+  // ▶ showStartDialog
+  // ───────────────────────────────
+
+showStartDialog() {
+  const dialog = this.add.container(this.scale.width / 2, this.scale.height / 2)
+    .setDepth(99999)
+    .setScrollFactor(0);
+
+  // 🖼️ Use the same purple frame sprite as end dialog
+  const bg = this.add.image(0, 0, "dialog_end").setScale(0.3);
+
+  const line1 = this.add.text(0, -70, "← ↑ → ↓  TO MOVE", {
+  fontFamily: "C64",
+  fontSize: "16px",
+  color: "#00ffff", // cyan
+  align: "center"
+}).setOrigin(0.5);
+
+const line2 = this.add.text(0, -30, "SPACE TO SHOOT", {
+  fontFamily: "C64",
+  fontSize: "16px",
+  color: "#ffff00", // yellow
+  align: "center"
+}).setOrigin(0.5);
+
+const line3 = this.add.text(0, 10, "LET'S GO!", {
+  fontFamily: "C64",
+  fontSize: "20px",
+  color: "#ff66cc", // pink
+  align: "center"
+}).setOrigin(0.5);
+
+
+  const okBtn = this.make.text({
+    x: 0,
+    y: 65,
+    text: " OK ",
+    style: {
+      fontFamily: "C64",
+      fontSize: "18px",
+      color: "#ffffff",
+      backgroundColor: "#ff00aa",
+      padding: { x: 10, y: 5 },
+      align: "center"
+    },
+    add: false
+  }).setOrigin(0.5).setInteractive();
+
+  okBtn.on("pointerdown", () => {
+    dialog.destroy();
+    this.startGame();
+  });
+
+  dialog.add([bg, line1, line2, line3, okBtn]);
+
+}
+
 
 
   // ───────────────────────────────
@@ -511,8 +585,16 @@ createGameOverDialog() {
   // ───────────────────────────────
   // ▶ showGameOverDialog
   // ───────────────────────────────
+// ───────────────────────────────
 showGameOverDialog() {
   const rawScore = this.scoreUI.getRawScore();
+
+  // 🧠 Skip rank display if score is not valid
+  if (rawScore <= 0) {
+    this.dialog.show(0, "-");
+    return;
+  }
+
   const scoreList = [...this.scoreUI.scoreList];
 
   if (!scoreList.includes(rawScore)) {
@@ -529,10 +611,15 @@ showGameOverDialog() {
 }
 
 
+
   // ───────────────────────────────
   // ▶ update
   // ───────────────────────────────
   update() {
+	  
+	  if (!this.gameStarted) return;
+
+
     if (!this.player.disableMovement) {
       this.scoreUI.update();
     }
@@ -579,7 +666,6 @@ resetGame() {
 	this.createBlockers();
 
   this.scoreUI.score = 0;
-  //this.scoreUI.setRank(99999);
 
   this.player.setPosition(100, 200);
   this.player.disableMovement = false;

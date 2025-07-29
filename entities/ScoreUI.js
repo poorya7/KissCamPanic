@@ -4,7 +4,6 @@ export default class ScoreUI {
 
     this.scene = scene;
     this.score = 0;
-    this.rank = 99999;
 
     const xLabel = scene.scale.width - 210;
     const xValue = scene.scale.width - 125;
@@ -37,7 +36,8 @@ export default class ScoreUI {
     }).setScrollFactor(0).setDepth(100);
 
     // Rank value
-    this.rankValue = scene.add.text(xValue, 30, "99999", {
+    this.rankValue = scene.add.text(xValue, 30, "-", {
+
       fontFamily: "C64",
       fontSize: "16px",
       color: "#FEAF00",

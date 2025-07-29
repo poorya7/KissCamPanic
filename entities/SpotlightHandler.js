@@ -6,7 +6,7 @@ export default class SpotlightHandler {
     this.onCatch = onCatchCallback;
 
     this.radius = spotlight.radius || 30;
-    this.maxSpeed = 1.8;
+    this.maxSpeed = 4;
     this.lerpStrength = 0.1;
     this.caughtTriggered = false;
   }

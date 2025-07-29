@@ -119,16 +119,19 @@ export default class GameOverDialog extends Phaser.GameObjects.Container {
   }
 
   async doSave() {
-  const name = this.enteredName || "Anonymous";
+  const name = this.enteredName.trim();
   const score = this.finalScore || 0;
 
-  console.log("✅ Saving score:", { name, score });
-
-  try {
-    await ScoreService.saveScore(name, score);
-    this.scene.onSaveName?.(this.enteredName);
-  } catch (e) {
-    console.error("❌ Score save failed:", e.message);
+  if (name.length === 0) {
+    console.log("⏭️ No name entered, skipping save.");
+  } else {
+    console.log("✅ Saving score:", { name, score });
+    try {
+      await ScoreService.saveScore(name, score);
+      this.scene.onSaveName?.(name);
+    } catch (e) {
+      console.error("❌ Score save failed:", e.message);
+    }
   }
 
   this.setVisible(false);
@@ -137,6 +140,7 @@ export default class GameOverDialog extends Phaser.GameObjects.Container {
     this.scene.scene.restart();
   });
 }
+
 
 
   enableKeyboardInput() {

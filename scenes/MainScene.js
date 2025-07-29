@@ -135,6 +135,11 @@ createBackgroundAndStage() {
     .setDepth(-20);
 
   this.scoreUI = new ScoreUI(this);
+  
+  ScoreService.getAllScores().then((allScores) => {
+  this.scoreUI.setScoreList(allScores);
+});
+
 
   const centerX = this.scale.width / 2;
   const stageY = 100;
@@ -508,7 +513,14 @@ createGameOverDialog() {
   // ───────────────────────────────
 showGameOverDialog() {
   const score = Math.floor(this.scoreUI.score);
-  this.dialog.show(score); // you can also pass a fake rank here
+  const rawScore = this.scoreUI.getRawScore();
+const totalPlayers = this.scoreUI.scoreList.length;
+const higherScores = this.scoreUI.scoreList.filter(s => s >= rawScore).length;
+const rank = higherScores + 1;
+
+
+this.dialog.show(score, `#${rank} / ${totalPlayers}`);
+
   
 }
 
@@ -562,7 +574,7 @@ resetGame() {
 	this.createBlockers();
 
   this.scoreUI.score = 0;
-  this.scoreUI.setRank(99999);
+  //this.scoreUI.setRank(99999);
 
   this.player.setPosition(100, 200);
   this.player.disableMovement = false;

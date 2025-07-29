@@ -68,4 +68,20 @@ export default class ScoreService {
       });
     }
   }
+  
+  
+  static async getAllScores() {
+  const { data, error } = await supabase
+    .from('highscores')
+    .select('score')
+    .order('score', { ascending: false });
+
+  if (error) {
+    console.error('❌ Failed to fetch full score list:', error.message);
+    return [];
+  }
+
+  return data.map(entry => entry.score);
+}
+
 }

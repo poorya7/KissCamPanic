@@ -8,6 +8,8 @@ export default class GameOverDialog extends Phaser.GameObjects.Container {
     this.setScale(1);
     this.setAlpha(0);
     this.setVisible(false);
+	this.naughtyDialogActive = false;
+
 
     this.enteredName = "";
     this.finalScore = 0;
@@ -105,22 +107,24 @@ export default class GameOverDialog extends Phaser.GameObjects.Container {
       });
     });
 
-    this.saveBtn.on("pointerup", async () => {
+   this.saveBtn.on("pointerup", async () => {
+  if (this.naughtyDialogActive) return;
   await this.doSave();
 });
 
-
-    this.cancelBtn.on("pointerup", () => {
+this.cancelBtn.on("pointerup", () => {
+  if (this.naughtyDialogActive) return;
   this.scene.onCancelName?.();
   this.hideWithAnimation();
 });
+
 
 
     this.add([this.saveBtn, this.cancelBtn]);
     scene.add.existing(this);
   }
 
-  async doSave() {
+async doSave() {
   if (this.isSubmitting) return;
   this.isSubmitting = true;
 
@@ -130,6 +134,12 @@ export default class GameOverDialog extends Phaser.GameObjects.Container {
   if (name.length === 0) {
     console.log("⏭️ No name entered, skipping save.");
     this.hideWithAnimation();
+    return;
+  }
+
+  if (this.containsBadWord(name)) {
+    this.showNaughtyDialog();
+    this.isSubmitting = false;
     return;
   }
 
@@ -143,6 +153,7 @@ export default class GameOverDialog extends Phaser.GameObjects.Container {
 
   this.hideWithAnimation();
 }
+
 
 
 
@@ -165,6 +176,60 @@ hideWithAnimation() {
 
 
 
+containsBadWord(name) {
+  const lower = name.toLowerCase();
+  const badWords = [
+  "fuck", "shit", "bitch", "cunt", "dick", "piss", "asshole", "fucker", "motherfucker",
+  "fag", "faggot", "nigger", "nigga", "slut", "whore", "bastard", "cock", "dildo",
+  "twat", "wank", "jerkoff", "bollocks", "arse", "tit", "boob", "clit", "spic", "coon",
+  "tranny", "rape", "rapist", "retard", "suckmy", "blowjob", "handjob", "rimjob", "anal",
+  "orgasm", "penis", "vagina", "ballsack", "nut", "milf", "gook", "kike", "spunk", "hoe",
+  "cum", "pussy", "tits", "queer", "gayass", "fisting", "facial", "shemale", "anus", "i hate"
+];
+
+  return badWords.some(word => lower.includes(word));
+}
+
+
+
+
+
+
+
+showNaughtyDialog() {
+  this.naughtyDialogActive = true;
+
+  const dialog = this.scene.add.container(0, 0).setDepth(10001);
+
+  const bg = this.scene.add.rectangle(0, 0, 260, 100, 0x000000)
+    .setStrokeStyle(2, 0xff0000)
+    .setOrigin(0.5);
+
+  const msg = this.scene.add.text(0, -20, "No naughty words!", {
+    fontFamily: "C64",
+    fontSize: "16px",
+    color: "#ff4444"
+  }).setOrigin(0.5);
+
+  const okBtn = this.scene.add.text(0, 25, " OK ", {
+    fontFamily: "C64",
+    fontSize: "18px",
+    color: "#ffffff",
+    backgroundColor: "#220000",
+    padding: { x: 12, y: 4 },
+    stroke: "#ff0000",
+    strokeThickness: 2
+  }).setOrigin(0.5).setInteractive();
+
+  okBtn.on("pointerup", () => {
+    dialog.destroy();
+    this.naughtyDialogActive = false; // ✅ restore interactivity
+  });
+
+  dialog.add([bg, msg, okBtn]);
+  dialog.setPosition(0, 0);
+  this.add(dialog);
+}
 
 
 
@@ -181,7 +246,7 @@ enableKeyboardInput() {
   }
 
   this.keydownCallback = (event) => {
-    if (!this.visible) return;
+    if (!this.visible || this.naughtyDialogActive) return;
 
     const key = event.key;
     if (/^[a-z0-9 ]$/i.test(key)) {

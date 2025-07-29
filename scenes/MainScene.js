@@ -6,7 +6,7 @@ import ProjectileManager from "../entities/ProjectileManager.js";
 import SpotlightHandler from "../entities/SpotlightHandler.js";
 import GameOverDialog from "../entities/GameOverDialog.js";
 import * as BLOCKERS from "../utils/BlockerZones.js";
-
+import ScoreService from "../services/ScoreService.js"; 
 
 import {
   isInsideStage,
@@ -56,6 +56,7 @@ export default class MainScene extends Phaser.Scene {
 	this.load.image("plant", "sprites/props/plant.png");
 	this.load.image('mute', 'sprites/UI/mute.png');
 	this.load.image('unmute', 'sprites/UI/unmute.png');
+	
 	
   }
 

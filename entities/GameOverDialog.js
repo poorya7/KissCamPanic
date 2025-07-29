@@ -1,3 +1,5 @@
+import ScoreService from "../services/ScoreService.js";
+
 export default class GameOverDialog extends Phaser.GameObjects.Container {
   constructor(scene) {
     super(scene, scene.cameras.main.centerX, scene.cameras.main.centerY);
@@ -7,19 +9,16 @@ export default class GameOverDialog extends Phaser.GameObjects.Container {
     this.setAlpha(0);
     this.setVisible(false);
 
-    // ───────────────────────────────
-    // ▶ Background
-    // ───────────────────────────────
+    this.enteredName = "";
+    this.finalScore = 0;
+    this.keyboardEnabled = false;
+    this.maxNameWidth = 180;
+
+    // Background
     this.bg = scene.add.image(0, 0, "dialog_end").setScale(0.3);
     this.add(this.bg);
 
-    // ───────────────────────────────
-    // ▶ Name Label + Name Value
-    // ───────────────────────────────
-    this.enteredName = "";
-	this.maxNameWidth = 180; // adjust as needed for your dialog width
-
-
+    // Name Value Display
     this.nameValue = this.scene.add.text(0, 30, "", {
       fontFamily: "C64",
       fontSize: "16px",
@@ -27,9 +26,7 @@ export default class GameOverDialog extends Phaser.GameObjects.Container {
     }).setOrigin(0, 0.5);
     this.add(this.nameValue);
 
-    // ───────────────────────────────
-    // ▶ Delayed Name Label Setup
-    // ───────────────────────────────
+    // Delayed Name Label Setup
     this.time = scene.time;
     this.time.delayedCall(100, () => {
       this.nameLabel = this.scene.add.text(0, 30, "NAME:", {
@@ -37,7 +34,6 @@ export default class GameOverDialog extends Phaser.GameObjects.Container {
         fontSize: "16px",
         color: "#ffffff"
       }).setOrigin(1, 0.5);
-
       this.nameLabel.setX(Math.floor(-10));
       this.nameLabel.setResolution(1);
       this.add(this.nameLabel);
@@ -46,9 +42,7 @@ export default class GameOverDialog extends Phaser.GameObjects.Container {
       this.nameValue.setResolution(1);
     }, [], this);
 
-    // ───────────────────────────────
-    // ▶ Blinking Cursor Timer
-    // ───────────────────────────────
+    // Blinking Cursor Timer
     this.cursorVisible = true;
     this.cursorTimer = this.scene.time.addEvent({
       delay: 400,
@@ -59,9 +53,7 @@ export default class GameOverDialog extends Phaser.GameObjects.Container {
       }
     });
 
-    // ───────────────────────────────
-    // ▶ SAVE & CANCEL Buttons
-    // ───────────────────────────────
+    // SAVE & CANCEL Buttons
     const buttonY = 140;
 
     this.saveBtn = scene.add.text(-70, buttonY, " SAVE ", {
@@ -111,52 +103,60 @@ export default class GameOverDialog extends Phaser.GameObjects.Container {
       });
     });
 
-    this.saveBtn.on("pointerdown", () => {
+    this.saveBtn.on("pointerup", () => {
+      const name = this.enteredName || "Anonymous";
+      const score = this.finalScore || 0;
+
+      console.log("✅ Saving score:", { name, score });
+
+      ScoreService.saveScore(name, score);
       this.scene.onSaveName?.(this.enteredName);
+
+      this.setVisible(false);
+      this.scene.scene.restart();
     });
 
-    this.cancelBtn.on("pointerdown", () => {
+    this.cancelBtn.on("pointerup", () => {
       this.scene.onCancelName?.();
+      this.setVisible(false);
+      this.scene.scene.restart();
     });
 
     this.add([this.saveBtn, this.cancelBtn]);
     scene.add.existing(this);
   }
 
-  // ───────────────────────────────
-  // ▶ enableKeyboardInput
-  // ───────────────────────────────
   enableKeyboardInput() {
-  this.scene.input.keyboard.on("keydown", (event) => {
-    if (!this.visible) return;
+    if (this.keyboardEnabled) return;
+    this.keyboardEnabled = true;
 
-    const key = event.key;
+    this.scene.input.keyboard.on("keydown", (event) => {
+      if (!this.visible) return;
 
-    if (/^[a-z0-9 ]$/i.test(key)) {
-      if (this.enteredName.length < 30) {
-        this.enteredName += key.toUpperCase();
+      const key = event.key;
+      if (/^[a-z0-9 ]$/i.test(key)) {
+        if (this.enteredName.length < 30) {
+          this.enteredName += key.toUpperCase();
+          this.updateNameDisplay();
+        }
+        event.preventDefault();
+      } else if (key === "Backspace") {
+        this.enteredName = this.enteredName.slice(0, -1);
         this.updateNameDisplay();
+        event.preventDefault();
+      } else if (key === "Enter") {
+        this.saveBtn.emit("pointerup");
+        event.preventDefault();
+      } else if (key === "Escape") {
+        this.cancelBtn.emit("pointerup");
+        event.preventDefault();
       }
-      event.preventDefault();
-    } else if (key === "Backspace") {
-      this.enteredName = this.enteredName.slice(0, -1);
-      this.updateNameDisplay();
-      event.preventDefault();
-    } else if (key === "Enter") {
-      this.scene.onSaveName?.(this.enteredName);
-      event.preventDefault();
-    } else if (key === "Escape") {
-      this.scene.onCancelName?.();
-      event.preventDefault();
-    }
-  });
-}
+    });
+  }
 
-
-  // ───────────────────────────────
-  // ▶ show
-  // ───────────────────────────────
   show(score = 0, rank = "#58 / 321") {
+    this.finalScore = Math.floor(score / 10);
+
     this.setVisible(true);
     this.setAlpha(0);
     this.setScale(0.8);
@@ -167,15 +167,14 @@ export default class GameOverDialog extends Phaser.GameObjects.Container {
       color: "#ff5555"
     }).setOrigin(0.5);
 
-    const rawScore = Math.floor(score / 10); // remove last digit
-const displayScore = rawScore.toString().padStart(8, "0"); // pad with extra zero
+    const rawScore = Math.floor(score / 10);
+    const displayScore = rawScore.toString().padStart(8, "0");
 
-const scoreText = this.scene.add.text(0, -50, `SCORE: ${displayScore}`, {
-  fontFamily: "C64",
-  fontSize: "16px",
-  color: "#ffffaa"
-}).setOrigin(0.5);
-
+    const scoreText = this.scene.add.text(0, -50, `SCORE: ${displayScore}`, {
+      fontFamily: "C64",
+      fontSize: "16px",
+      color: "#ffffaa"
+    }).setOrigin(0.5);
 
     const rankText = this.scene.add.text(0, -10, `YOU PLACED ${rank}`, {
       fontFamily: "C64",
@@ -192,23 +191,19 @@ const scoreText = this.scene.add.text(0, -50, `SCORE: ${displayScore}`, {
       ease: "back.out",
       duration: 400
     });
+
+    this.enableKeyboardInput();
   }
 
-  // ───────────────────────────────
-  // ▶ updateNameDisplay
-  // ───────────────────────────────
   updateNameDisplay() {
-  const cursor = this.cursorVisible ? "_" : " ";
-  this.nameValue.setText(this.enteredName + cursor);
+    const cursor = this.cursorVisible ? "_" : " ";
+    this.nameValue.setText(this.enteredName + cursor);
 
-  // Reset scale before measuring
-  this.nameValue.setScale(1);
-
-  const actualWidth = this.nameValue.width;
-  if (actualWidth > this.maxNameWidth) {
-    const shrinkScale = this.maxNameWidth / actualWidth;
-    this.nameValue.setScale(shrinkScale);
+    this.nameValue.setScale(1);
+    const actualWidth = this.nameValue.width;
+    if (actualWidth > this.maxNameWidth) {
+      const shrinkScale = this.maxNameWidth / actualWidth;
+      this.nameValue.setScale(shrinkScale);
+    }
   }
-}
-
 }

@@ -184,7 +184,8 @@ containsBadWord(name) {
   "twat", "wank", "jerkoff", "bollocks", "arse", "tit", "boob", "clit", "spic", "coon",
   "tranny", "rape", "rapist", "retard", "suckmy", "blowjob", "handjob", "rimjob", "anal",
   "orgasm", "penis", "vagina", "ballsack", "nut", "milf", "gook", "kike", "spunk", "hoe",
-  "cum", "pussy", "tits", "queer", "gayass", "fisting", "facial", "shemale", "anus", "i hate"
+  "cum", "pussy", "tits", "queer", "gayass", "fisting", "facial", "shemale", "anus", "i hate", "kill",
+  "finger me","fingerme"
 ];
 
   return badWords.some(word => lower.includes(word));

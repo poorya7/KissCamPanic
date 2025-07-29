@@ -109,10 +109,10 @@ export default class GameOverDialog extends Phaser.GameObjects.Container {
 
 
     this.cancelBtn.on("pointerup", () => {
-      this.scene.onCancelName?.();
-      this.setVisible(false);
-      this.scene.scene.restart();
-    });
+  this.scene.onCancelName?.();
+  this.hideWithAnimation();
+});
+
 
     this.add([this.saveBtn, this.cancelBtn]);
     scene.add.existing(this);
@@ -134,12 +134,27 @@ export default class GameOverDialog extends Phaser.GameObjects.Container {
     }
   }
 
-  this.setVisible(false);
-
-  this.scene.time.delayedCall(200, () => {
-    this.scene.scene.restart();
-  });
+  this.hideWithAnimation();
+ 
 }
+
+
+
+    hideWithAnimation() {
+    this.scene.tweens.add({
+      targets: this,
+      y: this.y + 500, // drops down off screen
+      scale: 0.95,
+      ease: "Back.easeIn",
+      duration: 400,
+      onComplete: () => {
+        this.setVisible(false);
+        this.setScale(1);
+        this.y = this.scene.cameras.main.centerY; // reset position
+      }
+    });
+  }
+
 
 
 
@@ -164,10 +179,15 @@ export default class GameOverDialog extends Phaser.GameObjects.Container {
       } else if (key === "Enter") {
         this.doSave();
         event.preventDefault();
-      } else if (key === "Escape") {
-        this.cancelBtn.emit("pointerup");
-        event.preventDefault();
-      }
+      } 
+	  
+	   else if (key === "Escape") {
+  this.scene.onCancelName?.();
+  this.hideWithAnimation();
+  event.preventDefault();
+}
+
+	  
     };
 
     this.scene.input.keyboard.on("keydown", this.keydownCallback);

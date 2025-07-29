@@ -459,14 +459,6 @@ createGameOverDialog() {
   this.dialog = new GameOverDialog(this, 400, 235);
   this.dialog.enableKeyboardInput();
 
-  this.onSaveName = (name) => {
-  window.location.reload();
-};
-
-this.onCancelName = () => {
-  window.location.reload();
-};
-
 }
 
 

@@ -57,16 +57,26 @@ Phaser.Utils.Array.Shuffle(spawnPoints); // ✅ randomizes order per run
       alienIndex++;
     }
 
-    // 🧍 Fill rest with crowd
-    for (let i = 0; i < spawnPoints.length; i++) {
-      const point = spawnPoints[i];
-      if (this.isBlocked(point.x, point.y)) continue;
+   
+   let crowdCount = 0;
+const maxCrowd = 100;
 
-      const densityFactor = Phaser.Math.Clamp(1.3 - (point.y / screenH), 0.5, 1.0);
-      if (Phaser.Math.Between(0, 100) > 40 * densityFactor) {
-        this.spawnCrowdMember(point.x, point.y);
-      }
-    }
+for (let i = 0; i < spawnPoints.length && crowdCount < maxCrowd; i++) {
+  const point = spawnPoints[i];
+  if (this.isBlocked(point.x, point.y)) continue;
+
+  const densityFactor = Phaser.Math.Clamp(1.3 - (point.y / screenH), 0.5, 1.0);
+  if (Phaser.Math.Between(0, 100) > 40 * densityFactor) {
+    this.spawnCrowdMember(point.x, point.y);
+    crowdCount++;
+  }
+}
+
+   
+   
+   
+   
+   
   }
 
   // ─────────────────────────────────────────────
@@ -156,6 +166,8 @@ Phaser.Utils.Array.Shuffle(spawnPoints); // ✅ randomizes order per run
       ease: "Sine.easeInOut",
       delay: Phaser.Math.Between(0, 800)
     });
+	
+
   }
 
   // ─────────────────────────────────────────────

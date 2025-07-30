@@ -76,6 +76,8 @@ export default class MainScene extends Phaser.Scene {
 	this.load.audio("shoot2", "sounds/fx/shoot2.wav");
 	this.load.audio("hit", "sounds/fx/hit.wav");
 	this.load.audio("spawn", "sounds/fx/spawn.wav");
+	this.load.audio("chris", "sounds/fx/chris.wav");
+	this.load.audio("snap", "sounds/fx/snap.wav");
 
   }
 
@@ -590,6 +592,8 @@ createGameOverDialog() {
   // ▶ triggerFlash
   // ───────────────────────────────
   triggerFlash() {
+	  SoundManager.playSFX("snap");
+
     this.flashOverlay.setAlpha(1);
 
     this.tweens.add({
@@ -603,15 +607,28 @@ createGameOverDialog() {
   // ───────────────────────────────
   // ▶ handlePlayerCaught
   // ───────────────────────────────
-  handlePlayerCaught() {
-    this.time.delayedCall(700, () => {
-      this.triggerFlash();
 
-      this.time.delayedCall(600, () => {
-        this.showGameOverDialog();
-      });
+handlePlayerCaught() {
+  this.time.delayedCall(700, () => {
+    this.triggerFlash(); // 🔊 snap plays here
+
+    // 🔁 Delay chris slightly after snap
+    this.time.delayedCall(300, () => {
+      if (SoundManager.chrisSFX) {
+        SoundManager.chrisSFX.stop();
+        SoundManager.chrisSFX.destroy();
+      }
+
+      SoundManager.chrisSFX = this.sound.add("chris");
+      SoundManager.chrisSFX.play();
     });
-  }
+
+    this.time.delayedCall(600, () => {
+      this.showGameOverDialog();
+    });
+  });
+}
+
 
   // ───────────────────────────────
   // ▶ showGameOverDialog
@@ -715,6 +732,13 @@ resetGame() {
   this.crowdSpawner.spawnCrowd();
   
   this.createSpotlightHandler();
+  
+  if (SoundManager.chrisSFX) {
+  SoundManager.chrisSFX.stop();
+  SoundManager.chrisSFX.destroy();
+  SoundManager.chrisSFX = null;
+}
+
 
 }
 

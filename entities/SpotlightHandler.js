@@ -6,10 +6,27 @@ export default class SpotlightHandler {
     this.onCatch = onCatchCallback;
 
     this.radius = spotlight.radius || 30;
-    this.maxSpeed = 0;
+    this.maxSpeed = 3;
     this.lerpStrength = 0.1;
     this.caughtTriggered = false;
+	
+	
+	
+	this.scene.time.addEvent({
+  delay: 10000, // every 10 seconds
+  callback: () => {
+    this.maxSpeed += 0.3;
+    console.log("⚡ Spotlight speed:", this.maxSpeed.toFixed(2));
+  },
+  callbackScope: this,
+  loop: true
+});
+
   }
+  
+  
+  
+  
 
   update() {
     const { x: targetX, y: targetY } = this.player;

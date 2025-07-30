@@ -1,4 +1,5 @@
 let SoundManager = {
+	chrisSFX: null,
   scene: null,
   muted: false,
 

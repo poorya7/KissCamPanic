@@ -18,7 +18,7 @@ export default class ScoreUI {
     }).setScrollFactor(0).setDepth(100);
 
     // Score value
-    this.scoreValue = scene.add.text(xValue, 10, "00000000", {
+    this.scoreValue = scene.add.text(xValue, 10, "000000", {
       fontFamily: "C64",
       fontSize: "16px",
       color: "#FEAF00",

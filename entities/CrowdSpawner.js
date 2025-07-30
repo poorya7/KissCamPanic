@@ -1,4 +1,5 @@
-import * as CrowdUtils from "../utils/CrowdUtils.js";
+import * as CrowdUtils from "../utils/CrowdUtils.js"
+import SoundManager from "../utils/SoundManager.js";
 
 export default class CrowdSpawner {
   constructor(scene, group, stage) {
@@ -98,9 +99,10 @@ Phaser.Utils.Array.Shuffle(spawnPoints); // ✅ randomizes order per run
   // ─────────────────────────────────────────────
   // 🧍 Normal Crowd Member
   // ─────────────────────────────────────────────
-  spawnCrowdMember(x, y) {
+  spawnCrowdMember(x, y, options = {}) {
     if (this.isBlocked(x, y)) return;
-    if (Phaser.Math.Between(0, 100) <= 50) return;
+    if (!options?.force && Phaser.Math.Between(0, 100) <= 50) return;
+
 
     const px = x + Phaser.Math.Between(-5, 5);
     const py = y + Phaser.Math.Between(-5, 5);
@@ -160,13 +162,28 @@ Phaser.Utils.Array.Shuffle(spawnPoints); // ✅ randomizes order per run
   // 🌀 Spawn 1 Crowd Anywhere Valid
   // ─────────────────────────────────────────────
   spawnAtRandomValidLocation() {
-    for (let i = 0; i < 20; i++) {
-      const x = Phaser.Math.Between(10, 790);
-      const y = Phaser.Math.Between(20, 460);
-      if (!this.isBlocked(x, y)) {
-        this.spawnCrowdMember(x, y);
-        return;
-      }
+  const maxAttempts = 100;
+
+  for (let i = 0; i < maxAttempts; i++) {
+    const x = Phaser.Math.Between(10, this.scene.scale.width - 10);
+    const y = Phaser.Math.Between(20, this.scene.scale.height - 10);
+
+    if (!this.isBlocked(x, y)) {
+      // Force spawn by skipping random chance
+      this.spawnCrowdMember(x, y, { force: true });
+	  this.spawnCrowdMember(x, y, { force: true });
+
+	this.scene.time.delayedCall(100, () => {
+	SoundManager.playSFX("spawn");
+	});
+
+return;
+
+      return;
     }
   }
+
+ 
+}
+
 }

@@ -1,3 +1,6 @@
+
+import SoundManager from "../utils/SoundManager.js";
+
 export default class Player extends Phaser.Physics.Arcade.Sprite {
   constructor(scene, x, y, texture) {
     super(scene, x, y, texture);
@@ -18,9 +21,6 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
     this.hr = null; // ✅ assigned later from MainScene
   }
-
-
-
 
 
 
@@ -107,6 +107,15 @@ move(cursors, speed = 200) {
     }
 
     const scale = type === "credit_card" ? 0.015 : 0.06;
+	
+	if (type === "credit_card") {
+  SoundManager.playSFX("shoot1");
+} else {
+  SoundManager.playSFX("shoot2");
+}
+
+
+
 
     const proj = this.projectiles.create(spawnX, spawnY, type).setScale(scale);
     proj.startY = proj.throwerY = originY;
@@ -120,10 +129,14 @@ move(cursors, speed = 200) {
     const angleRad = Phaser.Math.DegToRad(angleDeg);
     const speed = 400;
 
-    proj.body.setVelocity(
-      Math.cos(angleRad) * speed,
-      Math.sin(angleRad) * speed
-    );
+    const playerVX = this.body.velocity.x;
+const playerVY = this.body.velocity.y;
+
+proj.body.setVelocity(
+  Math.cos(angleRad) * speed + playerVX,
+  Math.sin(angleRad) * speed + playerVY
+);
+
 
     proj.body.setAllowGravity(true);
     proj.body.setGravityY(1300);

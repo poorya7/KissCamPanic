@@ -7,6 +7,8 @@ import SpotlightHandler from "../entities/SpotlightHandler.js";
 import GameOverDialog from "../entities/GameOverDialog.js";
 import * as BLOCKERS from "../utils/BlockerZones.js";
 import ScoreService from "../services/ScoreService.js"; 
+import SoundManager from "../utils/SoundManager.js";
+
 
 import {
   isInsideStage,
@@ -67,11 +69,14 @@ export default class MainScene extends Phaser.Scene {
 	this.load.image('mute', 'sprites/UI/mute.png');
 	this.load.image('unmute', 'sprites/UI/unmute.png');
 	for (let i = 1; i <= 4; i++) {
-	this.load.image(`alien/a${i}`, `sprites/crowd/alien/a${i}.png`);
-}
+		this.load.image(`alien/a${i}`, `sprites/crowd/alien/a${i}.png`);
+	}
 
-	
-	
+	this.load.audio("shoot1", "sounds/fx/shoot1.wav");
+	this.load.audio("shoot2", "sounds/fx/shoot2.wav");
+	this.load.audio("hit", "sounds/fx/hit.wav");
+	this.load.audio("spawn", "sounds/fx/spawn.wav");
+
   }
 
   
@@ -91,7 +96,9 @@ export default class MainScene extends Phaser.Scene {
 	this.createSpotlightHandler(); 
 	this.registerResizeHandler();
 	this.gameStarted = false;
+	SoundManager.init(this);
 	this.showStartDialog();
+	
   }
   
    // ───────────────────────────────
@@ -717,12 +724,19 @@ resetGame() {
   // ───────────────────────────────
   projectileHitsCrowd(proj, crowd) {
     proj.destroy();
+	SoundManager.playSFX("hit");
+	
     this.playPoof(crowd.x, crowd.y);
 
     if (crowd.visuals) {
       crowd.visuals.destroy();
     }
-
     crowd.destroy();
+	
+	this.time.delayedCall(500, () => {
+  this.crowdSpawner.spawnAtRandomValidLocation();
+});
+
+
   }
 }

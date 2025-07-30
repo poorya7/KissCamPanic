@@ -106,19 +106,29 @@ export default class MainScene extends Phaser.Scene {
   loop: true,
   volume: 1 // adjust to your taste
 });
-this.bgMusic.play();
 
-	
   }
   
    // ───────────────────────────────
   // ▶ startGame
   // ───────────────────────────────
-  startGame() {
-  this.gameStarted = true;
+startGame() {
+  if (!this.bgMusic) {
+    this.bgMusic = this.sound.add("bgMusic", {
+      loop: true,
+      volume: 1,
+    });
+  }
 
-  // You can put any other startup logic here if needed later
+  // 🔊 Start music only now
+  if (!this.bgMusic.isPlaying) {
+    this.bgMusic.play();
+  }
+
+  this.gameStarted = true;
+  // ✅ Your other game start logic goes here (e.g., enabling controls, timers, etc.)
 }
+
 
   
    // ───────────────────────────────

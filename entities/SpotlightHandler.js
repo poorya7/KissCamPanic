@@ -6,7 +6,7 @@ export default class SpotlightHandler {
     this.onCatch = onCatchCallback;
 
     this.radius = spotlight.radius || 30;
-    this.maxSpeed = 3;
+    this.maxSpeed = 0;
     this.lerpStrength = 0.1;
     this.caughtTriggered = false;
 	
@@ -56,13 +56,14 @@ export default class SpotlightHandler {
     const isCaught = distToPlayer < this.radius * 0.5;
 
     if (isCaught && !this.player.disableMovement) {
-      if (!this.caughtTriggered) {
-        this.caughtTriggered = true;
-		this.player.disableMovement = true;
-        this.onCatch();
-      }
-    }
+  if (!this.caughtTriggered) {
+    this.caughtTriggered = true;
+    this.player.disableMovement = true; 
+    this.onCatch();
+	}
+	}
 
-    this.player.disableMovement = isCaught;
+
+
   }
 }

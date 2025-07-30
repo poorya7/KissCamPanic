@@ -156,23 +156,35 @@ async doSave() {
 
 
 
-
 hideWithAnimation() {
   this.scene.tweens.add({
     targets: this,
-    y: this.y + 500, // drops down off screen
+    y: this.y + 500,
     scale: 0.95,
     ease: "Back.easeIn",
     duration: 400,
     onComplete: () => {
       this.setVisible(false);
       this.setScale(1);
-      this.y = this.scene.cameras.main.centerY; // reset position
+      this.y = this.scene.cameras.main.centerY;
 
-      this.scene.resetGame(); // 👈 add this
+      ScoreService.getTopScores(); // 🔄 Refresh highscore panel
+
+      ScoreService.getAllScores().then(scoreList => {
+        this.scene.scoreUI.scoreList = scoreList;
+
+        const rawScore = this.scene.scoreUI.getRawScore();
+        const higherScores = scoreList.filter(s => s > rawScore).length;
+        const rank = higherScores + 1;
+
+        this.scene.scoreUI.updateRankDisplay?.(rank);
+
+        this.scene.resetGame(); // 🔁 Restart only after rank is recalculated
+      });
     }
   });
 }
+
 
 
 
@@ -250,7 +262,7 @@ enableKeyboardInput() {
     if (!this.visible || this.naughtyDialogActive) return;
 
     const key = event.key;
-    if (/^[a-z0-9 ]$/i.test(key)) {
+    if (/^[a-z0-9 @]$/i.test(key)) {
       if (this.enteredName.length < 30) {
         this.enteredName += key.toUpperCase();
         this.updateNameDisplay();

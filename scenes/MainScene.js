@@ -75,9 +75,10 @@ export default class MainScene extends Phaser.Scene {
 	this.load.audio("shoot1", "sounds/fx/shoot1.wav");
 	this.load.audio("shoot2", "sounds/fx/shoot2.wav");
 	this.load.audio("hit", "sounds/fx/hit.wav");
-	this.load.audio("spawn", "sounds/fx/spawn.wav");
+	this.load.audio("spawn", "sounds/fx/spawn2.wav");
 	this.load.audio("chris", "sounds/fx/chris.wav");
 	this.load.audio("snap", "sounds/fx/snap.wav");
+	this.load.audio('bgMusic', 'sounds/music/main1.wav');
 
   }
 
@@ -100,6 +101,13 @@ export default class MainScene extends Phaser.Scene {
 	this.gameStarted = false;
 	SoundManager.init(this);
 	this.showStartDialog();
+	
+	this.bgMusic = this.sound.add('bgMusic', {
+  loop: true,
+  volume: 1 // adjust to your taste
+});
+this.bgMusic.play();
+
 	
   }
   
@@ -609,6 +617,8 @@ createGameOverDialog() {
   // ───────────────────────────────
 
 handlePlayerCaught() {
+	this.fadeOutMusic();
+	
   this.time.delayedCall(700, () => {
     this.triggerFlash(); // 🔊 snap plays here
 
@@ -627,6 +637,24 @@ handlePlayerCaught() {
       this.showGameOverDialog();
     });
   });
+}
+
+  // ───────────────────────────────
+  // ▶ fadeOutMusic
+  // ───────────────────────────────
+fadeOutMusic(duration = 1000) {
+  if (this.bgMusic && this.bgMusic.isPlaying) {
+    this.tweens.add({
+      targets: this.bgMusic,
+      volume: 0,
+      duration,
+      onComplete: () => {
+        this.bgMusic.stop();
+        this.bgMusic.destroy();
+        this.bgMusic = null;
+      }
+    });
+  }
 }
 
 
@@ -711,6 +739,17 @@ showGameOverDialog() {
   // ▶ resetGame
   // ───────────────────────────────
 resetGame() {
+	
+	if (!this.bgMusic) {
+  this.bgMusic = this.sound.add('bgMusic', {
+    loop: true,
+    volume: 1
+  });
+  this.bgMusic.play();
+}
+
+
+
 	this.createBlockers();
 
   this.scoreUI.score = 0;

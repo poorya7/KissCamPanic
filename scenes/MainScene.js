@@ -734,7 +734,8 @@ resetGame() {
     crowd.destroy();
 	
 	this.time.delayedCall(500, () => {
-  this.crowdSpawner.spawnAtRandomValidLocation();
+ this.crowdSpawner.spawnInLeastCrowdedArea();
+
 });
 
 

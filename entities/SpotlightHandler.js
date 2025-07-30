@@ -58,6 +58,7 @@ export default class SpotlightHandler {
     if (isCaught && !this.player.disableMovement) {
       if (!this.caughtTriggered) {
         this.caughtTriggered = true;
+		this.player.disableMovement = true;
         this.onCatch();
       }
     }

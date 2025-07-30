@@ -209,14 +209,13 @@ spawnInLeastCrowdedArea() {
   const scanRadius = 150;
   const crowdMembers = this.group.getChildren();
   let fallback = null;
-  let fallbackScore = -Infinity; // 🔁 start LOW so we pick HIGHEST spacing
+  let fallbackScore = -Infinity;
 
   for (let i = 0; i < attempts; i++) {
     const x = Phaser.Math.Between(10, this.scene.scale.width - 10);
     const y = Phaser.Math.Between(20, this.scene.scale.height - 10);
     if (this.isBlocked(x, y)) continue;
 
-    // Count nearby crowd within scan radius
     let nearbyCount = 0;
     let totalDist = 0;
 
@@ -229,14 +228,13 @@ spawnInLeastCrowdedArea() {
       }
     }
 
-    // 🎯 Perfect empty zone found
+    // 🎯 Perfect empty zone found — spawn immediately
     if (nearbyCount === 0) {
-      this.spawnCrowdMember(x, y, { force: true });
-      this.scene.time.delayedCall(100, () => SoundManager.playSFX("spawn"));
+      this.spawnRandomEntity(x, y);
       return;
     }
 
-    // 💡 Keep best fallback (widest spaced area)
+    // Keep best fallback
     const avgDist = totalDist / nearbyCount;
     if (avgDist > fallbackScore) {
       fallbackScore = avgDist;
@@ -244,15 +242,27 @@ spawnInLeastCrowdedArea() {
     }
   }
 
-  // 🪂 Use fallback if no perfect empty spot found
+  // 🪂 Fallback spawn
   if (fallback) {
-    this.spawnCrowdMember(fallback.x, fallback.y, { force: true });
-    this.scene.time.delayedCall(100, () => SoundManager.playSFX("spawn"));
+    this.spawnRandomEntity(fallback.x, fallback.y);
   } else {
     console.warn("⚠️ Could not find valid spawn spot at all");
   }
 }
 
+
+
+spawnRandomEntity(x, y) {
+  if (Phaser.Math.Between(1, 25) === 1) {
+    const alienFrames = ["a1", "a2", "a3", "a4"];
+    const frame = Phaser.Utils.Array.GetRandom(alienFrames);
+    this.spawnAlien(x, y, frame);
+  } else {
+    this.spawnCrowdMember(x, y, { force: true });
+  }
+
+  this.scene.time.delayedCall(100, () => SoundManager.playSFX("spawn"));
+}
 
 
 

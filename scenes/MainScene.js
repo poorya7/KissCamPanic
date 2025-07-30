@@ -8,6 +8,7 @@ import GameOverDialog from "../entities/GameOverDialog.js";
 import * as BLOCKERS from "../utils/BlockerZones.js";
 import ScoreService from "../services/ScoreService.js"; 
 import SoundManager from "../utils/SoundManager.js";
+import PowerupManager from "../entities/PowerupManager.js";
 
 
 import {
@@ -68,6 +69,10 @@ export default class MainScene extends Phaser.Scene {
 	this.load.image("plant", "sprites/props/plant.png");
 	this.load.image('mute', 'sprites/UI/mute.png');
 	this.load.image('unmute', 'sprites/UI/unmute.png');
+	this.load.image("stapler", "sprites/powerups/stapler.png");
+
+
+	
 	for (let i = 1; i <= 4; i++) {
 		this.load.image(`alien/a${i}`, `sprites/crowd/alien/a${i}.png`);
 	}
@@ -104,8 +109,17 @@ export default class MainScene extends Phaser.Scene {
 	
 	this.bgMusic = this.sound.add('bgMusic', {
   loop: true,
-  volume: 1 // adjust to your taste
+  volume: 1 
 });
+
+this.powerupManager = new PowerupManager(this);
+
+
+this.powerupManager.enableCollisionWith(this.player, {
+  stapler: () => this.activateRapidFireMode()
+});
+
+
 
   }
   
@@ -120,6 +134,9 @@ startGame() {
     });
   }
 
+this.powerupManager.reset();
+
+
   // 🔊 Start music only now
   if (!this.bgMusic.isPlaying) {
     this.bgMusic.play();
@@ -129,6 +146,21 @@ startGame() {
   // ✅ Your other game start logic goes here (e.g., enabling controls, timers, etc.)
 }
 
+   // ───────────────────────────────
+  // ▶ activateRapidFireMode
+  // ───────────────────────────────
+
+activateRapidFireMode() {
+  if (this.rapidFireTimer) {
+    this.rapidFireTimer.remove(false);
+  }
+
+  this.player.enableRapidFire(); // You’d implement this on your Player class
+
+  this.rapidFireTimer = this.time.delayedCall(2000, () => {
+    this.player.disableRapidFire();
+  });
+}
 
   
    // ───────────────────────────────

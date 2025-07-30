@@ -22,8 +22,30 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     this.hr = null; // ✅ assigned later from MainScene
   }
 
+enableRapidFire() {
+  if (this.rapidFireEvent) {
+    this.rapidFireEvent.remove(false);
+  }
+
+  this.rapidFireEvent = this.scene.time.addEvent({
+    delay: 50, // fire every 100ms
+    callback: () => {
+      if (!this.disableMovement) {
+        this.shoot();
+      }
+    },
+    callbackScope: this,
+    loop: true
+  });
+}
 
 
+disableRapidFire() {
+  if (this.rapidFireEvent) {
+    this.rapidFireEvent.remove(false);
+    this.rapidFireEvent = null;
+  }
+}
 
 
 move(cursors, speed = 200) {

@@ -87,3 +87,15 @@ export function randomColor() {
     Phaser.Math.Between(50, 255)
   );
 }
+
+
+export function isBlocked(scene, x, y) {
+  if (y < 120) return true;
+
+  return (
+    isInsideStage(scene.stage, x, y, 0) ||
+    isInsideKissCam(scene.kissCamFrame, x, y, 0) ||
+    isInsideCameraArea(x, y, scene.cameraGuy) ||
+    isInsideVIPArea(x, y, scene.vip)
+  );
+}

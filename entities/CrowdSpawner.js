@@ -31,7 +31,6 @@ export default class CrowdSpawner {
   // 🧑‍🤝‍🧑 Spawn All Crowd
   // ─────────────────────────────────────────────
   spawnCrowd() {
-	  
     const spacing = 25;
     const screenW = this.scene.scale.width;
     const screenH = this.scene.scale.height;

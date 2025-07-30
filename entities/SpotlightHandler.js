@@ -13,9 +13,9 @@ export default class SpotlightHandler {
 	
 	
 	this.scene.time.addEvent({
-  delay: 10000, // every 10 seconds
+  delay: 5000, // every 5 seconds
   callback: () => {
-    this.maxSpeed += 0.3;
+    this.maxSpeed += 0.2;
     console.log("⚡ Spotlight speed:", this.maxSpeed.toFixed(2));
   },
   callbackScope: this,

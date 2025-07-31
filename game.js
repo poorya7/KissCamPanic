@@ -1,5 +1,6 @@
 import MainScene from "./scenes/MainScene.js";
-import ScoreService from "./services/ScoreService.js"; // ⬅️ add this at the top
+import ScoreService from "./services/ScoreService.js";
+import SoundManager from "./utils/SoundManager.js"; // ✅ make sure this path is correct
 
 window.onload = () => {
   const wrapper = document.getElementById("game-wrapper");
@@ -34,7 +35,6 @@ window.onload = () => {
 
   const game = new Phaser.Game(config);
 
-  // ⬇️ Call this after game is created
   if (window.fontsReady) {
     ScoreService.getTopScores();
   } else {
@@ -44,16 +44,54 @@ window.onload = () => {
   }
 
   const muteBtn = document.getElementById("mute-btn");
-  let isMuted = false;
+  const sfxBtn = document.getElementById("mute-sfx-btn");
 
-  setTimeout(() => {
-    const scene = game.scene.scenes[0];
-    muteBtn.addEventListener("click", () => {
-      isMuted = !isMuted;
-      scene.sound.mute = isMuted;
-      muteBtn.src = isMuted
-        ? "sprites/UI/mute.png"
-        : "sprites/UI/unmute.png";
-    });
-  }, 500);
+  let isMuted = false;
+  let sfxMuted = false;
+
+
+setTimeout(() => {
+  const scene = game.scene.scenes[0];
+
+
+
+muteBtn.addEventListener("click", () => {
+  SoundManager.musicMuted = !SoundManager.musicMuted;
+
+  muteBtn.src = SoundManager.musicMuted
+    ? "sprites/UI/mute.png"
+    : "sprites/UI/unmute.png";
+
+  if (SoundManager.currentMusic) {
+    SoundManager.currentMusic.setMute(SoundManager.musicMuted);
+  }
+
+  // 🔍 TEMP LOGGING — add this here:
+  console.log("MUTED:", SoundManager.musicMuted);
+  console.log("CURRENT MUSIC:", SoundManager.currentMusic);
+  console.log("IS PLAYING:", SoundManager.currentMusic?.isPlaying);
+  console.log("IS MUTED:", SoundManager.currentMusic?.mute);
+});
+
+
+
+
+
+
+
+
+  // 💥 SFX Mute Toggle
+  sfxBtn.addEventListener("click", () => {
+    sfxMuted = !sfxMuted;
+    SoundManager.sfxMuted = sfxMuted; // 🔇 custom mute flag for SFX only
+    sfxBtn.src = sfxMuted
+      ? "sprites/UI/mutefx.png"
+      : "sprites/UI/unmutefx.png";
+  });
+}, 500);
+
+
+
+
+ 
 };

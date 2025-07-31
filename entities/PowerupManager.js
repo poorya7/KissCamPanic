@@ -1,4 +1,6 @@
 import { isBlocked } from "../utils/CrowdUtils.js";
+import SoundManager from "../utils/SoundManager.js";
+
 
 
 export default class PowerupManager {
@@ -6,7 +8,7 @@ export default class PowerupManager {
     this.scene = scene;
 
     this.maxPowerups = 2;
-    this.spawnInterval = 9000; // ms
+    this.spawnInterval = 8000; // ms
 
     this.powerupGroup = this.scene.physics.add.group();
     this.activePowerups = [];
@@ -37,6 +39,8 @@ export default class PowerupManager {
 
     stapler.powerupType = "stapler";
     this.powerupGroup.add(stapler);
+	SoundManager.playSFX("powerup");
+
 
     return; // ✅ spawn succeeded
   }

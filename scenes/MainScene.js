@@ -84,6 +84,8 @@ export default class MainScene extends Phaser.Scene {
 	this.load.audio("chris", "sounds/fx/chris.wav");
 	this.load.audio("snap", "sounds/fx/snap.wav");
 	this.load.audio('bgMusic', 'sounds/music/main1.wav');
+	this.load.audio("powerup", "sounds/fx/powerup.wav");
+
 
   }
 
@@ -94,6 +96,7 @@ export default class MainScene extends Phaser.Scene {
   create() {
     this.createFlashOverlay();
     this.createBackgroundAndStage();
+	this.scoreUI = new ScoreUI(this);
     this.createPlayerAndHR();
     this.createControlsAndProjectiles();
     this.createCrowdAndColliders();
@@ -107,17 +110,13 @@ export default class MainScene extends Phaser.Scene {
 	SoundManager.init(this);
 	this.showStartDialog();
 	
-	this.bgMusic = this.sound.add('bgMusic', {
-  loop: true,
-  volume: 1 
-});
 
-this.powerupManager = new PowerupManager(this);
+	this.powerupManager = new PowerupManager(this);
 
 
-this.powerupManager.enableCollisionWith(this.player, {
-  stapler: () => this.activateRapidFireMode()
-});
+	this.powerupManager.enableCollisionWith(this.player, {
+	  stapler: () => this.activateRapidFireMode()
+	});
 
 
 
@@ -133,6 +132,7 @@ startGame() {
       volume: 1,
     });
   }
+  SoundManager.currentMusic = this.bgMusic;
 
 this.powerupManager.reset();
 
@@ -205,7 +205,7 @@ createBackgroundAndStage() {
     .setOrigin(0)
     .setDepth(-20);
 
-  this.scoreUI = new ScoreUI(this);
+  
   
   ScoreService.getAllScores().then((allScores) => {
   this.scoreUI.setScoreList(allScores);
@@ -685,15 +685,15 @@ handlePlayerCaught() {
   // ▶ fadeOutMusic
   // ───────────────────────────────
 fadeOutMusic(duration = 1000) {
-  if (this.bgMusic && this.bgMusic.isPlaying) {
+  if (SoundManager.currentMusic && SoundManager.currentMusic.isPlaying) {
     this.tweens.add({
-      targets: this.bgMusic,
+      targets: SoundManager.currentMusic,
       volume: 0,
       duration,
       onComplete: () => {
-        this.bgMusic.stop();
-        this.bgMusic.destroy();
-        this.bgMusic = null;
+        SoundManager.currentMusic.stop();
+        SoundManager.currentMusic.destroy();
+        SoundManager.currentMusic = null;
       }
     });
   }
@@ -781,13 +781,12 @@ showGameOverDialog() {
   // ▶ resetGame
   // ───────────────────────────────
 resetGame() {
-	
-	if (!this.bgMusic) {
-  this.bgMusic = this.sound.add('bgMusic', {
+ 
+ if (!SoundManager.currentMusic || !SoundManager.currentMusic.isPlaying) {
+  SoundManager.playMusic("bgMusic", {
     loop: true,
     volume: 1
   });
-  this.bgMusic.play();
 }
 
 
@@ -827,22 +826,27 @@ resetGame() {
   // ───────────────────────────────
   // ▶ projectileHitsCrowd
   // ───────────────────────────────
-  projectileHitsCrowd(proj, crowd) {
-    proj.destroy();
-	SoundManager.playSFX("hit");
-	
-    this.playPoof(crowd.x, crowd.y);
+projectileHitsCrowd(proj, crowd) {
+  proj.destroy();
+  SoundManager.playSFX("hit");
 
-    if (crowd.visuals) {
-      crowd.visuals.destroy();
-    }
-    crowd.destroy();
-	
-	this.time.delayedCall(500, () => {
- this.crowdSpawner.spawnInLeastCrowdedArea();
+  this.playPoof(crowd.x, crowd.y);
 
-});
-
-
+  if (crowd.visuals) {
+    crowd.visuals.destroy();
   }
+  crowd.destroy();
+
+  this.scoreUI.addToScore(40);
+
+  this.time.delayedCall(500, () => {
+    this.crowdSpawner.spawnInLeastCrowdedArea();
+  });
+}
+
+  
+  
+  
+  
+  
 }

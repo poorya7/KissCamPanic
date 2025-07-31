@@ -6,7 +6,7 @@ export default class SpotlightHandler {
     this.onCatch = onCatchCallback;
 
     this.radius = spotlight.radius || 30;
-    this.maxSpeed = 3;
+    this.maxSpeed = 4;
     this.lerpStrength = 0.1;
     this.caughtTriggered = false;
 	
@@ -15,7 +15,7 @@ export default class SpotlightHandler {
 	this.scene.time.addEvent({
   delay: 5000, // every 5 seconds
   callback: () => {
-    this.maxSpeed += 0.2;
+    this.maxSpeed += 0.15;
   },
   callbackScope: this,
   loop: true

@@ -47,7 +47,8 @@ export default class ScoreUI {
   }
 
 update() {
-  this.score += this.scene.game.loop.delta / 10 * 3;
+  
+  this.score += this.scene.game.loop.delta / 10 * 1;
 
   const raw = Math.floor(this.score / 10);
   const display = raw.toString().padStart(6, "0");
@@ -81,4 +82,32 @@ setScoreList(scoreList) {
   getRawScore() {
     return Math.floor(this.score / 10);
   }
+  
+  
+  
+  
+addToScore(amount) {
+  this.score += amount;
+
+  const raw = Math.floor(this.score / 10); // 🔁 consistent with update()
+  const display = raw.toString().padStart(6, "0");
+  this.scoreValue.setText(display);
+
+  if (this.scoreList.length > 0) {
+    const higherScores = this.scoreList.filter(s => s > raw).length;
+    const newRank = higherScores + 1;
+
+    if (newRank !== this.rank) {
+      this.rank = newRank;
+      this.rankValue.setText(this.rank.toString());
+    }
+  }
+}
+
+
+
+  
+  
+  
+  
 }

@@ -17,6 +17,26 @@
 }
 
 
+#controls-hint {
+  font-family: 'c64', monospace;
+  font-size: 14px;
+  color: #ffafff;
+  margin-top:35px;
+  text-align: center;
+  text-shadow: 1px 1px #000;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+
+}
+
+.key-hint {
+  color: #ffff99;
+  text-shadow: 1px 1px #000;
+}
+
+
+
+
 #highscore-list div {
   font-family: "C64", monospace !important;
   font-size: 10px !important;

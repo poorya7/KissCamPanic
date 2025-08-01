@@ -7,8 +7,8 @@ export default class PowerupManager {
   constructor(scene) {
     this.scene = scene;
 
-    this.maxPowerups = 2;
-    this.spawnInterval = 8000; // ms
+    this.maxPowerups = 10;
+    this.spawnInterval = 2000; // ms
 
     this.powerupGroup = this.scene.physics.add.group();
     this.activePowerups = [];

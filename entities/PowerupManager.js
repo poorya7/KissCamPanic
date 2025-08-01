@@ -20,7 +20,7 @@ this.powerupLabel = this.scene.add.text(16, 15, "powerups:", {
 }).setScrollFactor(0).setDepth(100);
 
 // Powerups value
-this.powerupText = this.scene.add.text(140, 15, `0/${this.maxPowerups}`, {
+this.powerupText = this.scene.add.text(140, 15, `00/${this.maxPowerups}`, {
   fontFamily: 'C64',
   fontSize: '16px',
   color: '#00f0ff',
@@ -52,9 +52,13 @@ this.powerupText = this.scene.add.text(140, 15, `0/${this.maxPowerups}`, {
   }
 
   update() {
-    const active = this.powerupGroup.countActive(true);
-    this.powerupText.setText(`${active}/${this.maxPowerups}`);
-  }
+  const active = this.powerupGroup.countActive(true);
+  const padded = active.toString().padStart(2, "0");
+  this.powerupText.setText(`${padded}/${this.maxPowerups}`);
+}
+
+
+
 
   trySpawnPowerup() {
     if (this.powerupGroup.countActive(true) >= this.maxPowerups) return;

@@ -759,6 +759,13 @@ showGameOverDialog() {
 
     this.kissCamRenderer.render();
     this.projectileManager.update();
+	
+	if (this.powerupManager) {
+  this.powerupManager.update();
+}
+
+
+
   }
 
   // ───────────────────────────────

@@ -5,8 +5,8 @@ export default class ScoreUI {
     this.scene = scene;
     this.score = 0;
 
-    const xLabel = scene.scale.width - 210;
-    const xValue = scene.scale.width - 125;
+    const xLabel = scene.scale.width - 200;
+    const xValue = scene.scale.width - 115;
 
     // Score label
     this.scoreLabel = scene.add.text(xLabel, 10, "score:", {

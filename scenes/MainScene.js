@@ -134,7 +134,7 @@ startGame() {
   }
   SoundManager.currentMusic = this.bgMusic;
 
-this.powerupManager.reset();
+//this.powerupManager.reset();
 
 
   // 🔊 Start music only now

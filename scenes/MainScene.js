@@ -85,6 +85,7 @@ export default class MainScene extends Phaser.Scene {
 	this.load.audio("snap", "sounds/fx/snap.wav");
 	this.load.audio('bgMusic', 'sounds/music/main1.wav');
 	this.load.audio("powerup", "sounds/fx/powerup.wav");
+	this.load.audio("powerup_get", "sounds/fx/powerup_get.wav");
 
 
   }

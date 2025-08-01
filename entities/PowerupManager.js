@@ -88,18 +88,25 @@ this.powerupText = this.scene.add.text(140, 15, `00/${this.maxPowerups}`, {
 
   enableCollisionWith(player, callbackMap) {
     this.scene.physics.add.overlap(
-      player,
-      this.powerupGroup,
-      (player, powerup) => {
-        const type = powerup.powerupType;
-        powerup.disableBody(true, true);
-        if (callbackMap[type]) {
-          callbackMap[type](); // call specific powerup effect
-        }
-      },
-      null,
-      this
-    );
+  player,
+  this.powerupGroup,
+  (player, powerup) => {
+    const type = powerup.powerupType;
+    powerup.disableBody(true, true);
+
+    SoundManager.playSFX("powerup_get"); // 🔊 Play pickup sound
+
+    if (callbackMap[type]) {
+  this.scene.time.delayedCall(300, () => {
+    callbackMap[type](); // delay powerup activation slightly
+  });
+}
+
+  },
+  null,
+  this
+);
+
   }
 
   reset() {

@@ -13,9 +13,11 @@ let SoundManager = {
 
     const volumeMap = {
       spawn: 0.3,
-      shoot1: 1.0,
-      shoot2: 1.0,
-      powerup: 1.0
+      shoot1: 0.9,
+      shoot2: 0.9,
+      powerup: 1.0, 
+	  powerup_get:3
+	  
     };
 
     const volume = volumeMap[key] ?? 1.0;

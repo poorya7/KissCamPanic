@@ -2,11 +2,21 @@ import { isBlocked } from "../utils/CrowdUtils.js";
 import SoundManager from "../utils/SoundManager.js";
 
 export default class PowerupManager {
+	
+	static BAR_WIDTH = 175;
+	
+	
   constructor(scene) {
+	  
+
+
     this.scene = scene;
 
     this.maxPowerups = 15;
     this.spawnInterval = 2000;
+	
+	this.createRapidFireBar();
+
 
     // UI counter in top-left
     // Powerups label
@@ -31,6 +41,8 @@ this.powerupText = this.scene.add.text(140, 15, `00/${this.maxPowerups}`, {
 
 
 
+
+
     // Regular powerup logic
     this.powerupGroup = this.scene.physics.add.group();
     this.activePowerups = [];
@@ -51,11 +63,118 @@ this.powerupText = this.scene.add.text(140, 15, `00/${this.maxPowerups}`, {
     });
   }
 
-  update() {
-  const active = this.powerupGroup.countActive(true);
-  const padded = active.toString().padStart(2, "0");
-  this.powerupText.setText(`${padded}/${this.maxPowerups}`);
+update() {
+ let active = 0;
+
+if (this.rapidFireTimer) {
+  const remaining = this.rapidFireTimer.getRemaining();
+  active = Math.ceil(remaining / 2000); // 1 powerup = 2s
 }
+
+
+  // Count how many are still on the floor
+  const onFloor = this.powerupGroup.countActive(true);
+
+  // Total = active + on floor
+  const total = active + onFloor;
+
+  const paddedActive = active.toString().padStart(2, "0");
+  const paddedTotal = total.toString().padStart(2, "0");
+
+  this.powerupText.setText(`${paddedActive}/${paddedTotal}`);
+
+  // Update rapid fire bar fill width
+  if (this.rapidFireTimer && this.rapidFireBarFill.visible) {
+    const elapsed = this.scene.time.now - this.rapidFireStart;
+    const progress = Phaser.Math.Clamp(1 - (elapsed / this.rapidFireDuration), 0, 1);
+    this.rapidFireBarFill.width = this.rapidFireBarFullWidth * progress;
+  }
+}
+
+
+
+
+
+activateRapidFire(player) {
+  const extension = 2000;
+
+  if (this.rapidFireTimer) {
+    const remaining = this.rapidFireTimer.getRemaining();
+    const newDuration = remaining + extension;
+
+    this.rapidFireTimer.remove(false);
+    this.rapidFireTimer = this.scene.time.delayedCall(newDuration, () => {
+      player.disableRapidFire();
+      this.rapidFireTimer = null;
+      this.hideRapidFireBar();
+    });
+
+    this.startRapidFireBar(newDuration);
+
+  } else {
+    player.enableRapidFire();
+    this.rapidFireTimer = this.scene.time.delayedCall(extension, () => {
+      player.disableRapidFire();
+      this.rapidFireTimer = null;
+      this.hideRapidFireBar();
+    });
+
+    this.startRapidFireBar(extension);
+  }
+}
+
+
+startRapidFireBar(duration) {
+  const MAX_DURATION = 20000;
+  const capped = Math.min(duration, MAX_DURATION);
+
+  const barWidth = PowerupManager.BAR_WIDTH * (capped / MAX_DURATION);
+
+  this.rapidFireBarFill.setVisible(true);
+  this.rapidFireBarFill.width = barWidth;
+
+  this.rapidFireStart = this.scene.time.now;
+  this.rapidFireDuration = duration;
+  this.rapidFireBarFullWidth = barWidth;
+}
+
+
+
+
+
+
+hideRapidFireBar() {
+  this.rapidFireBarFill.setVisible(false); // hide green
+  // do NOT hide this.rapidFireBarBG — it should always stay visible
+}
+
+
+
+
+
+createRapidFireBar() {
+  const x = 25;
+  const y = 38;
+
+  this.rapidFireBarBG = this.scene.add.rectangle(
+    x, y,
+    PowerupManager.BAR_WIDTH, 8,
+    0x000000
+  ).setOrigin(0, 0).setScrollFactor(0).setDepth(100);
+
+  this.rapidFireBarFill = this.scene.add.rectangle(
+    x, y,
+    1, 8,
+    0x00ff00
+  ).setOrigin(0, 0).setScrollFactor(0).setDepth(101);
+
+  this.rapidFireBarFill.setVisible(false);
+  this.rapidFireBarBG.setVisible(true);
+}
+
+
+
+
 
 
 
@@ -85,6 +204,9 @@ this.powerupText = this.scene.add.text(140, 15, `00/${this.maxPowerups}`, {
 
     console.warn("⚠️ Could not find valid spot to spawn stapler.");
   }
+
+
+
 
   enableCollisionWith(player, callbackMap) {
     this.scene.physics.add.overlap(

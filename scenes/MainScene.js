@@ -151,17 +151,13 @@ startGame() {
   // ▶ activateRapidFireMode
   // ───────────────────────────────
 
-activateRapidFireMode() {
-  if (this.rapidFireTimer) {
-    this.rapidFireTimer.remove(false);
-  }
+	activateRapidFireMode() {
+		
+		this.powerupManager.activateRapidFire(this.player);
 
-  this.player.enableRapidFire(); // You’d implement this on your Player class
+	}
+		
 
-  this.rapidFireTimer = this.time.delayedCall(2000, () => {
-    this.player.disableRapidFire();
-  });
-}
 
   
    // ───────────────────────────────

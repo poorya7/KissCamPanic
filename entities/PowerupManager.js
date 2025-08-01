@@ -7,8 +7,8 @@ export default class PowerupManager {
   constructor(scene) {
     this.scene = scene;
 
-    this.maxPowerups = 10;
-    this.spawnInterval = 2000; // ms
+    this.maxPowerups =10;
+    this.spawnInterval = 2000; 
 
     this.powerupGroup = this.scene.physics.add.group();
     this.activePowerups = [];
@@ -21,14 +21,21 @@ export default class PowerupManager {
     });
   }
 
-  trySpawnPowerup() {
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ trySpawnPowerup() {
   if (this.powerupGroup.countActive(true) >= this.maxPowerups) return;
 
   const maxAttempts = 20;
 
   for (let i = 0; i < maxAttempts; i++) {
-    const x = Phaser.Math.Between(100, this.scene.scale.width - 100);
-    const y = Phaser.Math.Between(100, this.scene.scale.height - 100);
+    const x = Phaser.Math.Between(50, this.scene.scale.width - 50);
+    const y = Phaser.Math.Between(100, this.scene.scale.height - 10);
 
     if (isBlocked(this.scene, x, y)) continue;
 
@@ -39,8 +46,7 @@ export default class PowerupManager {
 
     stapler.powerupType = "stapler";
     this.powerupGroup.add(stapler);
-	SoundManager.playSFX("powerup");
-
+    SoundManager.playSFX("powerup");
 
     return; // ✅ spawn succeeded
   }
@@ -48,6 +54,12 @@ export default class PowerupManager {
   console.warn("⚠️ Could not find valid spot to spawn stapler.");
 }
 
+
+ 
+ 
+ 
+ 
+ 
 
 
   enableCollisionWith(player, callbackMap) {

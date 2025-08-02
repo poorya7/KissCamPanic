@@ -261,13 +261,13 @@ this.vip = this.add.image(this.scale.width, this.scale.height / 2, "vip")
   .setScale(0.15);        // adjust scale to fit your layout
 
 this.curtain = this.add.image(0, 0, "curtain")
-  .setOrigin(-1, -0.13)       // top-left of image aligns with top-left of screen
+  .setOrigin(-1.5, -0.13)       // top-left of image aligns with top-left of screen
   .setDepth(-9)
   .setScale(0.18);        // tweak as needed
 
 this.plant = this.add.image(0, 0, "plant")
-   .setOrigin(-2.0, -0.4)  
-  .setDepth(-10)
+   .setOrigin(0.1, -0.6)  
+  .setDepth(-8)
   .setDisplaySize(124,256)
 	.setScale(0.4);
 

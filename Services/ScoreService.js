@@ -38,8 +38,6 @@ export default class ScoreService {
       return;
     }
 
-    console.log('📋 Top scores:', data);
-
     const listEl = document.getElementById("highscore-list");
     if (listEl) {
       listEl.innerHTML = ""; // Clear "Loading scores..."

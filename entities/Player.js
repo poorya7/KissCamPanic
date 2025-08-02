@@ -2,6 +2,10 @@
 import SoundManager from "../utils/SoundManager.js";
 
 export default class Player extends Phaser.Physics.Arcade.Sprite {
+	
+  // ───────────────────────────────
+  // ▶ activateRapidFire
+  // ───────────────────────────────
   constructor(scene, x, y, texture) {
     super(scene, x, y, texture);
 
@@ -22,13 +26,16 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     this.hr = null; // ✅ assigned later from MainScene
   }
 
+  // ───────────────────────────────
+  // ▶ activateRapidFire
+  // ───────────────────────────────
 enableRapidFire() {
   if (this.rapidFireEvent) {
     this.rapidFireEvent.remove(false);
   }
 
   this.rapidFireEvent = this.scene.time.addEvent({
-    delay: 50, // fire every 100ms
+    delay: this.getDynamicRapidFireDelay(), // 👈 use calculated delay
     callback: () => {
       if (!this.disableMovement) {
         this.shoot();
@@ -40,12 +47,65 @@ enableRapidFire() {
 }
 
 
+  // ───────────────────────────────
+  // ▶ activateRapidFire
+  // ───────────────────────────────
+getDynamicRapidFireDelay() {
+  // Get how full the powerup bar is (0 to 1)
+  const manager = this.scene.powerupManager; // 🔁 adjust if stored differently
+  const ratio = Phaser.Math.Clamp(manager.totalRapidFireTime / manager.maxRapidFireDuration, 0, 1);
+
+  const minDelay = 30;
+  const maxDelay = 70;
+
+  // As bar fills, delay shrinks (faster)
+  return Math.floor(maxDelay - ratio * (maxDelay - minDelay));
+}
+
+
+  // ───────────────────────────────
+  // ▶ activateRapidFire
+  // ───────────────────────────────
 disableRapidFire() {
   if (this.rapidFireEvent) {
     this.rapidFireEvent.remove(false);
     this.rapidFireEvent = null;
   }
 }
+
+  // ───────────────────────────────
+  // ▶ activateRapidFire
+  // ───────────────────────────────
+
+updateRapidFireSpeed() {
+  // If rapid fire isn't running, do nothing
+  if (!this.rapidFireEvent) return;
+
+  const newDelay = this.getDynamicRapidFireDelay();
+
+  // If the delay hasn't changed, don't restart the timer
+  if (this.rapidFireEvent.delay === newDelay) return;
+
+  // Kill the old timer safely
+  this.rapidFireEvent.remove(false);
+
+  // Start a new one with updated delay
+  this.rapidFireEvent = this.scene.time.addEvent({
+    delay: newDelay,
+    callback: () => {
+      if (!this.disableMovement) {
+        this.shoot();
+      }
+    },
+    callbackScope: this,
+    loop: true
+  });
+}
+
+
+  // ───────────────────────────────
+  // ▶ activateRapidFire
+  // ───────────────────────────────
 
 
 move(cursors, speed = 200) {
@@ -106,10 +166,9 @@ move(cursors, speed = 200) {
   }
 }
 
-
-
-
-	
+  // ───────────────────────────────
+  // ▶ activateRapidFire
+  // ───────────────────────────────
 
   shoot() {
   if (this.disableMovement) return;

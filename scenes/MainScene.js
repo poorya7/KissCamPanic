@@ -70,6 +70,9 @@ export default class MainScene extends Phaser.Scene {
 	this.load.image('mute', 'sprites/UI/mute.png');
 	this.load.image('unmute', 'sprites/UI/unmute.png');
 	this.load.image("stapler", "sprites/powerups/stapler.png");
+	this.load.image("powerup_bar", "sprites/powerups/powerup_bar.png");
+	this.load.image("powerup_fill", "sprites/powerups/powerup_fill2.png");
+
 
 
 	

@@ -5,179 +5,215 @@ export default class PowerupManager {
 	
 	static BAR_WIDTH = 175;
 	
-	
+
+  // ───────────────────────────────
+  // ▶ constructor
+  // ───────────────────────────────	
   constructor(scene) {
-	  
+  this.scene = scene;
+
+  this.maxPowerups = 15;
+  this.spawnInterval = 2000;
+  this.totalRapidFireTime = 0;
+  this.lastRapidFireUpdate = 0;
+  this.maxRapidFireDuration = 20000; // cap at 20s max
 
 
-    this.scene = scene;
+  this.createRapidFireBar();
 
-    this.maxPowerups = 15;
-    this.spawnInterval = 2000;
-	
-	this.createRapidFireBar();
+  // UI counter in top-left
+  // Powerups label
+  this.powerupLabel = this.scene.add.text(16, 15, "powerups:", {
+    fontFamily: 'C64',
+    fontSize: '16px',
+    color: '#cc99ff',
+    stroke: '#000000',
+    strokeThickness: 3
+  }).setScrollFactor(0).setDepth(100);
 
+  // Powerups value
+  this.powerupText = this.scene.add.text(140, 15, `00/00`, {
+    fontFamily: 'C64',
+    fontSize: '16px',
+    color: '#cc99ff',
+    stroke: '#000000',
+    strokeThickness: 3
+  }).setScrollFactor(0).setDepth(100);
 
-    // UI counter in top-left
-    // Powerups label
-// Powerups label
-this.powerupLabel = this.scene.add.text(16, 15, "powerups:", {
-  fontFamily: 'C64',
-  fontSize: '16px',
-  color: '#00f0ff',
-  stroke: '#000000',
-  strokeThickness: 3
-}).setScrollFactor(0).setDepth(100);
+  // Regular powerup logic
+  this.powerupGroup = this.scene.physics.add.group();
+  this.activePowerups = [];
 
-// Powerups value
-this.powerupText = this.scene.add.text(140, 15, `00/${this.maxPowerups}`, {
-  fontFamily: 'C64',
-  fontSize: '16px',
-  color: '#00f0ff',
-  stroke: '#000000',
-  strokeThickness: 3
-}).setScrollFactor(0).setDepth(100);
+  this.timer = this.scene.time.addEvent({
+    delay: this.spawnInterval,
+    callback: this.trySpawnPowerup,
+    callbackScope: this,
+    loop: true
+  });
 
-
-
-
-
-
-    // Regular powerup logic
-    this.powerupGroup = this.scene.physics.add.group();
-    this.activePowerups = [];
-
-    this.timer = this.scene.time.addEvent({
-      delay: this.spawnInterval,
-      callback: this.trySpawnPowerup,
-      callbackScope: this,
-      loop: true
-    });
-
-    // 🔁 Independent UI updater
-    this.scene.time.addEvent({
-      delay: 200,
-      callback: () => this.update(),
-      callbackScope: this,
-      loop: true
-    });
-  }
-
-update() {
- let active = 0;
-
-if (this.rapidFireTimer) {
-  const remaining = this.rapidFireTimer.getRemaining();
-  active = Math.ceil(remaining / 2000); // 1 powerup = 2s
+  // 🔁 Independent UI updater
+  this.scene.time.addEvent({
+    delay: 200,
+    callback: () => this.update(),
+    callbackScope: this,
+    loop: true
+  });
 }
 
 
-  // Count how many are still on the floor
-  const onFloor = this.powerupGroup.countActive(true);
+  // ───────────────────────────────
+  // ▶ update
+  // ───────────────────────────────
+update() {
+  const now = this.scene.time.now;
+  const delta = now - this.lastRapidFireUpdate;
+  this.lastRapidFireUpdate = now;
 
-  // Total = active + on floor
+  if (this.totalRapidFireTime > 0) {
+    this.totalRapidFireTime = Math.max(this.totalRapidFireTime - delta, 0);
+
+    const progress = Phaser.Math.Clamp(this.totalRapidFireTime / this.maxRapidFireDuration, 0, 1);
+    const visibleSlots = Math.floor(this.rapidFireSlots.length * progress);
+
+    this.updateRapidFireBarColor(visibleSlots); // 👈 use helper here
+
+    // Debug logging
+    console.log("⏱ Total time left:", this.totalRapidFireTime);
+    console.log("📊 Progress:", progress.toFixed(2));
+    console.log("🟨 Slots showing:", visibleSlots);
+
+    if (this.totalRapidFireTime === 0) {
+      this.hideRapidFireBar();
+      this.scene.player.disableRapidFire();
+    }
+  }
+
+  // Update the powerup counter text
+  const active = Math.ceil(this.totalRapidFireTime / 2000);
+  const onFloor = this.powerupGroup.countActive(true);
   const total = active + onFloor;
 
   const paddedActive = active.toString().padStart(2, "0");
   const paddedTotal = total.toString().padStart(2, "0");
 
   this.powerupText.setText(`${paddedActive}/${paddedTotal}`);
+  
 
-  // Update rapid fire bar fill width
-  if (this.rapidFireTimer && this.rapidFireBarFill.visible) {
-    const elapsed = this.scene.time.now - this.rapidFireStart;
-    const progress = Phaser.Math.Clamp(1 - (elapsed / this.rapidFireDuration), 0, 1);
-    this.rapidFireBarFill.width = this.rapidFireBarFullWidth * progress;
-  }
+if (this.scene.player?.updateRapidFireSpeed) {
+  this.scene.player.updateRapidFireSpeed();
+}
+
+
 }
 
 
 
+  // ───────────────────────────────
+  // ▶ updateRapidFireBarColor
+  // ───────────────────────────────
+updateRapidFireBarColor(slotCount) {
+  const totalSlots = this.rapidFireSlots.length;
+  const fillRatio = slotCount / totalSlots;
 
+  let tint;
 
-activateRapidFire(player) {
-  const extension = 2000;
-
-  if (this.rapidFireTimer) {
-    const remaining = this.rapidFireTimer.getRemaining();
-    const newDuration = remaining + extension;
-
-    this.rapidFireTimer.remove(false);
-    this.rapidFireTimer = this.scene.time.delayedCall(newDuration, () => {
-      player.disableRapidFire();
-      this.rapidFireTimer = null;
-      this.hideRapidFireBar();
-    });
-
-    this.startRapidFireBar(newDuration);
-
-  } else {
-    player.enableRapidFire();
-    this.rapidFireTimer = this.scene.time.delayedCall(extension, () => {
-      player.disableRapidFire();
-      this.rapidFireTimer = null;
-      this.hideRapidFireBar();
-    });
-
-    this.startRapidFireBar(extension);
-  }
+  if (fillRatio <= 1 / 3) {
+  tint = 0xcc99ff; // lavender ice (purple-ish) — low fill
+} else if (fillRatio <= 2 / 3) {
+  tint = 0x3399ff; // cyber blue — mid fill
+} else {
+  tint = 0x00f0ff; // electric cyan — high fill
 }
 
 
-startRapidFireBar(duration) {
-  const MAX_DURATION = 20000;
-  const capped = Math.min(duration, MAX_DURATION);
+  // Update slot visuals
+  this.rapidFireSlots.forEach((slot, index) => {
+    const isVisible = index < slotCount;
+    slot.setVisible(isVisible);
+    if (isVisible) slot.setTint(tint);
+  });
 
-  const barWidth = PowerupManager.BAR_WIDTH * (capped / MAX_DURATION);
+  // Update label + value text
+  const hexColor = `#${tint.toString(16).padStart(6, '0')}`;
 
-  this.rapidFireBarFill.setVisible(true);
-  this.rapidFireBarFill.width = barWidth;
 
-  this.rapidFireStart = this.scene.time.now;
-  this.rapidFireDuration = duration;
-  this.rapidFireBarFullWidth = barWidth;
+this.powerupLabel.setColor(hexColor).setStroke('#000', 3);
+this.powerupText.setColor(hexColor).setStroke('#000', 3);
+
 }
 
 
+  // ───────────────────────────────
+  // ▶ createRapidFireBar
+  // ───────────────────────────────
 
-
-
-
-hideRapidFireBar() {
-  this.rapidFireBarFill.setVisible(false); // hide green
-  // do NOT hide this.rapidFireBarBG — it should always stay visible
-}
-
-
-
-
-
-createRapidFireBar() {
+  createRapidFireBar() {
   const x = 25;
   const y = 38;
 
-  this.rapidFireBarBG = this.scene.add.rectangle(
-    x, y,
-    PowerupManager.BAR_WIDTH, 8,
-    0x000000
-  ).setOrigin(0, 0).setScrollFactor(0).setDepth(100);
+  const SCALE = 0.2;
 
-  this.rapidFireBarFill = this.scene.add.rectangle(
-    x, y,
-    1, 8,
-    0x00ff00
-  ).setOrigin(0, 0).setScrollFactor(0).setDepth(101);
+  // Background frame
+  this.rapidFireBarBG = this.scene.add.image(x, y, "powerup_bar")
+    .setOrigin(0, 0)
+    .setScrollFactor(0)
+    .setDepth(100)
+    .setScale(SCALE, SCALE);
 
-  this.rapidFireBarFill.setVisible(false);
-  this.rapidFireBarBG.setVisible(true);
+  // Slot metrics
+  const SLOT_WIDTH = this.scene.textures.get("powerup_fill").getSourceImage().width * SCALE;
+  const SLOT_HEIGHT = this.scene.textures.get("powerup_fill").getSourceImage().height * SCALE;
+  const GAP = 2;
+  const MAX_SLOTS = 30;
+
+  this.rapidFireSlots = [];
+
+  for (let i = 0; i < MAX_SLOTS; i++) {
+    const slotX = x + 5 + i * (SLOT_WIDTH + GAP);
+    const slot = this.scene.add.image(slotX, y + 3, "powerup_fill")
+      .setOrigin(0, 0)
+      .setScrollFactor(0)
+      .setDepth(101)
+      .setScale(SCALE, SCALE)
+      .setVisible(false)
+	  .setTint(0xffffff);
+
+    this.rapidFireSlots.push(slot);
+  }
+}
+
+  // ───────────────────────────────
+  // ▶ activateRapidFire
+  // ───────────────────────────────
+
+activateRapidFire(player) {
+  const extension = 2000; // Each powerup adds 2s
+
+  // Add time, capped at max
+  this.totalRapidFireTime = Math.min(
+    this.totalRapidFireTime + extension,
+    this.maxRapidFireDuration
+  );
+
+  // Always enable rapid fire
+  player.enableRapidFire();
+
+  // Record time of this update
+  this.lastRapidFireUpdate = this.scene.time.now;
 }
 
 
+  // ───────────────────────────────
+  // ▶ hideRapidFireBar
+  // ───────────────────────────────
+hideRapidFireBar() {
+	
+  this.rapidFireSlots.forEach(slot => slot.setVisible(false));
+}
 
-
-
-
-
+  // ───────────────────────────────
+  // ▶ trySpawnPowerup
+  // ───────────────────────────────
 
   trySpawnPowerup() {
     if (this.powerupGroup.countActive(true) >= this.maxPowerups) return;
@@ -205,32 +241,35 @@ createRapidFireBar() {
     console.warn("⚠️ Could not find valid spot to spawn stapler.");
   }
 
+  // ───────────────────────────────
+  // ▶ enableCollisionWith
+  // ───────────────────────────────
+	enableCollisionWith(player, callbackMap) {
+	  this.scene.physics.add.overlap(
+		player,
+		this.powerupGroup,
+		(player, powerup) => {
+		  const type = powerup.powerupType;
+		  powerup.disableBody(true, true);
 
+		  // 🔊 Play pickup sound
+		  SoundManager.playSFX("powerup_get");
 
+		  if (callbackMap[type]) {
+			this.scene.time.delayedCall(300, () => {
+			  // Delay powerup activation slightly
+			  callbackMap[type]();
+			});
+		  }
+		},
+		null,
+		this
+	  );
+	}
 
-  enableCollisionWith(player, callbackMap) {
-    this.scene.physics.add.overlap(
-  player,
-  this.powerupGroup,
-  (player, powerup) => {
-    const type = powerup.powerupType;
-    powerup.disableBody(true, true);
-
-    SoundManager.playSFX("powerup_get"); // 🔊 Play pickup sound
-
-    if (callbackMap[type]) {
-  this.scene.time.delayedCall(300, () => {
-    callbackMap[type](); // delay powerup activation slightly
-  });
-}
-
-  },
-  null,
-  this
-);
-
-  }
-
+  // ───────────────────────────────
+  // ▶ reset
+  // ───────────────────────────────
   reset() {
     this.powerupGroup.clear(true, true);
   }

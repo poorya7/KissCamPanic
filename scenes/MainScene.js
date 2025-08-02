@@ -279,52 +279,52 @@ this.plant = this.add.image(0, 0, "plant")
   // ───────────────────────────────
   // ▶ showStartDialog
   // ───────────────────────────────
-
 showStartDialog() {
-	
-const titleLine = this.add.text(0, -90, "DODGE THE KISS CAM LIKE\nYOUR JOB DEPENDS ON IT!", {
-  fontFamily: "C64",
-  fontSize: "16px",
-  color: "#ff8800",
-  align: "center",
-  lineSpacing: 6
-}).setOrigin(0.5);
-
-
-
   const dialog = this.add.container(this.scale.width / 2, this.scale.height / 2)
     .setDepth(99999)
     .setScrollFactor(0);
 
-  // 🖼️ Use the same purple frame sprite as end dialog
+  // 🖼️ Same purple dialog box
   const bg = this.add.image(0, 0, "dialog_end").setScale(0.3, 0.35);
 
+  const title = this.add.text(0, -95, "DODGE THE KISS CAM", {
+    fontFamily: "C64",
+    fontSize: "18px",
+    color: "#ff66cc",
+    align: "center"
+  }).setOrigin(0.5);
 
-  const line1 = this.add.text(0, -30, "← ↑ → ↓  TO MOVE", {
-  fontFamily: "C64",
-  fontSize: "16px",
-  color: "#00ffff", // cyan
-  align: "center"
-}).setOrigin(0.5);
+  const subtitle = this.add.text(0, -65, "LIKE YOUR JOB DEPENDS ON IT!", {
+    fontFamily: "C64",
+    fontSize: "13px",
+    color: "#ffcc00",
+    align: "center"
+  }).setOrigin(0.5);
 
-const line2 = this.add.text(0, 0, "SPACE TO SHOOT", {
-  fontFamily: "C64",
-  fontSize: "16px",
-  color: "#ffff00", // yellow
-  align: "center"
-}).setOrigin(0.5);
+  const controls = this.add.text(0, -25, "← ↑ → ↓  TO MOVE", {
+    fontFamily: "C64",
+    fontSize: "15px",
+    color: "#00ffff",
+    align: "center"
+  }).setOrigin(0.5);
 
-const line3 = this.add.text(0, 30, "LET'S GO!", {
-  fontFamily: "C64",
-  fontSize: "20px",
-  color: "#ff66cc", // pink
-  align: "center"
-}).setOrigin(0.5);
+  const shoot = this.add.text(0, 0, "SPACE TO SHOOT", {
+    fontFamily: "C64",
+    fontSize: "15px",
+    color: "#00ff66",
+    align: "center"
+  }).setOrigin(0.5);
 
+  const hype = this.add.text(0, 35, "LET'S GO!!", {
+    fontFamily: "C64",
+    fontSize: "20px",
+    color: "#ffffff",
+    align: "center"
+  }).setOrigin(0.5);
 
   const okBtn = this.make.text({
     x: 0,
-    y: 80,
+    y: 75,
     text: " OK ",
     style: {
       fontFamily: "C64",
@@ -341,23 +341,25 @@ const line3 = this.add.text(0, 30, "LET'S GO!", {
     dialog.destroy();
     this.startGame();
   });
-  
+
   this.input.keyboard.once("keydown-ENTER", () => {
+    dialog.destroy();
+    this.startGame();
+  });
+
+  this.input.keyboard.once("keydown-SPACE", () => {
+    dialog.destroy();
+    this.startGame();
+  });
+  
+  this.input.keyboard.once("keydown-ESC", () => {
   dialog.destroy();
   this.startGame();
 });
 
-this.input.keyboard.once("keydown-SPACE", () => {
-  dialog.destroy();
-  this.startGame();
-});
 
-
- dialog.add([bg, titleLine, line1, line2, line3, okBtn]);
-
-
+  dialog.add([bg, title, subtitle, controls, shoot, hype, okBtn]);
 }
-
 
 
   // ───────────────────────────────

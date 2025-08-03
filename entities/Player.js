@@ -4,7 +4,7 @@ import SoundManager from "../utils/SoundManager.js";
 export default class Player extends Phaser.Physics.Arcade.Sprite {
 	
   // ───────────────────────────────
-  // ▶ activateRapidFire
+  // ▶ constructor
   // ───────────────────────────────
   constructor(scene, x, y, texture) {
     super(scene, x, y, texture);
@@ -18,16 +18,27 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     this.facingRight = true;
     this.shootToggle = false;
 
-    this.projectiles = scene.physics.add.group();
+    this.projectiles = scene.physics.add.group({
+  runChildUpdate: true,
+  maxSize: -1 // allow unlimited projectiles
+});
+
     this.scene = scene;
 
 	this.disableMovement = false;
 
     this.hr = null; // ✅ assigned later from MainScene
+	
+	this.scene.physics.world.on("worldbounds", body => {
+  if (body.gameObject?.texture?.key === "credit_card" || body.gameObject?.texture?.key === "briefcase") {
+    body.gameObject.destroy();
+  }
+});
+
   }
 
   // ───────────────────────────────
-  // ▶ activateRapidFire
+  // ▶ enableRapidFire
   // ───────────────────────────────
 enableRapidFire() {
   if (this.rapidFireEvent) {
@@ -35,7 +46,7 @@ enableRapidFire() {
   }
 
   this.rapidFireEvent = this.scene.time.addEvent({
-    delay: this.getDynamicRapidFireDelay(), // 👈 use calculated delay
+    delay: 20,//this.getDynamicRapidFireDelay(), // 👈 use calculated delay
     callback: () => {
       if (!this.disableMovement) {
         this.shoot();
@@ -48,7 +59,7 @@ enableRapidFire() {
 
 
   // ───────────────────────────────
-  // ▶ activateRapidFire
+  // ▶ getDynamicRapidFireDelay
   // ───────────────────────────────
 getDynamicRapidFireDelay() {
   // Get how full the powerup bar is (0 to 1)
@@ -64,7 +75,7 @@ getDynamicRapidFireDelay() {
 
 
   // ───────────────────────────────
-  // ▶ activateRapidFire
+  // ▶ disableRapidFire
   // ───────────────────────────────
 disableRapidFire() {
   if (this.rapidFireEvent) {
@@ -74,7 +85,7 @@ disableRapidFire() {
 }
 
   // ───────────────────────────────
-  // ▶ activateRapidFire
+  // ▶ updateRapidFireSpeed
   // ───────────────────────────────
 
 updateRapidFireSpeed() {
@@ -104,7 +115,7 @@ updateRapidFireSpeed() {
 
 
   // ───────────────────────────────
-  // ▶ activateRapidFire
+  // ▶ move
   // ───────────────────────────────
 
 
@@ -167,7 +178,7 @@ move(cursors, speed = 200) {
 }
 
   // ───────────────────────────────
-  // ▶ activateRapidFire
+  // ▶ shoot
   // ───────────────────────────────
 
   shoot() {
@@ -223,8 +234,6 @@ proj.body.setVelocity(
     proj.body.setGravityY(1300);
     proj.body.onWorldBounds = true;
 
-    this.scene.physics.world.on("worldbounds", body => {
-      if (body.gameObject === proj) proj.destroy();
-    });
+   
   }
 }

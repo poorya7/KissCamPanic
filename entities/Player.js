@@ -8,6 +8,9 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
   // ───────────────────────────────
   constructor(scene, x, y, texture) {
     super(scene, x, y, texture);
+	
+	this.shootSound1 = this.scene.sound.add("shoot1", { volume: 1 });
+  this.shootSound2 = this.scene.sound.add("shoot2", { volume: 1 });
 
 this.hasUsedRapidFireBefore = false;
 
@@ -98,7 +101,6 @@ updateRapidFireSpeed() {
   // ───────────────────────────────
   // ▶ update
   // ───────────────────────────────
-
 update() {
   if (this.rapidFireActive && !this.disableMovement) {
     const now = this.scene.time.now;
@@ -176,67 +178,73 @@ move(cursors, speed = 200) {
   // ───────────────────────────────
   // ▶ shoot
   // ───────────────────────────────
-
   shoot() {
   if (this.disableMovement) return;
-    const type = this.shootToggle ? "credit_card" : "briefcase";
-    this.shootToggle = !this.shootToggle;
 
-    let spawnX, spawnY, originY;
+  const type = this.shootToggle ? "credit_card" : "briefcase";
+  this.shootToggle = !this.shootToggle;
 
-    if (type === "credit_card") {
-      const offsetX = this.facingRight ? 10 : -10;
-      spawnX = this.x + offsetX;
-      spawnY = originY = this.y;
-    } else {
-      const offsetX = this.facingRight ? 8 : -8;
-      spawnX = this.x + offsetX;
-      spawnY = originY = this.hr ? this.hr.y : this.y;
+  let spawnX, spawnY, originY;
 
-    }
-
-    const scale = type === "credit_card" ? 0.015 : 0.06;
-	
-	if (type === "credit_card") {
-  SoundManager.playSFX("shoot1");
-} else {
-  SoundManager.playSFX("shoot2");
-}
-
-const proj = this.projectiles.create(spawnX, spawnY, type)?.setScale(scale);
-
-if (!proj) {
-  console.warn("❌ Failed to create projectile of type:", type);
-  return;
-}
-
-
-
-    
-    proj.startY = proj.throwerY = originY;
-    proj.type = type;
-
-    const angleDeg =
-      type === "credit_card"
-        ? this.facingRight ? -50 : 230
-        : this.facingRight ? 10 : 170;
-
-    const angleRad = Phaser.Math.DegToRad(angleDeg);
-    const speed = 400;
-
-    const playerVX = this.body.velocity.x;
-const playerVY = this.body.velocity.y;
-
-proj.body.setVelocity(
-  Math.cos(angleRad) * speed + playerVX,
-  Math.sin(angleRad) * speed + playerVY
-);
-
-
-    proj.body.setAllowGravity(true);
-    proj.body.setGravityY(1300);
-    proj.body.onWorldBounds = true;
-
-   
+  if (type === "credit_card") {
+    const offsetX = this.facingRight ? 10 : -10;
+    spawnX = this.x + offsetX;
+    spawnY = originY = this.y;
+  } else {
+    const offsetX = this.facingRight ? 8 : -8;
+    spawnX = this.x + offsetX;
+    spawnY = originY = this.hr ? this.hr.y : this.y;
   }
+
+  const scale = type === "credit_card" ? 0.015 : 0.06;
+
+  // ✅ Play fast reused sound per type
+  if (type === "credit_card") {
+  this.shootSound1.play();
+} else {
+  this.shootSound2.play();
 }
+
+
+  const proj = this.projectiles.create(spawnX, spawnY, type)?.setScale(scale);
+  if (!proj) {
+    console.warn("❌ Failed to create projectile of type:", type);
+    return;
+  }
+
+  proj.startY = proj.throwerY = originY;
+  proj.type = type;
+
+  const angleDeg =
+    type === "credit_card"
+      ? this.facingRight ? -50 : 230
+      : this.facingRight ? 10 : 170;
+
+  const angleRad = Phaser.Math.DegToRad(angleDeg);
+  const speed = 400;
+
+  const playerVX = this.body.velocity.x;
+  const playerVY = this.body.velocity.y;
+
+  proj.body.setVelocity(
+    Math.cos(angleRad) * speed + playerVX,
+    Math.sin(angleRad) * speed + playerVY
+  );
+
+  proj.body.setAllowGravity(true);
+  proj.body.setGravityY(1300);
+  proj.body.onWorldBounds = true;
+ }
+
+}
+  
+  
+  
+ 
+
+
+
+  
+  
+  
+  

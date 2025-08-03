@@ -224,8 +224,8 @@ hideRapidFireBar() {
       if (isBlocked(this.scene, x, y)) continue;
 
       const stapler = this.scene.physics.add.sprite(x, y, "stapler")
-        .setScale(0.1)
-        .setDepth(10)
+        .setScale(0.07)
+        .setDepth(y - 1) // 👈 this puts the stapler just behind the crowd at same Y
         .setImmovable(true);
 
       stapler.powerupType = "stapler";

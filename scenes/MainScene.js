@@ -69,7 +69,7 @@ export default class MainScene extends Phaser.Scene {
 	this.load.image("plant", "sprites/props/plant.png");
 	this.load.image('mute', 'sprites/UI/mute.png');
 	this.load.image('unmute', 'sprites/UI/unmute.png');
-	this.load.image("stapler", "sprites/powerups/stapler.png");
+	this.load.image("stapler", "sprites/powerups/stapler2.png");
 	this.load.image("powerup_bar", "sprites/powerups/powerup_bar.png");
 	this.load.image("powerup_fill", "sprites/powerups/powerup_fill2.png");
 
@@ -121,6 +121,13 @@ export default class MainScene extends Phaser.Scene {
 	this.powerupManager.enableCollisionWith(this.player, {
 	  stapler: () => this.activateRapidFireMode()
 	});
+
+
+this.input.keyboard.on("keydown-SPACE", (event) => {
+  if (!event.repeat) {
+    this.player.shoot();
+  }
+});
 
 
 
@@ -747,9 +754,10 @@ showGameOverDialog() {
 	
     this.player.move(this.cursors);
 
-    if (Phaser.Input.Keyboard.JustDown(this.spaceBar)) {
-      this.player.shoot();
-    }
+
+
+
+
 
     this.spotlightHandler.update();
 

@@ -1,7 +1,11 @@
 import * as CrowdUtils from "../utils/CrowdUtils.js"
 import SoundManager from "../utils/SoundManager.js";
 
+const CROWD_VISUALS_OFFSET = 100;
+
 export default class CrowdSpawner {
+	
+	
   constructor(scene, group, stage) {
     this.scene = scene;
     this.group = group;
@@ -91,6 +95,8 @@ for (let i = 0; i < spawnPoints.length && crowdCount < maxCrowd; i++) {
       .sprite(x, y, `alien/${frame}`)
       .setScale(scaleX, scaleY)
       .setImmovable(true);
+	  alien.setDepth(y + CROWD_VISUALS_OFFSET - 5); // 👈 keeps them behind crowd visuals but above staplers
+
 
     alien.originalScale = { x: scaleX, y: scaleY };
     this.group.add(alien);
@@ -126,6 +132,8 @@ for (let i = 0; i < spawnPoints.length && crowdCount < maxCrowd; i++) {
       .setScale(scaleX, scaleY)
       .setImmovable(true)
       .setVisible(false);
+  base.setDepth(py);            // 👈 makes the base interactable at its Y
+
 
     const hairStyleKey = Phaser.Math.RND.pick(["hair_f", "hair_m"]);
     const hairKey = `${variant}/${hairStyleKey}`;
@@ -152,6 +160,9 @@ for (let i = 0; i < spawnPoints.length && crowdCount < maxCrowd; i++) {
     const visuals = this.scene.add.container(px, py, [skinSprite, pants, shirt, hair, sunglasses].filter(Boolean));
     base.visuals = visuals;
     this.group.add(base);
+	
+	visuals.setDepth(py + CROWD_VISUALS_OFFSET);     // 👈 always above base + staplers
+
 
     const isVertical = Phaser.Math.Between(0, 1) === 0;
     const prop = isVertical ? "y" : "x";

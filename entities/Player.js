@@ -9,6 +9,8 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
   constructor(scene, x, y, texture) {
     super(scene, x, y, texture);
 
+this.hasUsedRapidFireBefore = false;
+
     scene.add.existing(this);
     scene.physics.add.existing(this);
 
@@ -35,82 +37,76 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
   }
 });
 
+this.lastRapidFireShotTime = 0;
+this.rapidFireInterval = 1000; // default value (will be set dynamically)
+this.rapidFireActive = false;
+
+
   }
 
   // ───────────────────────────────
   // ▶ enableRapidFire
   // ───────────────────────────────
-enableRapidFire() {
-  if (this.rapidFireEvent) {
-    this.rapidFireEvent.remove(false);
-  }
 
-  this.rapidFireEvent = this.scene.time.addEvent({
-    delay: 20,//this.getDynamicRapidFireDelay(), // 👈 use calculated delay
-    callback: () => {
-      if (!this.disableMovement) {
-        this.shoot();
-      }
-    },
-    callbackScope: this,
-    loop: true
-  });
+enableRapidFire() {
+  this.rapidFireInterval = this.getDynamicRapidFireDelay();
+  this.lastRapidFireShotTime = this.scene.time.now;
+  this.rapidFireActive = true;
 }
+
+
 
 
   // ───────────────────────────────
   // ▶ getDynamicRapidFireDelay
   // ───────────────────────────────
 getDynamicRapidFireDelay() {
-  // Get how full the powerup bar is (0 to 1)
-  const manager = this.scene.powerupManager; // 🔁 adjust if stored differently
-  const ratio = Phaser.Math.Clamp(manager.totalRapidFireTime / manager.maxRapidFireDuration, 0, 1);
+  const manager = this.scene.powerupManager;
+  const total = Phaser.Math.Clamp(manager.totalRapidFireTime, 0, manager.maxRapidFireDuration);
 
+  if (total <= 2000) return 70; // 🔒 Lock first powerup to slowest speed
+
+  const ratio = Phaser.Math.Clamp(total / manager.maxRapidFireDuration, 0, 1);
   const minDelay = 30;
   const maxDelay = 70;
 
-  // As bar fills, delay shrinks (faster)
   return Math.floor(maxDelay - ratio * (maxDelay - minDelay));
 }
+
+
 
 
   // ───────────────────────────────
   // ▶ disableRapidFire
   // ───────────────────────────────
 disableRapidFire() {
-  if (this.rapidFireEvent) {
-    this.rapidFireEvent.remove(false);
-    this.rapidFireEvent = null;
-  }
+  this.rapidFireActive = false;
 }
+
 
   // ───────────────────────────────
   // ▶ updateRapidFireSpeed
   // ───────────────────────────────
 
 updateRapidFireSpeed() {
-  // If rapid fire isn't running, do nothing
-  if (!this.rapidFireEvent) return;
+  if (!this.rapidFireActive) return;
+  this.rapidFireInterval = this.getDynamicRapidFireDelay();
+}
 
-  const newDelay = this.getDynamicRapidFireDelay();
 
-  // If the delay hasn't changed, don't restart the timer
-  if (this.rapidFireEvent.delay === newDelay) return;
 
-  // Kill the old timer safely
-  this.rapidFireEvent.remove(false);
+  // ───────────────────────────────
+  // ▶ update
+  // ───────────────────────────────
 
-  // Start a new one with updated delay
-  this.rapidFireEvent = this.scene.time.addEvent({
-    delay: newDelay,
-    callback: () => {
-      if (!this.disableMovement) {
-        this.shoot();
-      }
-    },
-    callbackScope: this,
-    loop: true
-  });
+update() {
+  if (this.rapidFireActive && !this.disableMovement) {
+    const now = this.scene.time.now;
+    if (now - this.lastRapidFireShotTime >= this.rapidFireInterval) {
+      this.shoot();
+      this.lastRapidFireShotTime = now;
+    }
+  }
 }
 
 
@@ -195,7 +191,8 @@ move(cursors, speed = 200) {
     } else {
       const offsetX = this.facingRight ? 8 : -8;
       spawnX = this.x + offsetX;
-      spawnY = originY = this.hr.y;
+      spawnY = originY = this.hr ? this.hr.y : this.y;
+
     }
 
     const scale = type === "credit_card" ? 0.015 : 0.06;
@@ -206,10 +203,16 @@ move(cursors, speed = 200) {
   SoundManager.playSFX("shoot2");
 }
 
+const proj = this.projectiles.create(spawnX, spawnY, type)?.setScale(scale);
+
+if (!proj) {
+  console.warn("❌ Failed to create projectile of type:", type);
+  return;
+}
 
 
 
-    const proj = this.projectiles.create(spawnX, spawnY, type).setScale(scale);
+    
     proj.startY = proj.throwerY = originY;
     proj.type = type;
 

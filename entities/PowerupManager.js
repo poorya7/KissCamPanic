@@ -77,10 +77,7 @@ update() {
 
     this.updateRapidFireBarColor(visibleSlots); // 👈 use helper here
 
-    // Debug logging
-    console.log("⏱ Total time left:", this.totalRapidFireTime);
-    console.log("📊 Progress:", progress.toFixed(2));
-    console.log("🟨 Slots showing:", visibleSlots);
+      
 
     if (this.totalRapidFireTime === 0) {
       this.hideRapidFireBar();
@@ -99,9 +96,10 @@ update() {
   this.powerupText.setText(`${paddedActive}/${paddedTotal}`);
   
 
-if (this.scene.player?.updateRapidFireSpeed) {
+if (this.scene.player?.rapidFireActive) {
   this.scene.player.updateRapidFireSpeed();
 }
+
 
 
 }
@@ -187,20 +185,19 @@ this.powerupText.setColor(hexColor).setStroke('#000', 3);
   // ───────────────────────────────
 
 activateRapidFire(player) {
-  const extension = 2000; // Each powerup adds 2s
+  const extension = 2000;
 
-  // Add time, capped at max
   this.totalRapidFireTime = Math.min(
     this.totalRapidFireTime + extension,
     this.maxRapidFireDuration
   );
 
-  // Always enable rapid fire
-  player.enableRapidFire();
-
-  // Record time of this update
   this.lastRapidFireUpdate = this.scene.time.now;
+
+  player.enableRapidFire();
+  player.updateRapidFireSpeed(); // 👈 ADD THIS
 }
+
 
 
   // ───────────────────────────────

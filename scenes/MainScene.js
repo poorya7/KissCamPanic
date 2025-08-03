@@ -735,7 +735,8 @@ showGameOverDialog() {
   // ───────────────────────────────
   // ▶ update
   // ───────────────────────────────
-  update() {
+ update(time, delta) {
+
 	  
 	  if (!this.gameStarted) return;
 
@@ -766,7 +767,9 @@ showGameOverDialog() {
   this.powerupManager.update();
 }
 
-
+  if (this.player && this.player.update) {
+    this.player.update(time, delta);
+  }
 
   }
 
@@ -848,7 +851,7 @@ projectileHitsCrowd(proj, crowd) {
 
   this.scoreUI.addToScore(40);
 
-  this.time.delayedCall(500, () => {
+  this.time.delayedCall(3000, () => {
     this.crowdSpawner.spawnInLeastCrowdedArea();
   });
 }

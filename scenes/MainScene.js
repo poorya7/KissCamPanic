@@ -92,7 +92,9 @@ export default class MainScene extends Phaser.Scene {
 	this.load.audio("powerup_get", "sounds/fx/powerup_get.wav");
 	this.load.audio("mug_get", "sounds/fx/mug_get.wav");
 	this.load.audio("burst", "sounds/fx/burst.wav");
-
+	this.load.audio("top20", "sounds/fx/win20.wav");
+	this.load.audio("top1", "sounds/fx/win1.wav");
+	
   }
 
   
@@ -832,6 +834,9 @@ if (!SoundManager.currentMusic || !SoundManager.currentMusic.isPlaying) {
 	this.createBlockers();
 
   this.scoreUI.score = 0;
+  this.scoreUI.top20SoundPlayed = false;
+this.scoreUI.top1SoundPlayed = false;
+
 
   this.player.setPosition(100, 200);
   this.player.disableMovement = false;

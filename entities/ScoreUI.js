@@ -1,3 +1,6 @@
+import SoundManager from "../utils/SoundManager.js";
+
+
 export default class ScoreUI {
   constructor(scene) {
 	  this.scoreList = [];
@@ -44,7 +47,24 @@ export default class ScoreUI {
       stroke: "#000000",
       strokeThickness: 3
     }).setScrollFactor(0).setDepth(100);
+	
+	this.top20SoundPlayed = false;
+
   }
+  
+checkRankSounds() {
+  if (!this.top20SoundPlayed && this.rank && this.rank <= 20) {
+    SoundManager.fadeMusicForSFX("top20");
+    this.top20SoundPlayed = true;
+  }
+
+  if (!this.top1SoundPlayed && this.rank === 1) {
+    SoundManager.fadeMusicForSFX("top1");
+    this.top1SoundPlayed = true;
+  }
+}
+
+
 
 update() {
   
@@ -60,9 +80,11 @@ update() {
     const newRank = higherScores + 1;
 
     if (newRank !== this.rank) {
-      this.rank = newRank;
-      this.rankValue.setText(this.rank.toString());
-    }
+  this.rank = newRank;
+  this.rankValue.setText(this.rank.toString());
+  this.checkRankSounds();
+}
+
   }
 }
 
@@ -98,9 +120,11 @@ addToScore(amount) {
     const newRank = higherScores + 1;
 
     if (newRank !== this.rank) {
-      this.rank = newRank;
-      this.rankValue.setText(this.rank.toString());
-    }
+  this.rank = newRank;
+  this.rankValue.setText(this.rank.toString());
+  this.checkRankSounds();
+}
+
   }
 }
 

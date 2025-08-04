@@ -61,10 +61,8 @@ export default class PowerupManager {
   
   // Mug powerup logic
 	this.mugGroup = this.scene.physics.add.group();
-	this.mugSpawnInterval = 5000; // 3 seconds
+	this.mugSpawnInterval = 5000; // 5 seconds
 	this.maxMugs = 2;
-	this.lastMugSpawnTime = 0;
-	this.mugSpawnCooldown = 3000; // 3s between mug spawns
 
 	this.scene.time.addEvent({
 	  delay: this.mugSpawnInterval,
@@ -226,7 +224,7 @@ trySpawnMug() {
   const now = this.scene.time.now;
 
   if (this.mugGroup.countActive(true) >= this.maxMugs) return;
-  if (now - this.lastMugSpawnTime < this.mugSpawnCooldown) return;
+ 
 
   const maxAttempts = 20;
   const minDistance = 150; // distance between mugs
@@ -262,89 +260,92 @@ trySpawnMug() {
   console.warn("⚠️ Could not find valid spot to spawn mug.");
 }
 
+
   // ───────────────────────────────
-  // ▶ trySpawnPowerup
-  // ───────────────────────────────
+// ▶ trySpawnPowerup
+// ───────────────────────────────
+trySpawnPowerup() {
+  if (this.powerupGroup.countActive(true) >= this.maxPowerups) return;
 
-  trySpawnPowerup() {
-    if (this.powerupGroup.countActive(true) >= this.maxPowerups) return;
+  const maxAttempts = 20;
 
-    const maxAttempts = 20;
+  for (let i = 0; i < maxAttempts; i++) {
+    const x = Phaser.Math.Between(50, this.scene.scale.width - 50);
+    const y = Phaser.Math.Between(100, this.scene.scale.height - 10);
 
-    for (let i = 0; i < maxAttempts; i++) {
-      const x = Phaser.Math.Between(50, this.scene.scale.width - 50);
-      const y = Phaser.Math.Between(100, this.scene.scale.height - 10);
+    if (isBlocked(this.scene, x, y)) continue;
 
-      if (isBlocked(this.scene, x, y)) continue;
+    const stapler = this.scene.physics.add.sprite(x, y, "stapler")
+      .setScale(0.07)
+      .setDepth(y - 1)
+      .setImmovable(true);
 
-      const stapler = this.scene.physics.add.sprite(x, y, "stapler")
-        .setScale(0.07)
-        .setDepth(y - 1) // 👈 this puts the stapler just behind the crowd at same Y
-        .setImmovable(true);
+    stapler.powerupType = "stapler";
+    this.powerupGroup.add(stapler);
+    SoundManager.playSFX("powerup");
 
-      stapler.powerupType = "stapler";
-      this.powerupGroup.add(stapler);
-      SoundManager.playSFX("powerup");
-
-      return; // ✅ spawn succeeded
-    }
-
-    console.warn("⚠️ Could not find valid spot to spawn stapler.");
+    return; // ✅ spawn succeeded
   }
+
+  console.warn("⚠️ Could not find valid spot to spawn stapler.");
+}
 
   // ───────────────────────────────
   // ▶ enableCollisionWith
   // ───────────────────────────────
-	enableCollisionWith(player, callbackMap) {
-	  this.scene.physics.add.overlap(
-		player,
-		this.powerupGroup,
-		(player, powerup) => {
-		  const type = powerup.powerupType;
-		  powerup.disableBody(true, true);
+enableCollisionWith(player, callbackMap) {
+  // Stapler overlap
+  this.scene.physics.add.overlap(
+    player,
+    this.powerupGroup,
+    (player, powerup) => {
+      const type = powerup.powerupType;
 
-		  // 🔊 Play pickup sound
-		  SoundManager.playSFX("powerup_get");
+      // ✅ Just disable & hide stapler — don't remove it
+      powerup.disableBody(true, true);
 
-		  if (callbackMap[type]) {
-			this.scene.time.delayedCall(300, () => {
-			  // Delay powerup activation slightly
-			  callbackMap[type]();
-			});
-		  }
-		},
-		null,
-		this
-	  );
-	  // Mug overlap
-this.scene.physics.add.overlap(
-  player,
-  this.mugGroup,
-  (player, powerup) => {
-    const type = powerup.powerupType;
-    powerup.disableBody(true, true);
+      SoundManager.playSFX("powerup_get");
 
-    SoundManager.playSFX("mug_get");
+      if (callbackMap[type]) {
+        this.scene.time.delayedCall(300, () => {
+          callbackMap[type]();
+        });
+      }
+    },
+    null,
+    this
+  );
 
-    if (callbackMap[type]) {
-  this.scene.time.delayedCall(300, () => {
-    callbackMap[type]();
+  // Mug overlap
+  this.scene.physics.add.overlap(
+    player,
+    this.mugGroup,
+    (player, powerup) => {
+      const type = powerup.powerupType;
 
-    // 👇 Trigger burst move after pickup delay
-    this.scene.player.triggerMugBurst({
-      delay: 150,     // time before it shoots forward
-      speed: 600,     // adjust to taste
-      duration: 180   // how long it moves
-    });
-  });
+      // ✅ Fully remove mug from group and destroy it
+      this.mugGroup.remove(powerup, true, true);
+
+      SoundManager.playSFX("mug_get");
+
+      if (callbackMap[type]) {
+        this.scene.time.delayedCall(300, () => {
+          callbackMap[type]();
+
+          this.scene.player.triggerMugBurst({
+            delay: 150,
+            speed: 600,
+            duration: 180
+          });
+        });
+      }
+    },
+    null,
+    this
+  );
 }
 
-  },
-  null,
-  this
-);
 
-	}
 
   // ───────────────────────────────
   // ▶ reset

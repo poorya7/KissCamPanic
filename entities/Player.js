@@ -83,7 +83,8 @@ const unitX = vx / mag;
 const unitY = vy / mag;
 
 this.setVelocity(unitX * speed, unitY * speed);
-this.scene.sound.play("burst", { volume: 1 });
+SoundManager.playSFX("burst");
+
 
 	this.startBurstTrail(duration);
 
@@ -288,11 +289,12 @@ move(cursors, speed = 200) {
   const scale = type === "credit_card" ? 0.015 : 0.06;
 
   // ✅ Play fast reused sound per type
-  if (type === "credit_card") {
-  this.shootSound1.play();
+if (type === "credit_card") {
+  SoundManager.playSFX("shoot1");
 } else {
-  this.shootSound2.play();
+  SoundManager.playSFX("shoot2");
 }
+
 
 
   const proj = this.projectiles.create(spawnX, spawnY, type)?.setScale(scale);

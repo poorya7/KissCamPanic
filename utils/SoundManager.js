@@ -30,9 +30,16 @@ let SoundManager = {
     if (this.sfxMuted || !this.scene) return;
 
     const volume = volumeMap[key] ?? 1.0;
-    const sound = this.scene.sound.add(key, { volume });
-    sound.once("complete", () => sound.destroy());
-    sound.play();
+    const existing = this.scene.sound.get(key);
+
+if (existing) {
+  existing.setVolume(volume);
+  existing.play();
+} else {
+  const sound = this.scene.sound.add(key, { volume });
+  sound.play();
+}
+
   },
 
   playMusic(key, config = { loop: true, volume: 0.5 }) {
@@ -56,33 +63,43 @@ let SoundManager = {
   },
 
   fadeMusicForSFX(sfxKey, fadeDuration = 500) {
-    if (!this.scene) return;
+  if (!this.scene) return;
 
-    if (this.currentMusic && this.currentMusic.isPlaying) {
-      this.scene.tweens.add({
-        targets: this.currentMusic,
-        volume: 0,
-        duration: fadeDuration,
-        onComplete: () => {
-          const volume = volumeMap[sfxKey] ?? 1.0;
-          const sfx = this.scene.sound.add(sfxKey, { volume });
+  const music = this.currentMusic;
 
-          sfx.once("complete", () => {
-            this.scene.tweens.add({
-              targets: this.currentMusic,
-              volume: 1,
-              duration: fadeDuration
-            });
-            sfx.destroy();
-          });
+  if (music && music.isPlaying) {
+    this.scene.tweens.add({
+      targets: music,
+      volume: 0,
+      duration: fadeDuration,
+      onComplete: () => {
+        const volume = volumeMap[sfxKey] ?? 1.0;
+        const sfx = this.scene.sound.get(sfxKey);
 
+        if (sfx) {
+          sfx.setVolume(volume);
           sfx.play();
+        } else {
+          const newSFX = this.scene.sound.add(sfxKey, { volume });
+          newSFX.play();
         }
-      });
-    } else {
-      this.playSFX(sfxKey);
-    }
-  },
+
+        if (music && !music.destroyed) {
+          this.scene.tweens.add({
+            targets: music,
+            volume: 1,
+            duration: fadeDuration
+          });
+        }
+      }
+    });
+  } else {
+    this.playSFX(sfxKey);
+  }
+}
+
+
+,
 
   toggleMusicMute() {
     this.musicMuted = !this.musicMuted;

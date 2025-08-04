@@ -268,34 +268,54 @@ move(cursors, speed = 200) {
   // ───────────────────────────────
   // ▶ shoot
   // ───────────────────────────────
-  shoot() {
+
+// 🔫 Used by rapid fire and manual
+shoot() {
   if (this.disableMovement) return;
-
-  const type = this.shootToggle ? "credit_card" : "briefcase";
+  this._shootSingle(this.shootToggle ? "credit_card" : "briefcase");
   this.shootToggle = !this.shootToggle;
-
-  let spawnX, spawnY, originY;
-
-  if (type === "credit_card") {
-    const offsetX = this.facingRight ? 10 : -10;
-    spawnX = this.x + offsetX;
-    spawnY = originY = this.y;
-  } else {
-    const offsetX = this.facingRight ? 8 : -8;
-    spawnX = this.x + offsetX;
-    spawnY = originY = this.hr ? this.hr.y : this.y;
-  }
-
-  const scale = type === "credit_card" ? 0.015 : 0.06;
-
-  // ✅ Play fast reused sound per type
-if (type === "credit_card") {
-  SoundManager.playSFX("shoot1");
-} else {
-  SoundManager.playSFX("shoot2");
 }
 
+  // ───────────────────────────────
+  // ▶ manualShoot
+  // ───────────────────────────────
 
+// 🎯 New: used by manual (spacebar) input only
+manualShoot() {
+  if (this.disableMovement) return;
+
+  this._shootSingle("credit_card");
+
+  this.scene.time.delayedCall(100, () => {
+    this._shootSingle("briefcase");
+  });
+}
+  // ───────────────────────────────
+  // ▶ _shootSingle
+  // ───────────────────────────────
+
+// 🧠 New: does the actual projectile logic
+_shootSingle(type) {
+  const offsetX = this.facingRight
+    ? type === "credit_card" ? 10 : 8
+    : type === "credit_card" ? -10 : -8;
+
+  const spawnX = this.x + offsetX;
+  const spawnY =
+    type === "credit_card"
+      ? this.y
+      : this.hr
+      ? this.hr.y
+      : this.y;
+
+  const originY = spawnY;
+  const scale = type === "credit_card" ? 0.015 : 0.06;
+
+  if (type === "credit_card") {
+    SoundManager.playSFX("shoot1");
+  } else {
+    SoundManager.playSFX("shoot2");
+  }
 
   const proj = this.projectiles.create(spawnX, spawnY, type)?.setScale(scale);
   if (!proj) {
@@ -325,17 +345,11 @@ if (type === "credit_card") {
   proj.body.setAllowGravity(true);
   proj.body.setGravityY(1300);
   proj.body.onWorldBounds = true;
- }
+}
+
+
+
 
 }
-  
-  
-  
- 
-
-
-
-  
-  
   
   

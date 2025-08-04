@@ -134,7 +134,7 @@ export default class MainScene extends Phaser.Scene {
 
 this.input.keyboard.on("keydown-SPACE", (event) => {
   if (!event.repeat) {
-    this.player.shoot();
+    this.player.manualShoot();
   }
 });
 

@@ -149,10 +149,11 @@ startGame() {
       loop: true,
       volume: 1,
     });
-  }
-  SoundManager.currentMusic = this.bgMusic;
 
-//this.powerupManager.reset();
+    this.bgMusic.setMute(SoundManager.musicMuted); // ✅ apply mute state right away
+  }
+
+  SoundManager.currentMusic = this.bgMusic;
 
 
   // 🔊 Start music only now
@@ -819,7 +820,7 @@ showGameOverDialog() {
   // ───────────────────────────────
 resetGame() {
  
- if (!SoundManager.currentMusic || !SoundManager.currentMusic.isPlaying) {
+if (!SoundManager.currentMusic || !SoundManager.currentMusic.isPlaying) {
   SoundManager.playMusic("bgMusic", {
     loop: true,
     volume: 1

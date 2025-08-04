@@ -9,6 +9,13 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
   constructor(scene, x, y, texture) {
     super(scene, x, y, texture);
 	
+	this.mugBurstSettings = {
+  delay: 100,
+  speed: 1000,
+  duration: 1000
+};
+
+	
 	this.shootSound1 = this.scene.sound.add("shoot1", { volume: 1 });
   this.shootSound2 = this.scene.sound.add("shoot2", { volume: 1 });
 
@@ -57,6 +64,86 @@ enableRapidFire() {
   this.rapidFireActive = true;
 }
 
+// ───────────────────────────────
+// ▶ triggerMugBurst
+// ───────────────────────────────
+triggerMugBurst(settings = this.mugBurstSettings) {
+	
+
+  const { delay, speed, duration } = settings || this.mugBurstSettings;
+
+  this.scene.time.delayedCall(delay, () => {
+    this.ignoreCrowdCollision = true;
+
+    const vx = this.body.velocity.x;
+const vy = this.body.velocity.y;
+
+const mag = Math.sqrt(vx * vx + vy * vy) || 1; // avoid divide-by-zero
+const unitX = vx / mag;
+const unitY = vy / mag;
+
+this.setVelocity(unitX * speed, unitY * speed);
+this.scene.sound.play("burst", { volume: 1 });
+
+	this.startBurstTrail(duration);
+
+
+    this.scene.time.delayedCall(duration, () => {
+      this.setVelocityX(0);
+      this.ignoreCrowdCollision = false;
+	  console.log("🛑 Burst ended");
+
+    });
+  });
+}
+
+// ───────────────────────────────
+// ▶ startBurstTrail
+// ───────────────────────────────
+startBurstTrail(duration = 200) {
+  const interval = 40;
+  const endTime = this.scene.time.now + duration;
+
+  const trailEvent = this.scene.time.addEvent({
+    delay: interval,
+    callback: () => {
+      const ghost = this.scene.add.sprite(this.x, this.y, this.texture.key)
+        .setAlpha(0.4)
+        .setScale(this.scaleX, this.scaleY)
+        .setFlipX(!this.facingRight)
+        .setDepth(this.depth - 1);
+
+      this.scene.tweens.add({
+        targets: ghost,
+        alpha: 0,
+        duration: 200,
+        onComplete: () => ghost.destroy()
+      });
+
+      // Optional: Add HR ghost too
+      if (this.hr) {
+        const hrGhost = this.scene.add.sprite(this.hr.x, this.hr.y, this.hr.texture.key)
+          .setAlpha(0.4)
+          .setScale(this.hr.scaleX, this.hr.scaleY)
+          .setFlipX(!this.facingRight)
+          .setDepth(this.hr.depth - 1);
+
+        this.scene.tweens.add({
+          targets: hrGhost,
+          alpha: 0,
+          duration: 200,
+          onComplete: () => hrGhost.destroy()
+        });
+      }
+
+      if (this.scene.time.now >= endTime) {
+        trailEvent.remove(false);
+      }
+    },
+    callbackScope: this,
+    loop: true
+  });
+}
 
 
 
@@ -118,6 +205,8 @@ update() {
 
 
 move(cursors, speed = 200) {
+	if (this.ignoreCrowdCollision) return;
+
   if (this.disableMovement) {
     this.body.setVelocity(0);
     this.anims.stop();

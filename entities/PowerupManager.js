@@ -58,6 +58,21 @@ export default class PowerupManager {
     callbackScope: this,
     loop: true
   });
+  
+  // Mug powerup logic
+	this.mugGroup = this.scene.physics.add.group();
+	this.mugSpawnInterval = 5000; // 3 seconds
+	this.maxMugs = 2;
+	this.lastMugSpawnTime = 0;
+	this.mugSpawnCooldown = 3000; // 3s between mug spawns
+
+	this.scene.time.addEvent({
+	  delay: this.mugSpawnInterval,
+	  callback: this.trySpawnMug,
+	  callbackScope: this,
+	  loop: true
+	});
+
 }
 
 
@@ -100,11 +115,7 @@ if (this.scene.player?.rapidFireActive) {
   this.scene.player.updateRapidFireSpeed();
 }
 
-
-
 }
-
-
 
   // ───────────────────────────────
   // ▶ updateRapidFireBarColor
@@ -208,6 +219,49 @@ hideRapidFireBar() {
   this.rapidFireSlots.forEach(slot => slot.setVisible(false));
 }
 
+// ───────────────────────────────
+// ▶ trySpawnMug
+// ───────────────────────────────
+trySpawnMug() {
+  const now = this.scene.time.now;
+
+  if (this.mugGroup.countActive(true) >= this.maxMugs) return;
+  if (now - this.lastMugSpawnTime < this.mugSpawnCooldown) return;
+
+  const maxAttempts = 20;
+  const minDistance = 150; // distance between mugs
+
+  for (let i = 0; i < maxAttempts; i++) {
+    const x = Phaser.Math.Between(50, this.scene.scale.width - 50);
+    const y = Phaser.Math.Between(100, this.scene.scale.height - 10);
+
+    if (isBlocked(this.scene, x, y)) continue;
+
+    // Check distance from existing mugs
+    let tooClose = false;
+    this.mugGroup.getChildren().forEach(mug => {
+      const dist = Phaser.Math.Distance.Between(x, y, mug.x, mug.y);
+      if (dist < minDistance) tooClose = true;
+    });
+
+    if (tooClose) continue;
+
+    const mug = this.scene.physics.add.sprite(x, y, "mug")
+      .setScale(0.07)
+      .setDepth(y - 1)
+      .setImmovable(true);
+
+    mug.powerupType = "mug";
+    this.mugGroup.add(mug);
+    SoundManager.playSFX("powerup");
+
+    this.lastMugSpawnTime = now;
+    return; // ✅ spawn successful
+  }
+
+  console.warn("⚠️ Could not find valid spot to spawn mug.");
+}
+
   // ───────────────────────────────
   // ▶ trySpawnPowerup
   // ───────────────────────────────
@@ -262,12 +316,42 @@ hideRapidFireBar() {
 		null,
 		this
 	  );
+	  // Mug overlap
+this.scene.physics.add.overlap(
+  player,
+  this.mugGroup,
+  (player, powerup) => {
+    const type = powerup.powerupType;
+    powerup.disableBody(true, true);
+
+    SoundManager.playSFX("mug_get");
+
+    if (callbackMap[type]) {
+  this.scene.time.delayedCall(300, () => {
+    callbackMap[type]();
+
+    // 👇 Trigger burst move after pickup delay
+    this.scene.player.triggerMugBurst({
+      delay: 150,     // time before it shoots forward
+      speed: 600,     // adjust to taste
+      duration: 180   // how long it moves
+    });
+  });
+}
+
+  },
+  null,
+  this
+);
+
 	}
 
   // ───────────────────────────────
   // ▶ reset
   // ───────────────────────────────
   reset() {
-    this.powerupGroup.clear(true, true);
-  }
+  this.powerupGroup.clear(true, true); // staplers
+  this.mugGroup.clear(true, true);     // mugs
+	}
+
 }

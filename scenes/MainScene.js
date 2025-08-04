@@ -70,6 +70,7 @@ export default class MainScene extends Phaser.Scene {
 	this.load.image('mute', 'sprites/UI/mute.png');
 	this.load.image('unmute', 'sprites/UI/unmute.png');
 	this.load.image("stapler", "sprites/powerups/stapler2.png");
+	this.load.image("mug", "sprites/powerups/mug.png");
 	this.load.image("powerup_bar", "sprites/powerups/powerup_bar.png");
 	this.load.image("powerup_fill", "sprites/powerups/powerup_fill2.png");
 
@@ -89,7 +90,8 @@ export default class MainScene extends Phaser.Scene {
 	this.load.audio('bgMusic', 'sounds/music/main1.wav');
 	this.load.audio("powerup", "sounds/fx/powerup.wav");
 	this.load.audio("powerup_get", "sounds/fx/powerup_get.wav");
-
+	this.load.audio("mug_get", "sounds/fx/mug_get.wav");
+	this.load.audio("burst", "sounds/fx/burst.wav");
 
   }
 
@@ -119,8 +121,13 @@ export default class MainScene extends Phaser.Scene {
 
 
 	this.powerupManager.enableCollisionWith(this.player, {
-	  stapler: () => this.activateRapidFireMode()
-	});
+  stapler: () => this.activateRapidFireMode(),
+  mug: () => {
+  this.player.triggerMugBurst();
+}
+
+});
+
 
 
 this.input.keyboard.on("keydown-SPACE", (event) => {
@@ -488,9 +495,19 @@ this.hr = this.add.sprite(90, 110, "hr1").setScale(0.07);
 	
 	this.maxCrowdSize = this.crowdGroup.getLength();
 
-    this.physics.add.collider(this.player, this.crowdGroup);
-    //this.physics.add.collider(this.hr, this.crowdGroup);
-    //this.physics.add.collider(this.player, this.hr);
+   this.physics.add.collider(
+  this.player,
+  this.crowdGroup,
+  (player, crowd) => {
+    if (player.ignoreCrowdCollision) return;
+
+    // 👇 Your existing collision behavior goes here
+    this.handlePlayerCrowdCollision?.(player, crowd);
+  },
+  null,
+  this
+);
+
 
     this.physics.add.overlap(
       this.projectiles,

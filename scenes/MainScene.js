@@ -8,7 +8,10 @@ import GameOverDialog from "../entities/GameOverDialog.js";
 import * as BLOCKERS from "../utils/BlockerZones.js";
 import ScoreService from "../services/ScoreService.js"; 
 import SoundManager from "../utils/SoundManager.js";
+import StaplerManager from "../entities/StaplerManager.js";
+import MugManager from "../entities/MugManager.js";
 import PowerupManager from "../entities/PowerupManager.js";
+
 
 
 import {
@@ -94,53 +97,50 @@ export default class MainScene extends Phaser.Scene {
 	this.load.audio("burst", "sounds/fx/burst.wav");
 	this.load.audio("top20", "sounds/fx/win20.wav");
 	this.load.audio("top1", "sounds/fx/win1.wav");
-	
-  }
 
+  }
   
   // ───────────────────────────────
   // ▶ create
   // ───────────────────────────────
-  create() {
-    this.createFlashOverlay();
-    this.createBackgroundAndStage();
-	this.scoreUI = new ScoreUI(this);
-    this.createPlayerAndHR();
-    this.createControlsAndProjectiles();
-    this.createCrowdAndColliders();
-	this.createKissCamUI();
-    this.createKissCamRenderer();
-    this.createBlockers();
-    this.createGameOverDialog();
-	this.createSpotlightHandler(); 
-	this.registerResizeHandler();
-	this.gameStarted = false;
-	SoundManager.init(this);
-	this.showStartDialog();
-	
+create() {
+  this.createFlashOverlay();
+  this.createBackgroundAndStage();
+  this.scoreUI = new ScoreUI(this);
+  this.createPlayerAndHR();
+  this.createControlsAndProjectiles();
+  this.createCrowdAndColliders();
+  this.createKissCamUI();
+  this.createKissCamRenderer();
+  this.createBlockers();
+  this.createGameOverDialog();
+  this.createSpotlightHandler(); 
+  this.registerResizeHandler();
+  this.gameStarted = false;
 
-	this.powerupManager = new PowerupManager(this);
+  SoundManager.init(this);
+  this.showStartDialog();
+
+  this.powerupManager = new PowerupManager(this);
+  this.staplerManager = new StaplerManager(this, this.player);
+  this.mugManager = this.powerupManager.mugManager;
+this.powerupManager.staplerManager = this.staplerManager;
 
 
-	this.powerupManager.enableCollisionWith(this.player, {
-  stapler: () => this.activateRapidFireMode(),
-  mug: () => {
-  this.player.triggerMugBurst();
+  this.staplerManager.enableCollision(() => {
+    this.powerupManager.activateRapidFire(this.player);
+  });
+
+  this.mugManager.enableCollision(() => {
+    this.player.triggerMugBurst();
+  });
+
+  this.input.keyboard.on("keydown-SPACE", (event) => {
+    if (!event.repeat) {
+      this.player.manualShoot();
+    }
+  });
 }
-
-});
-
-
-
-this.input.keyboard.on("keydown-SPACE", (event) => {
-  if (!event.repeat) {
-    this.player.manualShoot();
-  }
-});
-
-
-
-  }
   
    // ───────────────────────────────
   // ▶ startGame
@@ -167,19 +167,7 @@ startGame() {
   // ✅ Your other game start logic goes here (e.g., enabling controls, timers, etc.)
 }
 
-   // ───────────────────────────────
-  // ▶ activateRapidFireMode
-  // ───────────────────────────────
-
-	activateRapidFireMode() {
-		
-		this.powerupManager.activateRapidFire(this.player);
-
-	}
-		
-
-
-  
+ 
    // ───────────────────────────────
   // ▶ registerResizeHandler
   // ───────────────────────────────
@@ -664,9 +652,6 @@ createGameOverDialog() {
 
 }
 
-
-
-
   // ───────────────────────────────
   // ▶ triggerFlash
   // ───────────────────────────────
@@ -763,43 +748,37 @@ showGameOverDialog() {
   // ▶ update
   // ───────────────────────────────
  update(time, delta) {
+  if (!this.gameStarted) return;
 
-	  
-	  if (!this.gameStarted) return;
+  // 🔄 Update UI
+  if (!this.player.disableMovement) {
+    this.scoreUI.update();
+  }
 
+  // 🕹️ Player movement + update
+  this.player.move(this.cursors);
+  this.player.update?.(time, delta);
 
-    if (!this.player.disableMovement) {
-      this.scoreUI.update();
+  // 🎯 Spotlight AI
+  this.spotlightHandler.update();
+
+  // 👥 Sync crowd visuals
+  this.crowdGroup.getChildren().forEach(base => {
+    if (base.visuals) {
+      base.visuals.x = base.x;
+      base.visuals.y = base.y;
     }
-	
-    this.player.move(this.cursors);
+  });
 
+  // 📸 Kiss cam feed
+  this.kissCamRenderer.render();
 
+  // 🔫 Projectiles
+  this.projectileManager.update();
 
-
-
-
-    this.spotlightHandler.update();
-
-    this.crowdGroup.getChildren().forEach(base => {
-      if (base.visuals) {
-        base.visuals.x = base.x;
-        base.visuals.y = base.y;
-      }
-    });
-
-    this.kissCamRenderer.render();
-    this.projectileManager.update();
-	
-	if (this.powerupManager) {
-  this.powerupManager.update();
+  // ⚡ Powerup UI (bar, timer, counter)
+  this.powerupManager?.update();
 }
-
-  if (this.player && this.player.update) {
-    this.player.update(time, delta);
-  }
-
-  }
 
   // ───────────────────────────────
   // ▶ playPoof
@@ -821,49 +800,53 @@ showGameOverDialog() {
   // ▶ resetGame
   // ───────────────────────────────
 resetGame() {
- 
-if (!SoundManager.currentMusic || !SoundManager.currentMusic.isPlaying) {
-  SoundManager.playMusic("bgMusic", {
-    loop: true,
-    volume: 1
-  });
-}
+  // 🔊 Restart background music if not playing
+  if (!SoundManager.currentMusic || !SoundManager.currentMusic.isPlaying) {
+    SoundManager.playMusic("bgMusic", {
+      loop: true,
+      volume: 1
+    });
+  }
 
+  // 🧱 Reset blockers
+  this.createBlockers();
 
-
-	this.createBlockers();
-
+  // 🎯 Reset score state
   this.scoreUI.score = 0;
   this.scoreUI.top20SoundPlayed = false;
-this.scoreUI.top1SoundPlayed = false;
+  this.scoreUI.top1SoundPlayed = false;
 
-
+  // 🕹️ Reset player + HR positions
   this.player.setPosition(100, 200);
   this.player.disableMovement = false;
 
   if (this.hr) this.hr.setPosition(90, 110);
   if (this.spotlightMarker) this.spotlightMarker.setPosition(800, 0);
 
-  // 👇 Clear crowd visuals manually before clearing the group
+  // 👥 Clear crowd visuals
   this.crowdGroup.children.each(child => {
     if (child.visuals) {
-      child.visuals.destroy(); // destroy visual container
+      child.visuals.destroy();
     }
   });
-
-  this.crowdGroup.clear(true, true); // clear base sprites
+  this.crowdGroup.clear(true, true);
   this.crowdSpawner.spawnCrowd();
-  
+
+  // 🔦 Re-create spotlight
   this.createSpotlightHandler();
-  
+
+  // 🛑 Stop any Chris SFX
   if (SoundManager.chrisSFX) {
-  SoundManager.chrisSFX.stop();
-  SoundManager.chrisSFX.destroy();
-  SoundManager.chrisSFX = null;
+    SoundManager.chrisSFX.stop();
+    SoundManager.chrisSFX.destroy();
+    SoundManager.chrisSFX = null;
+  }
+
+  // ♻️ Reset powerups
+  this.staplerManager?.reset();
+  this.mugManager?.reset();
 }
 
-
-}
 
 
   // ───────────────────────────────
@@ -887,9 +870,6 @@ projectileHitsCrowd(proj, crowd) {
   });
 }
 
-  
-  
-  
   
   
 }

@@ -6,53 +6,52 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
   // ───────────────────────────────
   // ▶ constructor
   // ───────────────────────────────
-  constructor(scene, x, y, texture) {
-    super(scene, x, y, texture);
-	
-	this.mugBurstSettings = {
-  delay: 100,
-  speed: 1000,
-  duration: 1000
-};
+constructor(scene, x, y, texture) {
+  super(scene, x, y, texture);
 
-	
-	this.shootSound1 = this.scene.sound.add("shoot1", { volume: 1 });
+  this.mugBurstSettings = {
+    delay: 100,
+    speed: 1000,
+    duration: 1000
+  };
+
+  this.shootSound1 = this.scene.sound.add("shoot1", { volume: 1 });
   this.shootSound2 = this.scene.sound.add("shoot2", { volume: 1 });
 
-this.hasUsedRapidFireBefore = false;
+  this.hasUsedRapidFireBefore = false;
 
-    scene.add.existing(this);
-    scene.physics.add.existing(this);
+  scene.add.existing(this);
+  scene.physics.add.existing(this);
 
-    this.setScale(0.07);
-    this.setCollideWorldBounds(true);
+  this.setScale(0.07);
+  this.setCollideWorldBounds(true);
 
-    this.facingRight = true;
-    this.shootToggle = false;
+  this.facingRight = true;
+  this.shootToggle = false;
 
-    this.projectiles = scene.physics.add.group({
-  runChildUpdate: true,
-  maxSize: -1 // allow unlimited projectiles
-});
+  this.projectiles = scene.physics.add.group({
+    runChildUpdate: true,
+    maxSize: -1 // allow unlimited projectiles
+  });
 
-    this.scene = scene;
+  this.scene = scene;
+  this.disableMovement = false;
+  this.hr = null; // ✅ assigned later from MainScene
 
-	this.disableMovement = false;
+  this.scene.physics.world.on("worldbounds", (body) => {
+    if (
+      body.gameObject?.texture?.key === "credit_card" ||
+      body.gameObject?.texture?.key === "briefcase"
+    ) {
+      body.gameObject.destroy();
+    }
+  });
 
-    this.hr = null; // ✅ assigned later from MainScene
-	
-	this.scene.physics.world.on("worldbounds", body => {
-  if (body.gameObject?.texture?.key === "credit_card" || body.gameObject?.texture?.key === "briefcase") {
-    body.gameObject.destroy();
-  }
-});
+  this.lastRapidFireShotTime = 0;
+  this.rapidFireInterval = 1000; // default value (will be set dynamically)
+  this.rapidFireActive = false;
+}
 
-this.lastRapidFireShotTime = 0;
-this.rapidFireInterval = 1000; // default value (will be set dynamically)
-this.rapidFireActive = false;
-
-
-  }
 
   // ───────────────────────────────
   // ▶ enableRapidFire
@@ -68,32 +67,27 @@ enableRapidFire() {
 // ▶ triggerMugBurst
 // ───────────────────────────────
 triggerMugBurst(settings = this.mugBurstSettings) {
-	
-
   const { delay, speed, duration } = settings || this.mugBurstSettings;
 
   this.scene.time.delayedCall(delay, () => {
     this.ignoreCrowdCollision = true;
 
     const vx = this.body.velocity.x;
-const vy = this.body.velocity.y;
+    const vy = this.body.velocity.y;
 
-const mag = Math.sqrt(vx * vx + vy * vy) || 1; // avoid divide-by-zero
-const unitX = vx / mag;
-const unitY = vy / mag;
+    const mag = Math.sqrt(vx * vx + vy * vy) || 1; // avoid divide-by-zero
+    const unitX = vx / mag;
+    const unitY = vy / mag;
 
-this.setVelocity(unitX * speed, unitY * speed);
-SoundManager.playSFX("burst");
+    this.setVelocity(unitX * speed, unitY * speed);
+    SoundManager.playSFX("burst");
 
-
-	this.startBurstTrail(duration);
-
+    this.startBurstTrail(duration);
 
     this.scene.time.delayedCall(duration, () => {
       this.setVelocityX(0);
       this.ignoreCrowdCollision = false;
-	  console.log("🛑 Burst ended");
-
+      console.log("🛑 Burst ended");
     });
   });
 }
@@ -164,9 +158,6 @@ getDynamicRapidFireDelay() {
   return Math.floor(maxDelay - ratio * (maxDelay - minDelay));
 }
 
-
-
-
   // ───────────────────────────────
   // ▶ disableRapidFire
   // ───────────────────────────────
@@ -184,8 +175,6 @@ updateRapidFireSpeed() {
   this.rapidFireInterval = this.getDynamicRapidFireDelay();
 }
 
-
-
   // ───────────────────────────────
   // ▶ update
   // ───────────────────────────────
@@ -199,14 +188,11 @@ update() {
   }
 }
 
-
   // ───────────────────────────────
   // ▶ move
   // ───────────────────────────────
-
-
 move(cursors, speed = 200) {
-	if (this.ignoreCrowdCollision) return;
+  if (this.ignoreCrowdCollision) return;
 
   if (this.disableMovement) {
     this.body.setVelocity(0);
@@ -279,17 +265,17 @@ shoot() {
   // ───────────────────────────────
   // ▶ manualShoot
   // ───────────────────────────────
-
 // 🎯 New: used by manual (spacebar) input only
-manualShoot() {
-  if (this.disableMovement) return;
+	manualShoot() {
+	  if (this.disableMovement) return;
 
-  this._shootSingle("credit_card");
+	  this._shootSingle("credit_card");
 
-  this.scene.time.delayedCall(100, () => {
-    this._shootSingle("briefcase");
-  });
-}
+	  this.scene.time.delayedCall(100, () => {
+		this._shootSingle("briefcase");
+	  });
+	}
+
   // ───────────────────────────────
   // ▶ _shootSingle
   // ───────────────────────────────

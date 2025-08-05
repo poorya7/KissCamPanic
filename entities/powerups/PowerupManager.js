@@ -1,7 +1,7 @@
-import { isBlocked } from "../utils/CrowdUtils.js";
-import SoundManager from "../utils/SoundManager.js";
+import { isBlocked } from "../../utils/CrowdUtils.js";
+import SoundManager from "../../utils/SoundManager.js";
 import MugManager from "./MugManager.js";
-import RapidFireUI from "./RapidFireUI.js";
+import RapidFireUI from "../RapidFireUI.js";
 
 export default class PowerupManager {
   // ───────────────────────────────

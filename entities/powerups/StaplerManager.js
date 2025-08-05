@@ -1,8 +1,7 @@
-import { isBlocked } from "../utils/CrowdUtils.js";
-import SoundManager from "../utils/SoundManager.js";
+import { isBlocked } from "../../utils/CrowdUtils.js";
+import SoundManager from "../../utils/SoundManager.js";
 
-
-export default class MugManager {
+export default class StaplerManager {
 	
   // ───────────────────────────────
   // ▶ constructor
@@ -11,28 +10,25 @@ export default class MugManager {
     this.scene = scene;
     this.player = player;
 
-    this.maxMugs = 2;
-    this.mugSpawnInterval = 5000; // 5 seconds
+    this.maxStaplers = 15;
+    this.spawnInterval = 2000;
 
-    this.mugGroup = this.scene.physics.add.group();
+    this.staplerGroup = this.scene.physics.add.group();
 
     this.scene.time.addEvent({
-      delay: this.mugSpawnInterval,
-      callback: this.trySpawnMug,
+      delay: this.spawnInterval,
+      callback: this.trySpawnStapler,
       callbackScope: this,
       loop: true
     });
   }
   // ───────────────────────────────
-  // ▶ trySpawnMug
+  // ▶ trySpawnStapler
   // ───────────────────────────────
-  trySpawnMug() {
-  const now = this.scene.time.now;
-
-  if (this.mugGroup.countActive(true) >= this.maxMugs) return;
+ trySpawnStapler() {
+  if (this.staplerGroup.countActive(true) >= this.maxStaplers) return;
 
   const maxAttempts = 20;
-  const minDistance = 150; // distance between mugs
 
   for (let i = 0; i < maxAttempts; i++) {
     const x = Phaser.Math.Between(50, this.scene.scale.width - 50);
@@ -40,51 +36,35 @@ export default class MugManager {
 
     if (isBlocked(this.scene, x, y)) continue;
 
-    // Check distance from existing mugs
-    const tooClose = this.mugGroup.getChildren().some(mug =>
-  Phaser.Math.Distance.Between(x, y, mug.x, mug.y) < minDistance
-);
-if (tooClose) continue;
-
-
-    const mug = this.scene.physics.add.sprite(x, y, "mug")
+    const stapler = this.scene.physics.add.sprite(x, y, "stapler")
       .setScale(0.07)
       .setDepth(y - 1)
       .setImmovable(true);
 
-    mug.powerupType = "mug";
-    this.mugGroup.add(mug);
+    stapler.powerupType = "stapler";
+    this.staplerGroup.add(stapler);
     SoundManager.playSFX("powerup");
 
-    return; // ✅ spawn successful
+    return; // ✅ spawn succeeded
   }
 
-  console.warn("⚠️ Could not find valid spot to spawn mug.");
+  console.warn("⚠️ Could not find valid spot to spawn stapler.");
 }
 
   // ───────────────────────────────
   // ▶ enableCollision
   // ───────────────────────────────
- enableCollision(callback) {
+  enableCollision(callback) {
   this.scene.physics.add.overlap(
     this.player,
-    this.mugGroup,
-    (player, powerup) => {
-
-      // ✅ Fully remove mug from group and destroy it
-      this.mugGroup.remove(powerup, true, true);
-
-      SoundManager.playSFX("mug_get");
+    this.staplerGroup,
+    (player, stapler) => {
+      stapler.disableBody(true, true); // Hide but don't destroy
+      SoundManager.playSFX("powerup_get");
 
       if (callback) {
         this.scene.time.delayedCall(300, () => {
           callback();
-
-          this.player.triggerMugBurst({
-            delay: 150,
-            speed: 600,
-            duration: 180
-          });
         });
       }
     },
@@ -93,10 +73,10 @@ if (tooClose) continue;
   );
 }
 
-  // ───────────────────────────────
+// ───────────────────────────────
   // ▶ reset
   // ───────────────────────────────
   reset() {
-    this.mugGroup.clear(true, true);
+    this.staplerGroup.clear(true, true);
   }
 }

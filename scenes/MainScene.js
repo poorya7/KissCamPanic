@@ -183,7 +183,6 @@ startGame() {
     if (this.background) {
       this.background.setSize(width, height);
     }
-	
 
   });
 }
@@ -341,7 +340,6 @@ this.hr = this.add.sprite(90, 110, "hr1").setScale(0.07);
   this
 );
 
-
     this.physics.add.overlap(
       this.projectiles,
       this.crowdGroup,
@@ -441,7 +439,6 @@ fadeOutMusic(duration = 1000) {
   }
 }
 
-
   // ───────────────────────────────
   // ▶ showGameOverDialog
   // ───────────────────────────────
@@ -469,8 +466,6 @@ showGameOverDialog() {
 
   this.dialog.show(score, `#${rank} / ${totalPlayers}`);
 }
-
-
 
   // ───────────────────────────────
   // ▶ update
@@ -575,8 +570,6 @@ resetGame() {
   this.mugManager?.reset();
 }
 
-
-
   // ───────────────────────────────
   // ▶ projectileHitsCrowd
   // ───────────────────────────────
@@ -598,6 +591,5 @@ projectileHitsCrowd(proj, crowd) {
   });
 }
 
-  
-  
+    
 }

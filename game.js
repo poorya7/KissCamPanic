@@ -65,19 +65,7 @@ muteBtn.addEventListener("click", () => {
   if (SoundManager.currentMusic) {
     SoundManager.currentMusic.setMute(SoundManager.musicMuted);
   }
-
-  // 🔍 TEMP LOGGING — add this here:
-  console.log("MUTED:", SoundManager.musicMuted);
-  console.log("CURRENT MUSIC:", SoundManager.currentMusic);
-  console.log("IS PLAYING:", SoundManager.currentMusic?.isPlaying);
-  console.log("IS MUTED:", SoundManager.currentMusic?.mute);
 });
-
-
-
-
-
-
 
 
   // 💥 SFX Mute Toggle
@@ -89,9 +77,6 @@ muteBtn.addEventListener("click", () => {
       : "sprites/UI/unmutefx.png";
   });
 }, 500);
-
-
-
 
  
 };

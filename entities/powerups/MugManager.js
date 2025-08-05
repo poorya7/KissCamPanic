@@ -80,11 +80,9 @@ if (tooClose) continue;
         this.scene.time.delayedCall(300, () => {
           callback();
 
-          this.player.triggerMugBurst({
-            delay: 150,
-            speed: 600,
-            duration: 180
-          });
+
+		this.player.enableBurstMode(750, 350); // duration, speed (normal speed is 200)
+		  
         });
       }
     },

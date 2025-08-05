@@ -64,32 +64,47 @@ enableRapidFire() {
 }
 
 // ───────────────────────────────
-// ▶ triggerMugBurst
+// ▶ enableBurstMode
 // ───────────────────────────────
-triggerMugBurst(settings = this.mugBurstSettings) {
-  const { delay, speed, duration } = settings || this.mugBurstSettings;
+enableBurstMode(duration, burstSpeed) {
+  // Always update burst speed
+  this.burstSpeed = burstSpeed;
 
-  this.scene.time.delayedCall(delay, () => {
-    this.ignoreCrowdCollision = true;
+  // If already active, just update speed and extend duration
+  if (this.burstModeActive) {
+    console.log("⚠️ Burst already active — updating speed to", burstSpeed);
+    return;
+  }
 
-    const vx = this.body.velocity.x;
-    const vy = this.body.velocity.y;
+  this.burstModeActive = true;
+  this.ignoreCrowdCollision = true;
 
-    const mag = Math.sqrt(vx * vx + vy * vy) || 1; // avoid divide-by-zero
-    const unitX = vx / mag;
-    const unitY = vy / mag;
+  SoundManager.playSFX("burst");
+  this.startBurstTrail(duration);
 
-    this.setVelocity(unitX * speed, unitY * speed);
-    SoundManager.playSFX("burst");
-
-    this.startBurstTrail(duration);
-
-    this.scene.time.delayedCall(duration, () => {
-      this.setVelocityX(0);
-      this.ignoreCrowdCollision = false;
-      console.log("🛑 Burst ended");
-    });
+  this.scene.time.delayedCall(duration, () => {
+    this.disableBurstMode();
   });
+
+  if (this.scene.playerCrowdCollider) {
+    this.scene.playerCrowdCollider.active = false;
+  }
+
+  console.log("🔥 Burst mode ENABLED with speed:", burstSpeed);
+}
+
+
+// ───────────────────────────────
+// ▶ disableBurstMode
+// ───────────────────────────────
+disableBurstMode() {
+  this.burstModeActive = false;
+  this.ignoreCrowdCollision = false;
+  this.burstSpeed = null;
+  if (this.scene.playerCrowdCollider) {
+  this.scene.playerCrowdCollider.active = true;
+}
+
 }
 
 // ───────────────────────────────
@@ -141,7 +156,6 @@ startBurstTrail(duration = 200) {
 }
 
 
-
   // ───────────────────────────────
   // ▶ getDynamicRapidFireDelay
   // ───────────────────────────────
@@ -191,8 +205,10 @@ update() {
   // ───────────────────────────────
   // ▶ move
   // ───────────────────────────────
-move(cursors, speed = 200) {
-  if (this.ignoreCrowdCollision) return;
+move(cursors, _speed) {
+  let speed = this.burstModeActive && typeof this.burstSpeed === "number"
+    ? this.burstSpeed
+    : _speed;
 
   if (this.disableMovement) {
     this.body.setVelocity(0);

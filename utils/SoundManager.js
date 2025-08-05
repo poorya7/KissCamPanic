@@ -59,7 +59,6 @@ if (existing) {
     this.currentMusic.setMute(this.musicMuted); // Apply mute status immediately
     this.currentMusic.play();
 
-    console.log("[MUSIC] Music started");
   },
 
   fadeMusicForSFX(sfxKey, fadeDuration = 500) {

@@ -135,9 +135,8 @@ this.powerupManager.staplerManager = this.staplerManager;
     this.powerupManager.activateRapidFire(this.player);
   });
 
-  this.mugManager.enableCollision(() => {
-    this.player.triggerMugBurst();
-  });
+this.mugManager.enableCollision(() => {});
+
 
   this.input.keyboard.on("keydown-SPACE", (event) => {
     if (!event.repeat) {
@@ -327,7 +326,7 @@ this.hr = this.add.sprite(90, 110, "hr1").setScale(0.07);
 	
 	this.maxCrowdSize = this.crowdGroup.getLength();
 
-   this.physics.add.collider(
+this.playerCrowdCollider = this.physics.add.collider(
   this.player,
   this.crowdGroup,
   (player, crowd) => {
@@ -479,7 +478,8 @@ showGameOverDialog() {
   }
 
   // 🕹️ Player movement + update
-  this.player.move(this.cursors);
+  this.player.move(this.cursors, 200);
+
   this.player.update?.(time, delta);
 
   // 🎯 Spotlight AI

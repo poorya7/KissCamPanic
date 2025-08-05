@@ -5,12 +5,15 @@ import KissCamFeedRenderer from "../entities/KissCamFeedRenderer.js";
 import ProjectileManager from "../entities/ProjectileManager.js";
 import SpotlightHandler from "../entities/SpotlightHandler.js";
 import GameOverDialog from "../entities/GameOverDialog.js";
-import * as BLOCKERS from "../utils/BlockerZones.js";
 import ScoreService from "../services/ScoreService.js"; 
+import * as BLOCKERS from "../utils/BlockerZones.js";
 import SoundManager from "../utils/SoundManager.js";
 import StaplerManager from "../entities/StaplerManager.js";
 import MugManager from "../entities/MugManager.js";
 import PowerupManager from "../entities/PowerupManager.js";
+import StageBuilder from "../entities/StageBuilder.js";
+import StartDialog from "../entities/StartDialog.js"; 	
+import BlockerManager from "../entities/BlockerManager.js"; 
 
 
 
@@ -26,6 +29,7 @@ export default class MainScene extends Phaser.Scene {
     super("MainScene");
 	this.blockers = [];
   }
+ 
 
 	
 
@@ -105,7 +109,7 @@ export default class MainScene extends Phaser.Scene {
   // ───────────────────────────────
 create() {
   this.createFlashOverlay();
-  this.createBackgroundAndStage();
+  StageBuilder.build(this);
   this.scoreUI = new ScoreUI(this);
   this.createPlayerAndHR();
   this.createControlsAndProjectiles();
@@ -119,7 +123,7 @@ create() {
   this.gameStarted = false;
 
   SoundManager.init(this);
-  this.showStartDialog();
+  StartDialog.show(this, () => this.startGame());
 
   this.powerupManager = new PowerupManager(this);
   this.staplerManager = new StaplerManager(this, this.player);
@@ -193,179 +197,6 @@ startGame() {
       .setDepth(9999)
       .setAlpha(0);
   }
-
-
-  // ───────────────────────────────
-// ▶ createBackgroundAndStage
-// ───────────────────────────────
-createBackgroundAndStage() {
-  // Background base
-  this.background = this.add.tileSprite(
-    0,
-    0,
-    this.scale.width,
-    this.scale.height,
-    "background"
-  )
-    .setOrigin(0)
-    .setDepth(-20);
-
-  
-  
-  ScoreService.getAllScores().then((allScores) => {
-  this.scoreUI.setScoreList(allScores);
-  const totalPlayers = allScores.length;
-  this.scoreUI.rankValue.setText(`${totalPlayers + 1}`);
-});
-
-
-  const centerX = this.scale.width / 2;
-  const stageY = 100;
-
-  this.stage = this.add.image(centerX, stageY, "stage")
-    .setOrigin(0.48, 0.12)
-    .setScale(0.5);
-	
-	// ───── Exit Door (top-right) ─────
-this.exitDoor = this.add.image(this.scale.width - 20, 0, "exitdoor")
-  .setOrigin(.9, 0)
-  .setDepth(-10)
-  .setDisplaySize(325,128);
-
-
-// ───── Top Wall Connecting to Exit Door ─────
-
-this.wallTop = this.add.tileSprite(
-  0,
-  0,
-  this.exitDoor.x - 20,
-  128, // Match door height
-  "wall_top"
-)
-.setOrigin(0, 0)
-.setDepth(-11)
-.setTileScale(0.5, 0.5); // Downscale the tile to match door size
-
-
-// ───── Speaker Stack on Right Side ─────
-/*this.speaker = this.add.image(0, this.scale.height, "speaker")
-  .setOrigin(-0.05, 1.1)   // bottom-left anchor
-  .setDepth(-9)
-  .setScale(0.6);    // adjust if too big or small*/
-
-
-this.cameraGuy = this.add.image(this.scale.width, 0, "cameraguy")
-  .setOrigin(1.3, -0.5)     
-  .setDepth(-9)
-  .setScale(0.2);
-
-
-this.vip = this.add.image(this.scale.width, this.scale.height / 2, "vip")
-  .setOrigin(1.2, -0.7)     // anchor to right edge, center vertically
-  .setDepth(-9)
-  .setScale(0.15);        // adjust scale to fit your layout
-
-this.curtain = this.add.image(0, 0, "curtain")
-  .setOrigin(-1.5, -0.13)       // top-left of image aligns with top-left of screen
-  .setDepth(-9)
-  .setScale(0.18);        // tweak as needed
-
-this.plant = this.add.image(0, 0, "plant")
-   .setOrigin(0.1, -0.6)  
-  .setDepth(-8)
-  .setDisplaySize(124,256)
-	.setScale(0.4);
-
-
-
-}
-
-
-  // ───────────────────────────────
-  // ▶ showStartDialog
-  // ───────────────────────────────
-showStartDialog() {
-  const dialog = this.add.container(this.scale.width / 2, this.scale.height / 2)
-    .setDepth(99999)
-    .setScrollFactor(0);
-
-  // 🖼️ Same purple dialog box
-  const bg = this.add.image(0, 0, "dialog_end").setScale(0.3, 0.35);
-
-  const title = this.add.text(0, -95, "DODGE THE KISS CAM", {
-    fontFamily: "C64",
-    fontSize: "18px",
-    color: "#ff66cc",
-    align: "center"
-  }).setOrigin(0.5);
-
-  const subtitle = this.add.text(0, -65, "LIKE YOUR JOB DEPENDS ON IT!", {
-    fontFamily: "C64",
-    fontSize: "13px",
-    color: "#ffcc00",
-    align: "center"
-  }).setOrigin(0.5);
-
-  const controls = this.add.text(0, -25, "← ↑ → ↓  TO MOVE", {
-    fontFamily: "C64",
-    fontSize: "15px",
-    color: "#00ffff",
-    align: "center"
-  }).setOrigin(0.5);
-
-  const shoot = this.add.text(0, 0, "SPACE TO SHOOT", {
-    fontFamily: "C64",
-    fontSize: "15px",
-    color: "#00ff66",
-    align: "center"
-  }).setOrigin(0.5);
-
-  const hype = this.add.text(0, 35, "LET'S GO!!", {
-    fontFamily: "C64",
-    fontSize: "20px",
-    color: "#ffffff",
-    align: "center"
-  }).setOrigin(0.5);
-
-  const okBtn = this.make.text({
-    x: 0,
-    y: 75,
-    text: " OK ",
-    style: {
-      fontFamily: "C64",
-      fontSize: "18px",
-      color: "#ffffff",
-      backgroundColor: "#ff00aa",
-      padding: { x: 10, y: 5 },
-      align: "center"
-    },
-    add: false
-  }).setOrigin(0.5).setInteractive();
-
-  okBtn.on("pointerdown", () => {
-    dialog.destroy();
-    this.startGame();
-  });
-
-  this.input.keyboard.once("keydown-ENTER", () => {
-    dialog.destroy();
-    this.startGame();
-  });
-
-  this.input.keyboard.once("keydown-SPACE", () => {
-    dialog.destroy();
-    this.startGame();
-  });
-  
-  this.input.keyboard.once("keydown-ESC", () => {
-  dialog.destroy();
-  this.startGame();
-});
-
-
-  dialog.add([bg, title, subtitle, controls, shoot, hype, okBtn]);
-}
-
 
   // ───────────────────────────────
   // ▶ createKissCamUI
@@ -465,6 +296,17 @@ this.hr = this.add.sprite(90, 110, "hr1").setScale(0.07);
   }
 
   // ───────────────────────────────
+  // ▶ createBlockers
+  // ───────────────────────────────
+	createBlockers() {
+	  // 🧹 Destroy existing blockers
+	  this.blockers.forEach(b => b.destroy());
+	  this.blockers = [];
+
+	  this.blockers = BlockerManager.createBlockers(this, this.player);
+	}
+
+  // ───────────────────────────────
   // ▶ createControlsAndProjectiles
   // ───────────────────────────────
   createControlsAndProjectiles() {
@@ -522,120 +364,6 @@ this.hr = this.add.sprite(90, 110, "hr1").setScale(0.07);
       this.hr
     );
   }
-
-  // ───────────────────────────────
-  // ▶ createBlockers
-  // ───────────────────────────────
-
-
-createBlockers() {
-	
-	// 🧹 Destroy existing blockers
-this.blockers.forEach(b => b.destroy());
-this.blockers = [];
-
-  // ───── Stage Blocker ─────
-	const stageVisualX = this.stage.x - this.stage.displayWidth * (this.stage.originX - 0.5);
-	const stageVisualY = this.stage.y - this.stage.displayHeight * (this.stage.originY - 0.5);
-
-	const stageBlocker1 = this.add.rectangle(
-  stageVisualX + BLOCKERS.STAGE_BLOCKER.OFFSET_X,
-  stageVisualY + BLOCKERS.STAGE_BLOCKER.OFFSET_Y,
-  this.stage.displayWidth + BLOCKERS.STAGE_BLOCKER.EXTRA_WIDTH,
-  this.stage.displayHeight * BLOCKERS.STAGE_BLOCKER.HEIGHT_MULTIPLIER + BLOCKERS.STAGE_BLOCKER.EXTRA_HEIGHT,
-  0xff0000,
-  0.4
-)
-.setOrigin(0.5, 0.5)
-.setVisible(false);
-
-	this.physics.add.existing(stageBlocker1, true);
-	this.physics.add.collider(this.player, stageBlocker1);
-	
-
-
-  // ───── Kiss Cam Blocker ─────
-  const camWidth = this.kissCamFrame.width * this.kissCamFrame.scaleX + 40;
-  const camHeight = this.kissCamFrame.height * this.kissCamFrame.scaleY;
-
-  const kissCamBlocker = this.add.rectangle(
-    this.kissCamFrame.x,
-    this.kissCamFrame.y,
-    camWidth,
-    camHeight
-  )
-    .setOrigin(0.5, 0.5)
-    .setVisible(false); // Set to true for debug
-
-  this.physics.add.existing(kissCamBlocker, true);
-  this.physics.add.collider(this.player, kissCamBlocker);
-  
-  
-  
-  // ───── Cameraman + Fridge Blocker ─────
-
-const visualX = this.cameraGuy.x - this.cameraGuy.displayWidth * (this.cameraGuy.originX - 0.5);
-const visualY = this.cameraGuy.y - this.cameraGuy.displayHeight * (this.cameraGuy.originY - 0.5);
-
-const cameraFridgeBlocker = this.add.rectangle(
-  visualX + BLOCKERS.CAMERA_BLOCKER.OFFSET_X,
-  visualY + BLOCKERS.CAMERA_BLOCKER.OFFSET_Y,
-  BLOCKERS.CAMERA_BLOCKER.WIDTH,
-  BLOCKERS.CAMERA_BLOCKER.HEIGHT,
-  0xff0000,
-  0.4
-)
-.setOrigin(0.5, 0.5)
-.setVisible(false);
-
-
-this.physics.add.existing(cameraFridgeBlocker, true);
-this.physics.add.collider(this.player, cameraFridgeBlocker);
-
-
-
-// ───── VIP Blocker ─────
-const vipVisualX = this.vip.x - this.vip.displayWidth * (this.vip.originX - 0.5);
-const vipVisualY = this.vip.y - this.vip.displayHeight * (this.vip.originY - 0.5);
-
-const vipBlocker1 = this.add.rectangle(
-  vipVisualX + 4,  // tweak offsets as needed
-  vipVisualY - 42,
-  95,
-  10,
-  0xff0000,
-  0.4
-)
-.setOrigin(0.5, 0.5)
-.setVisible(false); // set to true for debug
-
-this.physics.add.existing(vipBlocker1, true);
-this.physics.add.collider(this.player, vipBlocker1);
-
-
-
-const vipBlocker2 = this.add.rectangle(
-  vipVisualX + 4,  // tweak offsets as needed
-  vipVisualY + 22,
-  100,
-  30,
-  0xff0000,
-  0.4
-)
-.setOrigin(0.5, 0.5)
-.setVisible(false); // set to true for debug
-
-this.physics.add.existing(vipBlocker2, true);
-this.physics.add.collider(this.player, vipBlocker2);
-
-
-this.blockers.push(stageBlocker1);
-this.blockers.push(kissCamBlocker);
-this.blockers.push(cameraFridgeBlocker);
-this.blockers.push(vipBlocker1, vipBlocker2);
-
-}
-
 
 // ───────────────────────────────
 // ▶ createGameOverDialog

@@ -115,5 +115,18 @@ muteBtn.addEventListener("click", () => {
   });
 }, 500);
 
+
+
+setTimeout(() => {
+  const title = document.getElementById("top-left-title");
+  const bottom = document.getElementById("bottom-bar");
+
+  debugLog(
+    `wrapper: ${wrapperSize.width}x${wrapperSize.height}`,
+    `\ntitle offset: ${title?.offsetTop}, ${title?.offsetLeft}`,
+    `\nbottom offset: ${bottom?.offsetTop}, ${bottom?.offsetLeft}`
+  );
+}, 1000);
+
  
 };

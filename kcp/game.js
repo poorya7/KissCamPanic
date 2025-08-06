@@ -3,17 +3,17 @@ import ScoreService from "./services/ScoreService.js";
 import SoundManager from "./utils/SoundManager.js";
 
 window.onload = () => {
-  const gameWidth = 1280;  // Landscape width
-  const gameHeight = 720;  // Landscape height
+  const gameWidth = 1280;
+  const gameHeight = 720;
 
   const config = {
     type: Phaser.AUTO,
     pixelArt: true,
     scale: {
-      mode: Phaser.Scale.NONE,
+      mode: Phaser.Scale.FIT, // ✅ auto-scale while preserving aspect ratio
       width: gameWidth,
       height: gameHeight,
-      autoCenter: Phaser.Scale.CENTER_BOTH
+      autoCenter: Phaser.Scale.CENTER_BOTH // ✅ center with letterboxing
     },
     render: {
       pixelArt: true,

@@ -1,38 +1,18 @@
 import MainScene from "./scenes/MainScene.js";
 import ScoreService from "./services/ScoreService.js";
-import SoundManager from "./utils/SoundManager.js"; // ✅ make sure this path is correct
+import SoundManager from "./utils/SoundManager.js";
 
 window.onload = () => {
-  // 📱 Detect mobile + portrait
-  const isMobile = /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
-  const gameWrapper = document.getElementById("game-wrapper");
-
-  function checkOrientation() {
-    const isPortrait = window.innerHeight > window.innerWidth;
-    if (isMobile && isPortrait) {
-      gameWrapper.style.display = "none";
-    } else {
-      gameWrapper.style.display = "block";
-    }
-  }
-
-  // Initial check + listeners
-  checkOrientation();
-  window.addEventListener("resize", checkOrientation);
-  window.addEventListener("orientationchange", checkOrientation);
-
-  const wrapperSize = {
-    width: gameWrapper.clientWidth,
-    height: gameWrapper.clientHeight,
-  };
+  const gameWidth = 1280;  // Landscape width
+  const gameHeight = 720;  // Landscape height
 
   const config = {
     type: Phaser.AUTO,
     pixelArt: true,
     scale: {
       mode: Phaser.Scale.NONE,
-      width: wrapperSize.width,
-      height: wrapperSize.height,
+      width: gameWidth,
+      height: gameHeight,
       autoCenter: Phaser.Scale.CENTER_BOTH
     },
     render: {

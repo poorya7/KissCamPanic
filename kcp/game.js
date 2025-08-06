@@ -3,10 +3,31 @@ import ScoreService from "./services/ScoreService.js";
 import SoundManager from "./utils/SoundManager.js"; // ✅ make sure this path is correct
 
 window.onload = () => {
-  const wrapper = document.getElementById("game-wrapper");
+  // 📱 Detect mobile + portrait
+  const isMobile = /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
+  const gameWrapper = document.getElementById("game-wrapper");
+  const warningOverlay = document.getElementById("mobile-warning");
+
+  function checkOrientation() {
+    if (isMobile && window.innerHeight > window.innerWidth) {
+      // Portrait on mobile — show warning
+      warningOverlay.style.display = "flex";
+      gameWrapper.style.display = "none";
+    } else {
+      // Landscape or desktop — show game
+      warningOverlay.style.display = "none";
+      gameWrapper.style.display = "block";
+    }
+  }
+
+  // Initial check + listeners
+  checkOrientation();
+  window.addEventListener("resize", checkOrientation);
+  window.addEventListener("orientationchange", checkOrientation);
+
   const wrapperSize = {
-    width: wrapper.clientWidth,
-    height: wrapper.clientHeight,
+    width: gameWrapper.clientWidth,
+    height: gameWrapper.clientHeight,
   };
 
   const config = {
@@ -64,10 +85,9 @@ window.onload = () => {
       }
     });
 
-    // 💥 SFX Mute Toggle
     sfxBtn.addEventListener("click", () => {
       sfxMuted = !sfxMuted;
-      SoundManager.sfxMuted = sfxMuted; // 🔇 custom mute flag for SFX only
+      SoundManager.sfxMuted = sfxMuted;
       sfxBtn.src = sfxMuted
         ? "./sprites/UI/mutefx.png"
         : "./sprites/UI/unmutefx.png";

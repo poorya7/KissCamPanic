@@ -1,25 +1,6 @@
 
 
 
-#mobile-warning {
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 9999;
-  background: #000;
-  color: #fff;
-  font-family: 'C64', monospace;
-  font-size: 18px;
-  width: 100vw;
-  height: 100vh;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 20px;
-}
-
-
 
 @font-face {
   font-family: 'C64';

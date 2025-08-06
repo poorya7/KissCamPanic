@@ -6,16 +6,12 @@ window.onload = () => {
   // 📱 Detect mobile + portrait
   const isMobile = /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
   const gameWrapper = document.getElementById("game-wrapper");
-  const warningOverlay = document.getElementById("mobile-warning");
 
   function checkOrientation() {
-    if (isMobile && window.innerHeight > window.innerWidth) {
-      // Portrait on mobile — show warning
-      warningOverlay.style.display = "flex";
+    const isPortrait = window.innerHeight > window.innerWidth;
+    if (isMobile && isPortrait) {
       gameWrapper.style.display = "none";
     } else {
-      // Landscape or desktop — show game
-      warningOverlay.style.display = "none";
       gameWrapper.style.display = "block";
     }
   }

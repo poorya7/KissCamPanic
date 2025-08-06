@@ -1,19 +1,22 @@
 import MainScene from "./scenes/MainScene.js";
 import ScoreService from "./services/ScoreService.js";
-import SoundManager from "./utils/SoundManager.js";
+import SoundManager from "./utils/SoundManager.js"; // ✅ make sure this path is correct
 
 window.onload = () => {
-  const gameWidth = 1280;
-  const gameHeight = 720;
+  const wrapper = document.getElementById("game-wrapper");
+  const wrapperSize = {
+    width: wrapper.clientWidth,
+    height: wrapper.clientHeight,
+  };
 
   const config = {
     type: Phaser.AUTO,
     pixelArt: true,
     scale: {
-      mode: Phaser.Scale.FIT, // ✅ auto-scale while preserving aspect ratio
-      width: gameWidth,
-      height: gameHeight,
-      autoCenter: Phaser.Scale.CENTER_BOTH // ✅ center with letterboxing
+      mode: Phaser.Scale.NONE,
+      width: wrapperSize.width,
+      height: wrapperSize.height,
+      autoCenter: Phaser.Scale.CENTER_BOTH
     },
     render: {
       pixelArt: true,
@@ -46,27 +49,34 @@ window.onload = () => {
   let isMuted = false;
   let sfxMuted = false;
 
-  setTimeout(() => {
-    const scene = game.scene.scenes[0];
 
-    muteBtn.addEventListener("click", () => {
-      SoundManager.musicMuted = !SoundManager.musicMuted;
+setTimeout(() => {
+  const scene = game.scene.scenes[0];
 
-      muteBtn.src = SoundManager.musicMuted
-        ? "./sprites/UI/mute.png"
-        : "./sprites/UI/unmute.png";
 
-      if (SoundManager.currentMusic) {
-        SoundManager.currentMusic.setMute(SoundManager.musicMuted);
-      }
-    });
 
-    sfxBtn.addEventListener("click", () => {
-      sfxMuted = !sfxMuted;
-      SoundManager.sfxMuted = sfxMuted;
-      sfxBtn.src = sfxMuted
-        ? "./sprites/UI/mutefx.png"
-        : "./sprites/UI/unmutefx.png";
-    });
-  }, 500);
+muteBtn.addEventListener("click", () => {
+  SoundManager.musicMuted = !SoundManager.musicMuted;
+
+  muteBtn.src = SoundManager.musicMuted
+    ? "sprites/UI/mute.png"
+    : "sprites/UI/unmute.png";
+
+  if (SoundManager.currentMusic) {
+    SoundManager.currentMusic.setMute(SoundManager.musicMuted);
+  }
+});
+
+
+  // 💥 SFX Mute Toggle
+  sfxBtn.addEventListener("click", () => {
+    sfxMuted = !sfxMuted;
+    SoundManager.sfxMuted = sfxMuted; // 🔇 custom mute flag for SFX only
+    sfxBtn.src = sfxMuted
+      ? "sprites/UI/mutefx.png"
+      : "sprites/UI/unmutefx.png";
+  });
+}, 500);
+
+ 
 };

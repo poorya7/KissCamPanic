@@ -143,15 +143,15 @@ async doSave() {
     return;
   }
 
-  console.log("✅ Saving score:", { name, score });
   try {
     await ScoreService.saveScore(name, score);
     this.scene.onSaveName?.(name);
+    this.hideWithAnimation(); // 👈 Only hide after score is submitted
   } catch (e) {
     console.error("❌ Score save failed:", e.message);
+    this.hideWithAnimation(); // 👈 Still hide, but only after error
   }
 
-  this.hideWithAnimation();
 }
 
 

@@ -14,17 +14,43 @@ const colorList = [
 ];
 
 export default class ScoreService {
-  static async saveScore(name, score) {
-    const { error } = await supabase
-      .from('highscores')
-      .insert([{ name, score }]);
+	
+static async saveScore(name, score) {
+  const timestamp = Date.now();  // current time
+  const secret = 'SALT123';      // shared secret - must match function backend
+  const payload = `${name}:${score}:${timestamp}`;
+  const hash = await ScoreService.generateHash(payload, secret);
 
-    if (error) {
-      console.error('❌ Failed to save score:', error.message);
-    } else {
-      console.log('✅ Score saved:', { name, score });
-    }
+  // 🔥 Add this log right before fetch!
+
+  // Call the Supabase Edge Function instead of inserting directly
+  const response = await fetch('https://ccwqodjxxyzdpotpavbd.functions.supabase.co/submit-score', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer ' + supabaseAnonKey  // 👈 Add this line
+  },
+  body: JSON.stringify({ name, score, timestamp, hash }),
+});
+
+
+  let result;
+try {
+  result = await response.json();
+} catch (e) {
+  console.error("❌ Failed to parse JSON response from Edge Function:", e);
+  return;
+}
+
+
+  if (result.error) {
+    console.error('❌ Failed to save score:', result.error);
+  } else {
+    
   }
+}
+
+
 
   static async getTopScores(limit = 20) {
     const { data, error } = await supabase
@@ -81,5 +107,22 @@ export default class ScoreService {
 
   return data.map(entry => entry.score);
 }
+
+
+
+static async generateHash(input, secret) {
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    enc.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+
+  const sig = await crypto.subtle.sign("HMAC", key, enc.encode(input));
+  return [...new Uint8Array(sig)].map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
 
 }

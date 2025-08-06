@@ -42,31 +42,58 @@ if (existing) {
 
   },
 
-  playMusic(key, config = { loop: true, volume: 0.5 }) {
-    if (!this.scene) return;
 
-    // Kill existing music
-    if (this.currentMusic) {
-      if (this.currentMusic.isPlaying) {
-        this.currentMusic.stop();
-      }
-      this.currentMusic.destroy();
-      this.currentMusic = null;
-    }
 
-    // Add & store new music instance
-    this.currentMusic = this.scene.sound.add(key, config);
-    this.currentMusic.setMute(this.musicMuted); // Apply mute status immediately
-    this.currentMusic.play();
 
-  },
 
-  fadeMusicForSFX(sfxKey, fadeDuration = 500) {
+
+playMusic(key, config = { loop: true, volume: 0.5 }) {
+  if (!this.scene) return;
+
+  // Check if the sound key exists
+  if (!this.scene.cache.audio.exists(key)) {
+    console.warn(`❌ Sound key "${key}" not found in audio cache`);
+    return;
+  }
+
+  // Destroy old music if it's valid and not already destroyed
+  if (this.currentMusic && !this.currentMusic.destroyed) {
+    this.currentMusic.stop();
+    this.currentMusic.destroy();
+  }
+
+  // Try to create a new music instance
+  const music = this.scene.sound.add(key, config);
+
+  if (!music || typeof music.play !== "function") {
+    console.warn("❌ Failed to create a valid music object");
+    this.currentMusic = null;
+    return;
+  }
+
+  music.setMute(this.musicMuted);
+  music.play();
+
+  this.currentMusic = music;
+}
+
+
+
+
+
+
+  ,
+
+
+
+
+
+fadeMusicForSFX(sfxKey, fadeDuration = 500) {
   if (!this.scene) return;
 
   const music = this.currentMusic;
 
-  if (music && music.isPlaying) {
+  if (music && music.isPlaying && !music.destroyed) {
     this.scene.tweens.add({
       targets: music,
       volume: 0,
@@ -75,7 +102,7 @@ if (existing) {
         const volume = volumeMap[sfxKey] ?? 1.0;
         const sfx = this.scene.sound.get(sfxKey);
 
-        if (sfx) {
+        if (sfx && !sfx.destroyed) {
           sfx.setVolume(volume);
           sfx.play();
         } else {
@@ -83,12 +110,16 @@ if (existing) {
           newSFX.play();
         }
 
-        if (music && !music.destroyed) {
+        // 💣 BEFORE fading back in, make sure music is still valid
+        if (this.currentMusic && !this.currentMusic.destroyed) {
           this.scene.tweens.add({
-            targets: music,
+            targets: this.currentMusic,
             volume: 1,
             duration: fadeDuration
           });
+        } else {
+          console.warn("🎵 Music was destroyed before fade back in");
+          this.currentMusic = null; // Optional cleanup
         }
       }
     });
@@ -96,6 +127,12 @@ if (existing) {
     this.playSFX(sfxKey);
   }
 }
+
+
+
+
+
+
 
 
 ,

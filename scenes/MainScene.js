@@ -149,28 +149,37 @@ this.mugManager.enableCollision(() => {});
   // ▶ startGame
   // ───────────────────────────────
 startGame() {
+  this.sound.unlock();
+
+  if (!this.cache.audio.exists("bgMusic")) {
+    console.warn("❌ bgMusic audio key not found in cache");
+    return;
+  }
+
   if (!this.bgMusic) {
     this.bgMusic = this.sound.add("bgMusic", {
       loop: true,
       volume: 1,
     });
 
-    this.bgMusic.setMute(SoundManager.musicMuted); // ✅ apply mute state right away
+    if (!this.bgMusic) {
+      console.warn("⚠️ Failed to load bgMusic sound");
+      return;
+    }
+
+    this.bgMusic.setMute(SoundManager.musicMuted);
   }
 
   SoundManager.currentMusic = this.bgMusic;
 
-
-  // 🔊 Start music only now
   if (!this.bgMusic.isPlaying) {
     this.bgMusic.play();
   }
 
   this.gameStarted = true;
-  // ✅ Your other game start logic goes here (e.g., enabling controls, timers, etc.)
 }
 
- 
+
    // ───────────────────────────────
   // ▶ registerResizeHandler
   // ───────────────────────────────
@@ -524,12 +533,11 @@ showGameOverDialog() {
   // ───────────────────────────────
 resetGame() {
   // 🔊 Restart background music if not playing
-  if (!SoundManager.currentMusic || !SoundManager.currentMusic.isPlaying) {
-    SoundManager.playMusic("bgMusic", {
-      loop: true,
-      volume: 1
-    });
-  }
+SoundManager.playMusic("bgMusic", {
+  loop: true,
+  volume: 1
+});
+
 
   // 🧱 Reset blockers
   this.createBlockers();

@@ -1,5 +1,12 @@
+
+
 export default class StartDialog {
+  static _alreadyShown = false;
+
   static show(scene, onStart) {
+    if (StartDialog._alreadyShown) return;
+    StartDialog._alreadyShown = true;
+
     const dialog = scene.add.container(scene.scale.width / 2, scene.scale.height / 2)
       .setDepth(99999)
       .setScrollFactor(0);
@@ -56,15 +63,26 @@ export default class StartDialog {
       add: false
     }).setOrigin(0.5).setInteractive();
 
+    // --- Handlers with cleanup ---
     const destroyAndStart = () => {
       dialog.destroy();
+
+      // 🧹 Remove key listeners
+      scene.input.keyboard.off("keydown-ENTER", enterHandler);
+      scene.input.keyboard.off("keydown-SPACE", spaceHandler);
+      scene.input.keyboard.off("keydown-ESC", escHandler);
+
       onStart?.();
     };
 
+    const enterHandler = () => destroyAndStart();
+    const spaceHandler = () => destroyAndStart();
+    const escHandler = () => destroyAndStart();
+
     okBtn.on("pointerdown", destroyAndStart);
-    scene.input.keyboard.once("keydown-ENTER", destroyAndStart);
-    scene.input.keyboard.once("keydown-SPACE", destroyAndStart);
-    scene.input.keyboard.once("keydown-ESC", destroyAndStart);
+    scene.input.keyboard.once("keydown-ENTER", enterHandler);
+    scene.input.keyboard.once("keydown-SPACE", spaceHandler);
+    scene.input.keyboard.once("keydown-ESC", escHandler);
 
     dialog.add([bg, title, subtitle, controls, shoot, hype, okBtn]);
   }

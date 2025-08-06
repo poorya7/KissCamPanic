@@ -1,15 +1,4 @@
-@media (max-width: 768px) {
-  body {
-    background-color: red !important;
-  }
-}
  
- @font-face {
-  font-family: 'C64';
-  src: url('fonts/c64.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
-}
 
 /* Layout */
 #layout {
@@ -585,18 +574,68 @@ canvas {
   white-space: pre-wrap;
 }
 
-/* Remove body margin/padding */
-body {
-  margin: 0;
-  padding: 0;
-  background-color: #0f0f2e;
-}
-	
-	
-canvas {
-  display: block;
-  margin: 0;
-  padding: 0;
-  border: none;
-  outline: none;
+@media (max-width: 768px) {
+  #layout {
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  #left-column {
+    position: relative !important;
+    transform: rotate(-90deg) !important;
+    transform-origin: top left !important;
+    width: 100vh !important;
+    height: 100vw !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+  }
+
+  #right-sidebar {
+    display: none !important;
+  }
+
+  #top-left-title {
+    margin: 0 !important;
+    width: 200px !important;
+    height: 60px !important;
+    align-self: center !important;
+    background-size: contain !important;
+  }
+
+  #game-wrapper {
+    flex: none !important;
+    width: 540px !important;
+    height: 960px !important;
+    margin: 0 auto !important;
+  }
+
+  #bottom-bar {
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    padding: 10px 20px !important;
+    font-size: 12px !important;
+    width: 100% !important;
+  }
+
+  #socials,
+  #mute-buttons,
+  #controls-hint {
+    margin-top: 10px !important;
+    display: flex !important;
+    justify-content: center !important;
+    width: 100% !important;
+  }
+
+  #mute-buttons {
+    gap: 12px !important;
+  }
+
+  #mute-btn,
+  #mute-sfx-btn {
+    margin-top: 0 !important;
+  }
 }

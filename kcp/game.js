@@ -4,10 +4,15 @@ import SoundManager from "./utils/SoundManager.js"; // ✅ make sure this path i
 
 window.onload = () => {
   const wrapper = document.getElementById("game-wrapper");
-  const wrapperSize = {
-    width: wrapper.clientWidth,
-    height: wrapper.clientHeight,
-  };
+ const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+const wrapperSize = isMobile
+  ? { width: 540, height: 960 }
+  : {
+      width: wrapper.clientWidth,
+      height: wrapper.clientHeight,
+    };
+
 
   const config = {
     type: Phaser.AUTO,

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Supabase Test</title>
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+    const supabase = createClient(
+      "https://ccwqodjxxyzdpotpavbd.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNjd3FvZGp4eHl6ZHBvdHBhdmJkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM3MzkxNjMsImV4cCI6MjA2OTMxNTE2M30.B1_fEPuMTvftVFQ5GgjJRDzzcbvRwvEfgM_NA7M158o"
+    );
+
+    supabase.from("highscores").insert([{ name: "HTMLPlayer", score: 42 }])
+      .then(result => console.log(result))
+      .catch(err => console.error("🔥 Error inserting:", err));
+  </script>
+</head>
+<body>
+  <h1>Supabase Insert Test</h1>
+  <p>Open the Dev Console to see the result.</p>
+</body>
+</html>

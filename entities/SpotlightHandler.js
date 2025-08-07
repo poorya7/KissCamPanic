@@ -49,7 +49,7 @@ export default class SpotlightHandler {
 
 
           // Destroy bubble 4s after showing (5s total)
-          this.scene.time.delayedCall(7000, () => {
+          this.scene.time.delayedCall(8000, () => {
             if (this.bubble) {
               this.bubble.destroy();
               this.bubble = null;

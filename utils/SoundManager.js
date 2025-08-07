@@ -2,7 +2,7 @@ const volumeMap = {
   spawn: 0.3,
   shoot1: 0.9,
   shoot2: 0.9,
-  powerup: 1.0,
+  powerup: 0.7,
   powerup_get: 3,
   top20: 1.2,
   top1 :2.2

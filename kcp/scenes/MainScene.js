@@ -111,16 +111,32 @@ export default class MainScene extends Phaser.Scene {
   // ───────────────────────────────
 create() {
 	
-	const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+
+
+const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 const isPortrait = window.innerHeight > window.innerWidth;
 
 if (isMobile && isPortrait) {
-  this.add.text(10, 10, "ROTATED MODE ACTIVE", {
-    fontFamily: "C64",
-    fontSize: "18px",
-    color: "#ff0000"
-  }).setScrollFactor(0).setDepth(9999);
+  // 1. Rotate the camera
+  this.cameras.main.setRotation(Phaser.Math.DegToRad(-90));
+
+  // 2. Translate camera to center the game in portrait
+  this.cameras.main.setScroll(0, -1920);
+
+  // 3. Scale to fit the portrait screen
+  const scaleX = window.innerWidth / 1080;
+  const scaleY = window.innerHeight / 1920;
+  const scale = Math.min(scaleX, scaleY);
+
+  this.cameras.main.setZoom(scale);
+
+  // 4. Optional: adjust input if needed later
+  this.physics.world.setBounds(0, 0, 1920, 1080);
 }
+
+
+
 
 
 

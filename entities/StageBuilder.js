@@ -33,6 +33,13 @@ export default class StageBuilder {
       .setOrigin(0.9, 0)
       .setDepth(-10)
       .setDisplaySize(325, 128);
+	  
+	  // ───── Police Tape ─────
+    scene.policetape = scene.add.image(scene.scale.width - 240, 65, "policetape")
+      .setOrigin(0.9, 0)
+      .setDepth(-10)
+	  .setScale(0.33);
+      //.setDisplaySize(256,140);
 
     // ───── Top Wall ─────
     scene.wallTop = scene.add.tileSprite(

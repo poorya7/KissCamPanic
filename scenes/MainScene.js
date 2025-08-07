@@ -81,6 +81,7 @@ export default class MainScene extends Phaser.Scene {
 	this.load.image("mug", "sprites/powerups/mug.png");
 	this.load.image("powerup_bar", "sprites/powerups/powerup_bar.png");
 	this.load.image("powerup_fill", "sprites/powerups/powerup_fill2.png");
+	this.load.image("bubble_kisscam", "sprites/props/bubble_kisscam.png");
 
 
 
@@ -299,9 +300,20 @@ this.hr = this.add.sprite(90, 110, "hr1").setScale(0.07);
       repeat: -1
     });
 
-    this.spotlightMarker = this.add.circle(800, 0, 30, 0xffffff, 0.3)
-      .setDepth(1000);
-  }
+const screenWidth = this.scale.width;
+const screenHeight = this.scale.height;
+
+this.spotlightMarker = this.add.circle(screenWidth - 80, screenHeight - 40, 30, 0xffffff, 0.3)
+  .setDepth(1000);
+  
+  
+  this.spotlightBubble = this.add.image(this.spotlightMarker.x+6, this.spotlightMarker.y - 70, "bubble_kisscam")
+  .setScale(0.4)
+  .setDepth(1001)
+  .setAlpha(0.7)  
+   .setVisible(false); // ✅ Hide it at first;
+
+}
 
   // ───────────────────────────────
   // ▶ createBlockers
@@ -553,7 +565,11 @@ SoundManager.playMusic("bgMusic", {
   this.player.disableMovement = false;
 
   if (this.hr) this.hr.setPosition(90, 110);
-  if (this.spotlightMarker) this.spotlightMarker.setPosition(800, 0);
+  const screenWidth = this.scale.width;
+const screenHeight = this.scale.height;
+
+  if (this.spotlightMarker) this.spotlightMarker.setPosition(screenWidth - 80, screenHeight - 40);
+    
 
   // 👥 Clear crowd visuals
   this.crowdGroup.children.each(child => {

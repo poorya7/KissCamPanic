@@ -112,28 +112,33 @@ export default class MainScene extends Phaser.Scene {
 create() {
 	
 
-
-
 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 const isPortrait = window.innerHeight > window.innerWidth;
 
 if (isMobile && isPortrait) {
+  const cam = this.cameras.main;
+
   // 1. Rotate the camera
-  this.cameras.main.setRotation(Phaser.Math.DegToRad(-90));
+  cam.setRotation(Phaser.Math.DegToRad(-90));
 
-  // 2. Translate camera to center the game in portrait
-  this.cameras.main.setScroll(0, -1920);
+  // 2. Translate camera: X becomes Y, Y becomes 0
+  cam.setScroll(0, 0);
 
-  // 3. Scale to fit the portrait screen
+  // 3. Adjust zoom to fit the portrait screen height
   const scaleX = window.innerWidth / 1080;
   const scaleY = window.innerHeight / 1920;
   const scale = Math.min(scaleX, scaleY);
 
-  this.cameras.main.setZoom(scale);
+  cam.setZoom(scale);
 
-  // 4. Optional: adjust input if needed later
-  this.physics.world.setBounds(0, 0, 1920, 1080);
+  // 4. Add debug text (helpful to verify)
+  this.add.text(10, 10, "ROTATED OK", {
+    fontFamily: "C64",
+    fontSize: "18px",
+    color: "#00ff00"
+  }).setScrollFactor(0).setDepth(9999);
 }
+
 
 
 

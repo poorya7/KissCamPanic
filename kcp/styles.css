@@ -1,0 +1,263 @@
+@font-face {
+  font-family: 'C64';
+  src: url('fonts/c64.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+/* Layout */
+#layout {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  font-family: 'C64', monospace;
+  margin: 0;
+  padding: 0;
+}
+
+
+#controls-hint {
+  font-family: 'c64', monospace;
+  font-size: 14px;
+  color: #ffafff;
+  margin-top:35px;
+  text-align: center;
+  text-shadow: 1px 1px #000;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+
+}
+
+.key-hint {
+  color: #ffff99;
+  text-shadow: 1px 1px #000;
+}
+
+
+
+
+#highscore-list div {
+  font-family: "C64", monospace !important;
+  font-size: 10px !important;
+  line-height: 1.8em;
+  white-space: pre;
+  padding: 1px 0;
+  text-shadow: 0 0 4px rgba(255, 255, 255, 0.3);
+}
+
+/* Twitch-style alternating colors */
+#highscore-list div:nth-child(odd) {
+  color: #a970ff; /* Twitch purple */
+}
+
+#highscore-list div:nth-child(even) {
+  color: #00ffe1; /* Neon cyan */
+}
+
+#highscore-list {
+  background-color: transparent;
+  overflow-y: auto;
+  max-height: 600px;
+  scrollbar-width: none; /* Firefox */
+}
+
+/* Hide scrollbar - Chrome/Safari */
+#highscore-list::-webkit-scrollbar {
+  display: none;
+}
+
+
+
+
+
+
+
+/* LEFT COLUMN */
+#left-column {
+  display: flex;
+  flex-direction: column;
+  flex: 3.2;
+  background: #1e1f3f; /* purple-tinted */
+  box-sizing: border-box;
+  overflow: visible;  
+  padding: 60px 20px 40px 0px; /* 🔥 left padding removed */
+}
+
+/* RIGHT SIDEBAR */
+#right-sidebar {
+  flex: 0.6;
+  background: #000;
+  display: flex;
+  flex-direction: column;
+  padding: 40px 30px 40px 20px;
+  box-sizing: border-box;
+}
+
+
+#mute-btn {
+  width: 20px;
+  height: 20px;
+  margin-top: 35px;
+  opacity: 0.8;
+  cursor: pointer;
+}
+
+#mute-btn:hover {
+  opacity: 1;
+  filter: brightness(1.5);
+}
+
+
+#mute-sfx-btn {
+  width: 20px;
+  height: 20px;
+  margin-top: 35px;
+  opacity: 0.8;
+  cursor: pointer;
+}
+
+#mute-sfx-btn:hover {
+  opacity: 1;
+  filter: brightness(1.5);
+}
+
+
+
+
+
+/* Top title bar */
+#top-left-title {
+  width: 300px;
+  height: 70px; /* make taller */
+  background-image: url("sprites/title.png");
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: left center;
+  margin-top: -60px; /* pull up */
+  margin-left: 20px; 
+}
+
+
+/* Game canvas wrapper */
+#game-wrapper {
+  flex: 1;
+  background: #2c0b3f;
+     margin: 0;           /* 🔥 remove purple gap */
+  padding: 0;
+}
+
+/* Bottom bar */
+#bottom-bar {
+  height: 10px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  font-size: 14px;
+}
+
+/* Socials */
+#socials {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+
+.social-icon {
+ margin-top: 30px;
+  width: 20px;
+  height: 20px;
+  opacity: 0.8;
+}
+
+.social-icon:hover {
+  opacity: 1;
+  filter: brightness(1.5);
+  cursor: pointer;
+}
+
+#live-counter {
+  margin-top: 30px; 
+}
+
+#donate-box {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  font-family: "C64", monospace;
+  font-size: 12px;
+  color: #ffccff;
+  margin-top: 34px;
+  margin-right: 10px;
+  opacity: 0.8;
+}
+
+#donate-box a {
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  align-items: center;
+  gap: 6px; /* Adjust for better spacing */
+}
+
+#donate-box:hover {
+  opacity: 1;
+  filter: brightness(1.3);
+}
+
+#coffee-icon {
+  width: 20px;
+  height: 20px;
+  vertical-align: middle;
+  position: relative;
+  top: -17px; 
+}
+
+
+
+#donate-text {
+  font-family: "C64", monospace;
+  font-size: 12px;
+  color: #ffccff;
+}
+
+
+
+/* Highscores */
+#highscores {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  color: white;
+  overflow-y: auto;
+}
+
+#highscore-title {
+  font-size: 18px;
+  color: #ff33cc;
+  margin-bottom: 8px;
+}
+
+#highscore-list {
+  font-size: 14px;
+  white-space: pre-wrap;
+}
+
+/* Remove body margin/padding */
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #0f0f2e;
+}
+	
+	
+canvas {
+  display: block;
+  margin: 0;
+  padding: 0;
+  border: none;
+  outline: none;
+}

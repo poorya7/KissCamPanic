@@ -5,12 +5,13 @@
   font-style: normal;
 }
 
-/* Hide right sidebar on small screens so canvas can take full width */
+
+/* DEBUG: prove mobile CSS is active and hide sidebar hard */
 @media (max-width: 900px) {
-  #right-sidebar {
-    display: none;
-  }
+  body { outline: 3px solid lime !important; }   /* visual proof */
+  #right-sidebar { display: none !important; }   /* force-hide */
 }
+
 
 
 

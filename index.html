@@ -27,11 +27,38 @@
 <body>
 
   <!-- Rotate Device Overlay (shows only in portrait via CSS) -->
-  <div id="rotate-overlay">
-    <div id="rotate-message">
-      🔄 ROTATE YOUR DEVICE
-    </div>
+  <!-- Rotate Device Overlay (shows only in portrait via CSS) -->
+<div id="rotate-overlay">
+  <div class="rotate-wrapper" aria-label="Please rotate your device to landscape">
+    <svg class="rotate-graphic" viewBox="0 0 200 140" role="img" aria-hidden="true">
+      <defs>
+        <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+          <path d="M0,0 L8,4 L0,8 Z"></path>
+        </marker>
+      </defs>
+
+      <!-- Phone outline (portrait) -->
+      <rect x="66" y="16" rx="12" ry="12" width="68" height="108"
+            fill="none" stroke="#ffffff" stroke-width="6"></rect>
+
+      <!-- Speaker notch -->
+      <rect x="94" y="22" width="12" height="4" rx="2" ry="2"
+            fill="#ffffff"></rect>
+
+      <!-- Curved orbit arrow around the phone -->
+      <path class="rotate-arrow"
+            d="M 150 70
+               A 72 48 0 1 1 50 70"
+            fill="none"
+            stroke-width="6"
+            stroke-linecap="round"
+            marker-end="url(#arrowhead)"></path>
+    </svg>
+
+    <div class="rotate-label">ROTATE TO LANDSCAPE</div>
   </div>
+</div>
+
 
   <div id="layout">
     <!-- LEFT SIDE -->

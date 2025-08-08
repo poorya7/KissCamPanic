@@ -60,8 +60,12 @@ window.onload = () => {
           debug: false
         }
       },
-      scene: [MainScene],
-      parent: "game-wrapper"
+	  
+  dom: { createContainer: true },
+  scene: [MainScene],
+  parent: "game-wrapper"
+ 
+  
     };
 
     const game = new Phaser.Game(config);

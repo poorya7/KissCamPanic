@@ -28,34 +28,8 @@ export default class MainScene extends Phaser.Scene {
   constructor() {
     super("MainScene");
 	this.blockers = [];
-	// Base design resolution (your desktop layout)
-// Adjust if your game was authored at different dims.
-	this.DESIGN_W = 800;
-	this.DESIGN_H = 470;
-
   }
  
-// ───────────────────────────────
-// ▶ applyCameraFit
-// ───────────────────────────────
-applyCameraFit() {
-  const vw = this.scale.width;
-  const vh = this.scale.height;
-
-  // Base design size for your stage layout
-  const fitW = vw / this.DESIGN_W;
-  const fitH = vh / this.DESIGN_H;
-
-  // Fit both dimensions — guarantees no cropping in either orientation
-  let zoom = Math.min(fitW, fitH) * 0.98; // small margin from edges
-  zoom = Phaser.Math.Clamp(zoom, 0.8, 2.0);
-
-  const cam = this.cameras.main;
-  cam.setZoom(zoom);
-
-  if (this.stage) cam.centerOn(this.stage.x, this.stage.y);
-}
-
 
 	
 
@@ -171,9 +145,6 @@ this.mugManager.enableCollision(() => {});
       this.player.manualShoot();
     }
   });
-  
-  this.applyCameraFit();
-
 }
   
    // ───────────────────────────────
@@ -211,40 +182,20 @@ startGame() {
 }
 
 
-// ───────────────────────────────
-// ▶ registerResizeHandler
-// ───────────────────────────────
-registerResizeHandler() {
-  // remove old overlay if it exists
-  const old = document.getElementById('orient-debug');
-  if (old) old.remove();
+   // ───────────────────────────────
+  // ▶ registerResizeHandler
+  // ───────────────────────────────
+    registerResizeHandler() {
+  this.scale.on('resize', (gameSize) => {
+    const width = gameSize.width;
+    const height = gameSize.height;
 
-  this._onResize = (gameSize) => {
-    const width  = gameSize?.width  ?? this.scale.width;
-    const height = gameSize?.height ?? this.scale.height;
+    if (this.background) {
+      this.background.setSize(width, height);
+    }
 
-    if (this.background) this.background.setSize(width, height);
-
-    this.isPortrait = height > width;
-
-    // Apply camera fit on every resize
-    this.applyCameraFit();
-  };
-
-  // avoid duplicates
-  this.scale.off('resize', this._onResize, this);
-  this.scale.on('resize', this._onResize, this);
-
-  // iOS Safari sometimes misses resize on rotate — nudge it
-  this._onOrientation = () => setTimeout(() => this._onResize(), 60);
-  window.removeEventListener('orientationchange', this._onOrientation);
-  window.addEventListener('orientationchange', this._onOrientation);
-
-  // run once immediately
-  this._onResize();
+  });
 }
-
-
 
   // ───────────────────────────────
   // ▶ createFlashOverlay

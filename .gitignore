@@ -6,6 +6,3 @@ services/supabaseConfig.js
 # Ignore all env/config files
 .env
 .env.*
-*.zip 
- 
- 

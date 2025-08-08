@@ -179,6 +179,24 @@ createMobileNameInput() {
   ).createFromHTML(html).setDepth(10002);
 
   const el = this.mobileInputDom.getChildByID("tmpName");
+  
+  this.mobileInputEl = el;
+
+// Make the whole dialog tappable to focus the input
+this.setInteractive(
+  new Phaser.Geom.Rectangle(-this.bg.displayWidth/2, -this.bg.displayHeight/2, this.bg.displayWidth, this.bg.displayHeight),
+  Phaser.Geom.Rectangle.Contains
+);
+this.on("pointerup", () => {
+  setTimeout(() => {
+    this.mobileInputEl?.focus({ preventScroll: true });
+    const len = this.mobileInputEl.value.length;
+    try { this.mobileInputEl.setSelectionRange(len, len); } catch {}
+  }, 0);
+});
+
+
+
   el.value = this.enteredName;
 
   // Sync typing from the DOM input to your bitmap text

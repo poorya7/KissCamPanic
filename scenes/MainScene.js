@@ -495,7 +495,6 @@ handlePlayerCaught() {
   this.fadeOutMusic();
 
   this.time.delayedCall(700, () => {
-    if (this.debugText) this.debugText.setText("caught:700ms");
 
     this.triggerFlash(); // 🔊 snap plays here
 
@@ -511,14 +510,11 @@ handlePlayerCaught() {
     });
 
     // 👇 ADD THESE TWO LINES
-    if (this.debugText) this.debugText.setText("caught:before-600ms");
 
     this.time.delayedCall(600, () => {
-      if (this.debugText) this.debugText.setText("caught:inside-600ms");
       try {
         this.showGameOverDialog();
       } catch (e) {
-        if (this.debugText) this.debugText.setText("caught:error " + (e?.message || e));
       }
     });
   });
@@ -548,8 +544,6 @@ fadeOutMusic(duration = 1000) {
   // ───────────────────────────────
 // ───────────────────────────────
 showGameOverDialog() {
-	if (this.debugText) this.debugText.setText("showGameOverDialog() called");
-
 
   const rawScore = this.scoreUI.getRawScore();
 

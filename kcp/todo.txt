@@ -1,8 +1,0 @@
-
-
-update powerup bar
-fix positioning of powerup bar
-make it pulse
-make it exponentially grow instead of linear
-
-fix bug: kiss cam inceases speed 

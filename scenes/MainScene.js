@@ -179,7 +179,7 @@ enableSwipeControls() {
     if (!this.swipeActive || !this.swipeStart) return;
     const v = new Phaser.Math.Vector2(p.x, p.y).subtract(this.swipeStart);
     // small deadzone to avoid jitter
-    if (v.length() < 4) { this.touchDir = null; return; }
+    if (v.length() < 2) { this.touchDir = null; return; }
     this.touchDir = v.normalize();
   });
 
@@ -608,7 +608,7 @@ enableMobileAutoShoot(rateMs = 500) {
 
 handleMovement(baseSpeed = 200) {
   if (this.isTouchDevice && this.touchDir && !this.player.disableMovement) {
-	  baseSpeed=300;
+	  baseSpeed=350;
     let vx = this.touchDir.x * baseSpeed;
     let vy = this.touchDir.y * baseSpeed;
 

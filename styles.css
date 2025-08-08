@@ -5,6 +5,15 @@
   font-style: normal;
 }
 
+/* Hide right sidebar on small screens so canvas can take full width */
+@media (max-width: 900px) {
+  #right-sidebar {
+    display: none;
+  }
+}
+
+
+
 /* Layout */
 #layout {
   display: flex;

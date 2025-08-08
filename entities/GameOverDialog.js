@@ -188,6 +188,8 @@ this.setInteractive(
   Phaser.Geom.Rectangle.Contains
 );
 this.on("pointerup", () => {
+	if (this.scene.debugText) this.scene.debugText.setText("dialog tapped");
+
   setTimeout(() => {
     this.mobileInputEl?.focus({ preventScroll: true });
     const len = this.mobileInputEl.value.length;

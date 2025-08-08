@@ -182,7 +182,7 @@ enableSwipeControls() {
   this.lastTouchPos = null; // dynamic center
   this.touchDir = null;     // normalized vector {x,y}
 
-  this.deadzone = 2; // px movement before counting
+  this.deadzone = 4; // px movement before counting
 
   if (!this.isTouchDevice) return;
 

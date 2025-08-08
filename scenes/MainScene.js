@@ -493,9 +493,18 @@ createGameOverDialog() {
   // ───────────────────────────────
 
 handlePlayerCaught() {
+	
+	if (this.debugText) this.debugText.setText("caught:start");
+
+
+
 	this.fadeOutMusic();
 	
   this.time.delayedCall(700, () => {
+	  
+	  if (this.debugText) this.debugText.setText("caught:700ms");
+	  
+	  
     this.triggerFlash(); // 🔊 snap plays here
 
     // 🔁 Delay chris slightly after snap

@@ -606,7 +606,17 @@ enableMobileAutoShoot(rateMs = 500) {
 // ───────────────────────────────
 handleMovement(baseSpeed = 200) {
   if (this.isTouchDevice && this.touchDir && !this.player.disableMovement) {
-    this.player.setVelocity(this.touchDir.x * baseSpeed, this.touchDir.y * baseSpeed);
+    const vx = this.touchDir.x * baseSpeed;
+    const vy = this.touchDir.y * baseSpeed;
+
+    this.player.setVelocity(vx, vy);
+
+    // 🔁 Face the direction of travel (left/right)
+    if (Math.abs(vx) > 0.01) {
+      this.player.setFlipX(vx < 0);
+      // (optional) mirror HR too so they stay consistent:
+      this.hr?.setFlipX(vx < 0);
+    }
   } else {
     this.player.move(this.cursors, baseSpeed);
   }

@@ -42,6 +42,7 @@ export default class StageBuilder {
     if (isMobile) {
       stageY -= mobileStageOffsetY;
     }
+	scene.stageMobileYOffset = isMobile ? mobileStageOffsetY : 0;
 
     // ───── Stage (uses stageScale ONLY) ─────
     scene.stage = scene.add

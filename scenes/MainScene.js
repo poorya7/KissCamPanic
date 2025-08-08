@@ -260,18 +260,26 @@ startGame() {
   // ▶ createKissCamUI
   // ───────────────────────────────
 createKissCamUI() {
-  const camX = this.stage.x - this.stage.displayWidth * (this.stage.originX - 0.5);
-const camY = this.stage.y - this.stage.displayHeight * (this.stage.originY - 0.5)-150;
-
-
   const FEED_SIZE = 70;
   const OFFSET_X = 10;
   const OFFSET_Y = 4;
 
+  const stage = this.stage;
+
+  // Base position derived from stage (includes scale, origin, etc.)
+  const baseCamX = stage.x - stage.displayWidth * (stage.originX - 0.5);
+  let   baseCamY = stage.y - stage.displayHeight * (stage.originY - 0.5) - 150;
+
+  // If StageBuilder moved the stage up on mobile, cancel that here
+  const yComp = this.stageMobileYOffset || 0;
+
+  const camX = baseCamX;
+  const camY = baseCamY + yComp;
+
   if (!camX || !camY || FEED_SIZE <= 0) {
     console.warn("🚨 Skipping kissCamFeed due to invalid camX or camY");
     return;
-  }
+    }
 
   this.kissCamFeed = this.add.renderTexture(
     camX - FEED_SIZE / 2 + OFFSET_X,
@@ -307,6 +315,7 @@ const camY = this.stage.y - this.stage.displayHeight * (this.stage.originY - 0.5
     }
   });
 }
+
 
   
   // ───────────────────────────────

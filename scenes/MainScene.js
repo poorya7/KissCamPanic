@@ -491,20 +491,12 @@ createGameOverDialog() {
   // ───────────────────────────────
   // ▶ handlePlayerCaught
   // ───────────────────────────────
-
 handlePlayerCaught() {
-	
-	if (this.debugText) this.debugText.setText("caught:start");
+  this.fadeOutMusic();
 
-
-
-	this.fadeOutMusic();
-	
   this.time.delayedCall(700, () => {
-	  
-	  if (this.debugText) this.debugText.setText("caught:700ms");
-	  
-	  
+    if (this.debugText) this.debugText.setText("caught:700ms");
+
     this.triggerFlash(); // 🔊 snap plays here
 
     // 🔁 Delay chris slightly after snap
@@ -518,11 +510,20 @@ handlePlayerCaught() {
       SoundManager.chrisSFX.play();
     });
 
+    // 👇 ADD THESE TWO LINES
+    if (this.debugText) this.debugText.setText("caught:before-600ms");
+
     this.time.delayedCall(600, () => {
-      this.showGameOverDialog();
+      if (this.debugText) this.debugText.setText("caught:inside-600ms");
+      try {
+        this.showGameOverDialog();
+      } catch (e) {
+        if (this.debugText) this.debugText.setText("caught:error " + (e?.message || e));
+      }
     });
   });
 }
+
 
   // ───────────────────────────────
   // ▶ fadeOutMusic

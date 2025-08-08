@@ -110,39 +110,6 @@ export default class MainScene extends Phaser.Scene {
   // ▶ create
   // ───────────────────────────────
 create() {
-	
-
-this.gameContainer = this.add.container(0, 0);
-
-const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-const isPortrait = window.innerHeight > window.innerWidth;
-
-if (isMobile && isPortrait) {
-  const container = this.gameContainer;
-
-  // Rotate the game world -90 degrees (landscape while phone is upright)
-  container.setAngle(-90);
-
-  // Move it into view (since rotation moves origin)
-  container.setPosition(0, 1920);
-
-  // Scale it down to fit screen
-  const scaleX = window.innerWidth / 1080;
-  const scaleY = window.innerHeight / 1920;
-  const scale = Math.min(scaleX, scaleY);
-  container.setScale(scale);
-
-  // Add on-screen debug text
-  const debug = this.add.text(10, 10, "ROTATED CONTAINER", {
-    fontFamily: "C64",
-    fontSize: "16px",
-    color: "#ffff00"
-  }).setScrollFactor(0).setDepth(9999);
-}
-
-
-
-
   this.createFlashOverlay();
   StageBuilder.build(this);
   this.scoreUI = new ScoreUI(this);
@@ -238,8 +205,6 @@ startGame() {
       .setScale(4)
       .setDepth(9999)
       .setAlpha(0);
-	  
-	  this.gameContainer.add(flashOverlay);
   }
 
   // ───────────────────────────────
@@ -267,8 +232,6 @@ const camY = this.stage.y - this.stage.displayHeight * (this.stage.originY - 0.5
   )
     .setOrigin(0, 0)
     .setDepth(1001);
-	
-	this.gameContainer.add(kissCamFeed);
 
   const maskGraphics = this.make.graphics({ x: 0, y: 0, add: false });
   maskGraphics.fillStyle(0xffffff);
@@ -285,8 +248,6 @@ const camY = this.stage.y - this.stage.displayHeight * (this.stage.originY - 0.5
   this.kissCamFrame = this.add.image(camX, camY, "kisscam1")
     .setScale(0.07)
     .setDepth(1000);
-	
-	this.gameContainer.add(kissCamFrame);
 
   this.time.addEvent({
     delay: 700,
@@ -320,7 +281,6 @@ const camY = this.stage.y - this.stage.displayHeight * (this.stage.originY - 0.5
     this.player = new Player(this, 100, 200, "ceo1");
     // ✅ New line (visual-only HR — no physics = no jitter)
 this.hr = this.add.sprite(90, 110, "hr1").setScale(0.07);
-this.gameContainer.add(hr);
 
 
     this.player.hr = this.hr;
@@ -347,15 +307,11 @@ this.spotlightMarker = this.add.circle(screenWidth - 80, screenHeight - 40, 30, 
   .setDepth(1000);
   
   
-  this.gameContainer.add(spotlightMarker);
-  
   this.spotlightBubble = this.add.image(this.spotlightMarker.x+6, this.spotlightMarker.y - 70, "bubble_kisscam")
   .setScale(0.4)
   .setDepth(1001)
   .setAlpha(0.7)  
    .setVisible(false); // ✅ Hide it at first;
-   
-   this.gameContainer.add(spotlightBubble);
 
 }
 
@@ -574,8 +530,6 @@ showGameOverDialog() {
   // ───────────────────────────────
   playPoof(x, y) {
     const poof = this.add.image(x, y, "poof").setDepth(10).setScale(0.05);
-	
-	this.gameContainer.add(poof);
 
     this.tweens.add({
       targets: poof,

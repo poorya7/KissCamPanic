@@ -5,8 +5,8 @@ import SoundManager from "./utils/SoundManager.js"; // ✅ make sure this path i
 window.onload = () => {
   const wrapper = document.getElementById("game-wrapper");
   const wrapperSize = {
-    width: 1920,
-    height: 1080
+    width: wrapper.clientWidth,
+    height: wrapper.clientHeight,
   };
 
   const config = {

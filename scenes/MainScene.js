@@ -181,31 +181,50 @@ startGame() {
   this.gameStarted = true;
 }
 
+
 // ───────────────────────────────
 // ▶ registerResizeHandler
 // ───────────────────────────────
 registerResizeHandler() {
-  // Keep a stable reference so we can remove it later if needed
+  // create the tiny overlay once
+  if (!this._orientEl) {
+    const el = document.createElement('div');
+    el.id = 'orient-debug';
+    Object.assign(el.style, {
+      position: 'fixed',
+      bottom: '8px',
+      left: '8px',
+      padding: '4px 6px',
+      fontFamily: 'monospace',
+      fontSize: '12px',
+      color: '#fff',
+      background: 'rgba(0,0,0,0.7)',
+      borderRadius: '4px',
+      zIndex: 99999,
+      pointerEvents: 'none',
+    });
+    document.body.appendChild(el);
+    this._orientEl = el;
+  }
+
   this._onResize = (gameSize) => {
     const width  = gameSize?.width  ?? this.scale.width;
     const height = gameSize?.height ?? this.scale.height;
 
-    // Keep your current background sizing logic
-    if (this.background) {
-      this.background.setSize(width, height);
-    }
+    // keep your existing background sizing
+    if (this.background) this.background.setSize(width, height);
 
-    // Orientation flag we’ll use later
     this.isPortrait = height > width;
 
-    console.log(`[resize] ${width}x${height} → orientation:`, this.isPortrait ? 'portrait' : 'landscape');
+    // update overlay text
+    this._orientEl.textContent = `${width}×${height} · ${this.isPortrait ? 'PORTRAIT' : 'LANDSCAPE'}`;
   };
 
-  // Avoid double-registering if scene restarts
+  // avoid duplicates
   this.scale.off('resize', this._onResize, this);
   this.scale.on('resize', this._onResize, this);
 
-  // Run once at startup so we log immediately
+  // run once immediately
   this._onResize();
 }
 

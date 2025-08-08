@@ -28,8 +28,42 @@ export default class MainScene extends Phaser.Scene {
   constructor() {
     super("MainScene");
 	this.blockers = [];
+	// Base design resolution (your desktop layout)
+// Adjust if your game was authored at different dims.
+DESIGN_W = 800;
+DESIGN_H = 470;
+
   }
  
+// ───────────────────────────────
+// ▶ applyCameraFit
+// ───────────────────────────────
+applyCameraFit() {
+  const vw = this.scale.width;
+  const vh = this.scale.height;
+
+  // Orientation already set in registerResizeHandler()
+  const fitW = vw / this.DESIGN_W;
+  const fitH = vh / this.DESIGN_H;
+
+  // Portrait: fit height; Landscape: fit width
+  let zoom = this.isPortrait ? fitH : fitW;
+
+  // Small margin so HUD isn't glued to edges
+  zoom *= 0.98;
+
+  // Clamp to keep things readable
+  zoom = Phaser.Math.Clamp(zoom, 0.8, 2.0);
+
+  // Apply & keep world centered on the stage
+  const cam = this.cameras.main;
+  cam.setZoom(zoom);
+
+  // StageBuilder centers the stage; use it as anchor
+  if (this.stage) {
+    cam.centerOn(this.stage.x, this.stage.y);
+  }
+}
 
 	
 
@@ -145,6 +179,9 @@ this.mugManager.enableCollision(() => {});
       this.player.manualShoot();
     }
   });
+  
+  this.applyCameraFit();
+
 }
   
    // ───────────────────────────────
@@ -226,6 +263,9 @@ registerResizeHandler() {
 
   // run once immediately
   this._onResize();
+  
+  this.applyCameraFit();
+
 }
 
 

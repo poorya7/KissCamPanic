@@ -111,6 +111,21 @@ export default class MainScene extends Phaser.Scene {
   // ───────────────────────────────
 
 create() {
+	
+	// 🐞 Debug overlay for mobile
+this.debugText = this.add.text(10, 10, "", {
+  fontFamily: "C64",
+  fontSize: "14px",
+  color: "#ffffff",
+  backgroundColor: "#000000",
+  padding: { x: 6, y: 4 }
+})
+  .setScrollFactor(0)
+  .setDepth(100000)
+  .setAlpha(0.9);
+
+
+
   this.createFlashOverlay();
   StageBuilder.build(this);
   
@@ -523,6 +538,9 @@ fadeOutMusic(duration = 1000) {
   // ───────────────────────────────
 // ───────────────────────────────
 showGameOverDialog() {
+	if (this.debugText) this.debugText.setText("showGameOverDialog() called");
+
+
   const rawScore = this.scoreUI.getRawScore();
 
   // 🧠 Skip rank display if score is not valid

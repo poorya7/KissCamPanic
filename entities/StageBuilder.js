@@ -4,7 +4,7 @@ export default class StageBuilder {
   /**
    * Build the stage & props.
    * @param {Phaser.Scene} scene
-   * @param {{stageScale?: number, propScale?: number}} [opts]
+   * @param {{stageScale?: number, propScale?: number, mobileStageOffsetY?: number}} [opts]
    */
   static build(scene, opts = {}) {
     // ───── Decoupled scales (only stage reacts to mobile by default) ─────
@@ -15,7 +15,10 @@ export default class StageBuilder {
     const stageScale = opts.stageScale ?? (isMobile ? 0.4 : BASE_STAGE);
     const propScale  = opts.propScale  ?? BASE_PROP;
 
-    // Ratios vs your old 0.5 baseline for easy reuse below
+    // Mobile Y offset (default = move stage up 40px on mobile)
+    const mobileStageOffsetY = opts.mobileStageOffsetY ?? 60;
+
+    // Ratios vs your old 0.5 baseline
     const stageRatio = stageScale / 0.5;
     const propRatio  = propScale  / 0.5;
 
@@ -33,7 +36,12 @@ export default class StageBuilder {
     });
 
     const centerX = scene.scale.width / 2;
-    const stageY = 100;
+    let stageY = 100;
+
+    // Move stage up if mobile
+    if (isMobile) {
+      stageY -= mobileStageOffsetY;
+    }
 
     // ───── Stage (uses stageScale ONLY) ─────
     scene.stage = scene.add

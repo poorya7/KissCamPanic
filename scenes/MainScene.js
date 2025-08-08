@@ -181,21 +181,34 @@ startGame() {
   this.gameStarted = true;
 }
 
+// ───────────────────────────────
+// ▶ registerResizeHandler
+// ───────────────────────────────
+registerResizeHandler() {
+  // Keep a stable reference so we can remove it later if needed
+  this._onResize = (gameSize) => {
+    const width  = gameSize?.width  ?? this.scale.width;
+    const height = gameSize?.height ?? this.scale.height;
 
-   // ───────────────────────────────
-  // ▶ registerResizeHandler
-  // ───────────────────────────────
-    registerResizeHandler() {
-  this.scale.on('resize', (gameSize) => {
-    const width = gameSize.width;
-    const height = gameSize.height;
-
+    // Keep your current background sizing logic
     if (this.background) {
       this.background.setSize(width, height);
     }
 
-  });
+    // Orientation flag we’ll use later
+    this.isPortrait = height > width;
+
+    console.log(`[resize] ${width}x${height} → orientation:`, this.isPortrait ? 'portrait' : 'landscape');
+  };
+
+  // Avoid double-registering if scene restarts
+  this.scale.off('resize', this._onResize, this);
+  this.scale.on('resize', this._onResize, this);
+
+  // Run once at startup so we log immediately
+  this._onResize();
 }
+
 
   // ───────────────────────────────
   // ▶ createFlashOverlay

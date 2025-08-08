@@ -2,6 +2,8 @@ import ScoreService from "../services/ScoreService.js";
 
 export default class GameOverDialog extends Phaser.GameObjects.Container {
   constructor(scene) {
+	  this.isMobile = window.matchMedia("(pointer: coarse)").matches;
+
     super(scene, scene.cameras.main.centerX, scene.cameras.main.centerY);
     this.scene = scene;
     this.setDepth(10000);
@@ -156,6 +158,57 @@ async doSave() {
 
 
 
+createMobileNameInput() {
+  // remove old one if any
+  if (this.mobileInputDom) {
+    this.mobileInputDom.destroy();
+    this.mobileInputDom = null;
+  }
+
+  // Create an *invisible but focusable* input to trigger soft keyboard
+  // Keep font-size >=16px so iOS doesn’t zoom.
+  const html = `
+    <input id="tmpName" type="text"
+      inputmode="text" autocomplete="name" autocapitalize="characters"
+      style="opacity:0; width:1px; height:1px; font-size:16px; position:absolute; left:0; top:0;" />
+  `;
+
+  // Position at screen center (position doesn't matter since it's invisible)
+  this.mobileInputDom = this.scene.add.dom(
+    this.scene.cameras.main.centerX,
+    this.scene.cameras.main.centerY
+  ).createFromHTML(html).setDepth(10002);
+
+  const el = this.mobileInputDom.getChildByID("tmpName");
+  el.value = this.enteredName;
+
+  // Sync typing from the DOM input to your bitmap text
+  el.addEventListener("input", () => {
+    this.enteredName = el.value.toUpperCase().slice(0, 30);
+    this.updateNameDisplay();
+  });
+
+  // Allow pressing Enter on the soft keyboard to save
+  el.addEventListener("keydown", (ev) => {
+    if (ev.key === "Enter") {
+      ev.preventDefault();
+      this.doSave();
+    }
+  });
+
+  // IMPORTANT: focus must happen inside a user gesture
+  this.scene.input.once("pointerup", () => {
+    // short delay helps after layout
+    setTimeout(() => {
+      el.focus({ preventScroll: true });
+      const len = el.value.length;
+      try { el.setSelectionRange(len, len); } catch {}
+    }, 0);
+  });
+}
+
+
+
 hideWithAnimation() {
   this.scene.tweens.add({
     targets: this,
@@ -178,6 +231,13 @@ hideWithAnimation() {
         const rank = higherScores + 1;
 
         this.scene.scoreUI.updateRankDisplay?.(rank);
+
+if (this.mobileInputDom) {
+  this.mobileInputDom.destroy();
+  this.mobileInputDom = null;
+}
+// re-enable keyboard capture after dialog closes
+this.scene.input.keyboard.enabled = true;
 
         this.scene.resetGame(); // 🔁 Restart only after rank is recalculated
       });
@@ -250,6 +310,8 @@ showNaughtyDialog() {
 
 
 enableKeyboardInput() {
+	if (this.isMobile) return; // mobile uses DOM input instead
+
   if (this.keyboardEnabled) return;
   this.keyboardEnabled = true;
 
@@ -338,7 +400,24 @@ show(score = 0, rank = "#58 / 321") {
     duration: 400
   });
 
-  this.enableKeyboardInput();
+    this.scene.tweens.add({
+    targets: this,
+    alpha: 1,
+    scale: 1,
+    ease: "back.out",
+    duration: 400
+  });
+
+  // Desktop: keep your current Phaser keyboard flow.
+  // Mobile: use hidden DOM input to trigger soft keyboard.
+  if (this.isMobile) {
+    // prevent Phaser from swallowing keys while typing
+    this.scene.input.keyboard.enabled = false;
+    this.createMobileNameInput();
+  } else {
+    this.enableKeyboardInput();
+  }
+
 }
 
 

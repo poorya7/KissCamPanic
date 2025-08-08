@@ -109,12 +109,18 @@ export default class MainScene extends Phaser.Scene {
   // ───────────────────────────────
   // ▶ create
   // ───────────────────────────────
+
 create() {
   this.createFlashOverlay();
   StageBuilder.build(this);
   this.scoreUI = new ScoreUI(this);
   this.createPlayerAndHR();
   this.createControlsAndProjectiles();
+
+  // ✅ Mobile input setup
+  this.enableSwipeControls();
+  this.enableMobileAutoShoot(500); // tweak rate if you want faster/slower auto fire
+
   this.createCrowdAndColliders();
   this.createKissCamUI();
   this.createKissCamRenderer();
@@ -130,36 +136,64 @@ create() {
   this.powerupManager = new PowerupManager(this);
   this.staplerManager = new StaplerManager(this, this.player);
   this.mugManager = this.powerupManager.mugManager;
-this.powerupManager.staplerManager = this.staplerManager;
-
+  this.powerupManager.staplerManager = this.staplerManager;
 
   this.staplerManager.enableCollision(() => {
     this.powerupManager.activateRapidFire(this.player);
   });
 
-this.mugManager.enableCollision(() => {});
+  this.mugManager.enableCollision(() => {});
 
-
+  // ✅ Only bind manual shooting on desktop
   if (window.matchMedia("(pointer: fine)").matches) {
-  this.input.keyboard.on("keydown-SPACE", (event) => {
-    if (!event.repeat) {
-      this.player.manualShoot();
-    }
-  });
-} else {
-  // Mobile → enable auto shooting
-  this.time.addEvent({
-    delay: 500, // adjust fire rate as needed
-    loop: true,
-    callback: () => {
-      if (this.gameStarted) {
+    this.input.keyboard.on("keydown-SPACE", (event) => {
+      if (!event.repeat) {
         this.player.manualShoot();
       }
+    });
+  }
+}
+
+
+// ───────────────────────────────
+// ▶ enableSwipeControls
+// ───────────────────────────────
+enableSwipeControls() {
+  this.isTouchDevice = window.matchMedia("(pointer: coarse)").matches;
+  this.swipeActive = false;
+  this.swipeStart = null;
+  this.touchDir = null; // normalized vector {x,y}
+
+  if (!this.isTouchDevice) return;
+
+  // Start swipe
+  this.input.on("pointerdown", (p) => {
+    this.swipeActive = true;
+    this.swipeStart = new Phaser.Math.Vector2(p.x, p.y);
+    this.touchDir = null;
+  });
+
+  // Track direction
+  this.input.on("pointermove", (p) => {
+    if (!this.swipeActive || !this.swipeStart) return;
+    const v = new Phaser.Math.Vector2(p.x, p.y).subtract(this.swipeStart);
+    // small deadzone to avoid jitter
+    if (v.length() < 12) { this.touchDir = null; return; }
+    this.touchDir = v.normalize();
+  });
+
+  // End swipe
+  this.input.on("pointerup", () => {
+    this.swipeActive = false;
+    this.swipeStart = null;
+    this.touchDir = null;
+    // stop motion immediately
+    if (this.player && !this.player.disableMovement) {
+      this.player.setVelocity(0, 0);
     }
   });
 }
 
-}
   
    // ───────────────────────────────
   // ▶ startGame
@@ -505,7 +539,7 @@ showGameOverDialog() {
   // ───────────────────────────────
   // ▶ update
   // ───────────────────────────────
- update(time, delta) {
+update(time, delta) {
   if (!this.gameStarted) return;
 
   // 🔄 Update UI
@@ -513,8 +547,8 @@ showGameOverDialog() {
     this.scoreUI.update();
   }
 
-  // 🕹️ Player movement + update
-  this.player.move(this.cursors, 200);
+  // 🕹️ Player movement + update (keyboard on desktop, swipe on mobile)
+  this.handleMovement(200);
 
   this.player.update?.(time, delta);
 
@@ -537,6 +571,45 @@ showGameOverDialog() {
 
   // ⚡ Powerup UI (bar, timer, counter)
   this.powerupManager?.update();
+}
+
+
+// ───────────────────────────────
+// ▶ enableMobileAutoShoot
+// ───────────────────────────────
+enableMobileAutoShoot(rateMs = 500) {
+  this.isTouchDevice = this.isTouchDevice ?? window.matchMedia("(pointer: coarse)").matches;
+  if (!this.isTouchDevice) return;
+
+  // avoid duplicates if scene resets
+  if (this._autoShootTimer) this._autoShootTimer.remove(false);
+
+  this._autoShootTimer = this.time.addEvent({
+    delay: rateMs,
+    loop: true,
+    callback: () => {
+      if (this.gameStarted && !this.player?.disableMovement) {
+        this.player.manualShoot();
+      }
+    }
+  });
+
+  // clean up on shutdown
+  this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+    if (this._autoShootTimer) this._autoShootTimer.remove(false);
+    this._autoShootTimer = null;
+  });
+}
+
+// ───────────────────────────────
+// ▶ handleMovement
+// ───────────────────────────────
+handleMovement(baseSpeed = 200) {
+  if (this.isTouchDevice && this.touchDir && !this.player.disableMovement) {
+    this.player.setVelocity(this.touchDir.x * baseSpeed, this.touchDir.y * baseSpeed);
+  } else {
+    this.player.move(this.cursors, baseSpeed);
+  }
 }
 
   // ───────────────────────────────

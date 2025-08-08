@@ -261,3 +261,36 @@ canvas {
   border: none;
   outline: none;
 }
+/* ───────────────────────────────
+   Rotate Overlay for Mobile Portrait
+─────────────────────────────── */
+#rotate-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100dvh; /* fixes mobile Safari vh bug */
+  background-color: #000;
+  color: #ff33cc; /* 8-bit pink */
+  font-family: "C64", monospace;
+  font-size: 24px;
+  display: none; /* default hidden */
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  z-index: 999999; /* above everything */
+  pointer-events: all; /* block touches/clicks */
+}
+
+#rotate-message {
+  max-width: 80%;
+  line-height: 1.5;
+  text-shadow: 2px 2px #000;
+}
+
+/* Show overlay in portrait orientation */
+@media screen and (orientation: portrait) {
+  #rotate-overlay {
+    display: flex;
+  }
+}

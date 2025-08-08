@@ -85,6 +85,14 @@ export default class StageBuilder {
       .setDepth(-9)
       .setScale(0.15 * propRatio);
 
+
+const isMobile = window.matchMedia("(pointer: coarse)").matches;
+
+if (isMobile) {
+  scene.cameraGuy.x += 30; // tweak pixels to taste
+  scene.vip.x += 30;        // tweak pixels to taste
+}
+
     // ───── Curtain (uses propScale) ─────
     scene.curtain = scene.add
       .image(0, 0, "curtain")

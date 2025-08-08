@@ -113,6 +113,7 @@ export default class MainScene extends Phaser.Scene {
 create() {
   this.createFlashOverlay();
   StageBuilder.build(this);
+  
   this.scoreUI = new ScoreUI(this);
   this.createPlayerAndHR();
   this.createControlsAndProjectiles();

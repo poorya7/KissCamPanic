@@ -201,7 +201,7 @@ Object.assign(el.style, {
 // iOS: don’t delay focus—do it in the same gesture callback
 this.off("pointerup"); // ensure we don’t stack listeners if re-created
 this.on("pointerup", () => {
-  if (this.scene.debugText) this.scene.debugText.setText("dialog tapped");
+  //if (this.scene.debugText) this.scene.debugText.setText("dialog tapped");
   this.mobileInputEl?.focus({ preventScroll: true });
   const len = this.mobileInputEl.value.length;
   try { this.mobileInputEl.setSelectionRange(len, len); } catch {}
@@ -216,7 +216,7 @@ this.setInteractive(
   Phaser.Geom.Rectangle.Contains
 );
 this.on("pointerup", () => {
-	if (this.scene.debugText) this.scene.debugText.setText("dialog tapped");
+//	if (this.scene.debugText) this.scene.debugText.setText("dialog tapped");
 
   setTimeout(() => {
     this.mobileInputEl?.focus({ preventScroll: true });

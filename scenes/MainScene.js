@@ -123,7 +123,7 @@ this.debugText = this.add.text(10, 10, "", {
   .setScrollFactor(0)
   .setDepth(100000)
   .setAlpha(0.9);
-  //.setVisible(false);
+  .setVisible(false);
   
 
 

@@ -30,8 +30,8 @@ export default class MainScene extends Phaser.Scene {
 	this.blockers = [];
 	// Base design resolution (your desktop layout)
 // Adjust if your game was authored at different dims.
-DESIGN_W = 800;
-DESIGN_H = 470;
+	this.DESIGN_W = 800;
+	this.DESIGN_H = 470;
 
   }
  

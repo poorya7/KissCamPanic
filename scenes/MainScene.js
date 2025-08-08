@@ -606,21 +606,33 @@ enableMobileAutoShoot(rateMs = 500) {
 // ───────────────────────────────
 handleMovement(baseSpeed = 200) {
   if (this.isTouchDevice && this.touchDir && !this.player.disableMovement) {
-    const vx = this.touchDir.x * baseSpeed;
-    const vy = this.touchDir.y * baseSpeed;
+    let vx = this.touchDir.x * baseSpeed;
+    let vy = this.touchDir.y * baseSpeed;
+
+    // 🔒 Match desktop’s top-wall rule (no moving up past y < 130)
+    if (vy < 0 && this.player.y < 130) {
+      vy = 0;
+    }
 
     this.player.setVelocity(vx, vy);
 
-    // 🔁 Face the direction of travel (left/right)
+    // Face travel direction (left/right)
     if (Math.abs(vx) > 0.01) {
-      this.player.setFlipX(vx < 0);
-      // (optional) mirror HR too so they stay consistent:
-      this.hr?.setFlipX(vx < 0);
+      const faceLeft = vx < 0;
+      this.player.setFlipX(faceLeft);
+      this.hr?.setFlipX(faceLeft);
+    }
+
+    // (Optional) keep HR glued to player like in Player.move()
+    if (this.hr) {
+      this.hr.setPosition(this.player.x - 5, this.player.y + 5);
     }
   } else {
+    // Desktop / no swipe → use existing logic (has the 130 guard)
     this.player.move(this.cursors, baseSpeed);
   }
 }
+
 
   // ───────────────────────────────
   // ▶ playPoof

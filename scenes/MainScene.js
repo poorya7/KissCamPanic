@@ -607,6 +607,7 @@ enableMobileAutoShoot(rateMs = 500) {
 
 handleMovement(baseSpeed = 200) {
   if (this.isTouchDevice && this.touchDir && !this.player.disableMovement) {
+	  baseSpeed=300;
     let vx = this.touchDir.x * baseSpeed;
     let vy = this.touchDir.y * baseSpeed;
 

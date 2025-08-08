@@ -321,3 +321,26 @@ canvas {
   #controls-hint { display: none; }
   #mobile-controls-hint { display: block; }
 }
+/* iOS notch / island safe areas */
+:root {
+  /* fallback spacing + iOS env() */
+  --safe-right: env(safe-area-inset-right);
+  --safe-left:  env(safe-area-inset-left);
+  --safe-top:   env(safe-area-inset-top);
+  --safe-bot:   env(safe-area-inset-bottom);
+}
+
+/* shrink the usable layout so content never sits under the island */
+#layout {
+  padding-right: max(0px, var(--safe-right));
+  padding-left:  max(0px, var(--safe-left));
+  padding-top:   max(0px, var(--safe-top));
+  padding-bottom:max(0px, var(--safe-bot));
+  box-sizing: border-box;
+}
+
+/* (optional) if you want extra breathing room inside the sidebar too */
+#right-sidebar {
+  padding-right: calc(16px + var(--safe-right));
+  box-sizing: border-box;
+}

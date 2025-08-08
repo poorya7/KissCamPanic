@@ -88,7 +88,7 @@ export default class StageBuilder {
 
 if (isMobile) {
   scene.cameraGuy.x += 80; // tweak pixels to taste
-  scene.vip.x += 80;        // tweak pixels to taste
+  scene.vip.x += 280;        // tweak pixels to taste
 }
 
     // ───── Curtain (uses propScale) ─────

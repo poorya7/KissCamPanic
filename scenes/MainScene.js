@@ -137,7 +137,7 @@ this.debugText = this.add.text(10, 10, "", {
 
   // ✅ Mobile input setup
   this.enableSwipeControls();
-  this.enableMobileAutoShoot(500); // tweak rate if you want faster/slower auto fire
+  this.enableMobileAutoShoot(50); // tweak rate if you want faster/slower auto fire
 
   this.createCrowdAndColliders();
   this.createKissCamUI();

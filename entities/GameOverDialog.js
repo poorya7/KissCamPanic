@@ -181,6 +181,34 @@ createMobileNameInput() {
   const el = this.mobileInputDom.getChildByID("tmpName");
   
   this.mobileInputEl = el;
+  
+  // Make it *just* visible & reasonably sized so iOS accepts programmatic focus
+Object.assign(el.style, {
+  opacity: "0.01",
+  width: "40px",
+  height: "40px",
+  position: "fixed",
+  left: "50%",
+  top: "50%",
+  transform: "translate(-50%, -50%)",
+  zIndex: "9999",
+  background: "transparent",
+  border: "0",
+  // We focus programmatically, so keep it from eating touches:
+  pointerEvents: "none",
+});
+
+// iOS: don’t delay focus—do it in the same gesture callback
+this.off("pointerup"); // ensure we don’t stack listeners if re-created
+this.on("pointerup", () => {
+  if (this.scene.debugText) this.scene.debugText.setText("dialog tapped");
+  this.mobileInputEl?.focus({ preventScroll: true });
+  const len = this.mobileInputEl.value.length;
+  try { this.mobileInputEl.setSelectionRange(len, len); } catch {}
+});
+
+
+
 
 // Make the whole dialog tappable to focus the input
 this.setInteractive(

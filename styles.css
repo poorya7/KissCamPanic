@@ -6,14 +6,6 @@
 }
 
 
-/* DEBUG: prove mobile CSS is active and hide sidebar hard */
-@media (max-width: 900px) {
-  body { outline: 3px solid lime !important; }   /* visual proof */
-  #right-sidebar { display: none !important; }   /* force-hide */
-}
-
-
-
 
 /* Layout */
 #layout {

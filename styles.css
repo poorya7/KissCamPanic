@@ -308,3 +308,14 @@ canvas {
 #rotate-overlay {
   touch-action: none;
 }
+
+
+/* Force-hide in landscape on all devices */
+@media screen and (orientation: landscape) {
+  #rotate-overlay { display: none !important; }
+}
+
+/* Show ONLY on touch devices in portrait */
+@media screen and (orientation: portrait) and (pointer: coarse) {
+  #rotate-overlay { display: flex !important; }
+}

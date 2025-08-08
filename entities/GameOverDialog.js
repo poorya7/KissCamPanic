@@ -2,9 +2,8 @@ import ScoreService from "../services/ScoreService.js";
 
 export default class GameOverDialog extends Phaser.GameObjects.Container {
   constructor(scene) {
-	  this.isMobile = window.matchMedia("(pointer: coarse)").matches;
-
     super(scene, scene.cameras.main.centerX, scene.cameras.main.centerY);
+	this.isMobile = window.matchMedia("(pointer: coarse)").matches;
     this.scene = scene;
     this.setDepth(10000);
     this.setScale(1);
@@ -400,13 +399,7 @@ show(score = 0, rank = "#58 / 321") {
     duration: 400
   });
 
-    this.scene.tweens.add({
-    targets: this,
-    alpha: 1,
-    scale: 1,
-    ease: "back.out",
-    duration: 400
-  });
+
 
   // Desktop: keep your current Phaser keyboard flow.
   // Mobile: use hidden DOM input to trigger soft keyboard.

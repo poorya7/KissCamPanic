@@ -176,52 +176,66 @@ this.debugText = this.add.text(10, 10, "", {
 // ───────────────────────────────
 // ▶ enableSwipeControls
 // ───────────────────────────────
-
 enableSwipeControls() {
   this.isTouchDevice = window.matchMedia("(pointer: coarse)").matches;
   this.swipeActive = false;
-  this.lastTouchPos = null; // dynamic center
-  this.touchDir = null;     // normalized vector {x,y}
-  this.deadzone = 2;        // px movement before we count it
+  this.lastTouchPos = null;
+  this.touchDir = null;
+
+  this.deadzone = 5;        // ignore tiny shakes
+  this.directionThreshold = 20; // px before we change direction
+  this.prevDir = null;      // keep last committed direction
 
   if (!this.isTouchDevice) return;
 
-  // Start touch
+  // Touch start
   this.input.on("pointerdown", (p) => {
     this.swipeActive = true;
     this.lastTouchPos = new Phaser.Math.Vector2(p.x, p.y);
     this.touchDir = null;
+    this.prevDir = null;
   });
 
-  // Track direction relative to last frame's touch
+  // Touch move
   this.input.on("pointermove", (p) => {
     if (!this.swipeActive || !this.lastTouchPos) return;
 
-    const v = new Phaser.Math.Vector2(p.x, p.y).subtract(this.lastTouchPos);
+    const dx = p.x - this.lastTouchPos.x;
+    const dy = p.y - this.lastTouchPos.y;
 
-    // reset "center" every frame
+    // always update last pos (dynamic center)
     this.lastTouchPos.set(p.x, p.y);
 
-    // deadzone to kill jitter
-    if (v.length() < this.deadzone) {
+    // deadzone for tiny tremors
+    if (Math.abs(dx) < this.deadzone && Math.abs(dy) < this.deadzone) {
       this.touchDir = null;
       return;
     }
 
-    // normalized direction vector
-    this.touchDir = v.normalize();
+    // horizontal-only game
+    let dirX = dx > 0 ? 1 : -1;
+
+    // if we have a previous direction, only change when movement is big enough
+    if (this.prevDir && dirX !== this.prevDir && Math.abs(dx) < this.directionThreshold) {
+      dirX = this.prevDir; // stick to old dir until threshold crossed
+    }
+
+    this.prevDir = dirX;
+    this.touchDir = new Phaser.Math.Vector2(dirX, 0); // normalized
   });
 
-  // End touch
+  // Touch end
   this.input.on("pointerup", () => {
     this.swipeActive = false;
     this.lastTouchPos = null;
     this.touchDir = null;
+    this.prevDir = null;
     if (this.player && !this.player.disableMovement) {
       this.player.setVelocity(0, 0);
     }
   });
 }
+
 
   
    // ───────────────────────────────

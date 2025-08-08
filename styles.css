@@ -262,50 +262,36 @@ canvas {
   outline: none;
 }
 
-/* Show overlay in portrait on touch devices only */
-@media screen and (orientation: portrait) and (pointer: coarse) {
-  #rotate-overlay { display: flex; }
-}
-
-/* Layout & accessibility */
-.rotate-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  padding: env(safe-area-inset-top) env(safe-area-inset-right)
-           env(safe-area-inset-bottom) env(safe-area-inset-left);
-  user-select: none;
-}
-
-/* SVG sizing — scales cleanly on any phone */
-.rotate-graphic {
-  width: 56vw;
-  max-width: 420px;
-  min-width: 220px;
-}
-
-/* Pixel/8-bit-ish label using your C64 font */
-.rotate-label {
+/* ───────────────────────────────
+   Rotate Overlay for Mobile Portrait
+─────────────────────────────── */
+#rotate-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100dvh; /* fixes mobile Safari vh bug */
+  background-color: #000;
+  color: #ff33cc; /* 8-bit pink */
   font-family: "C64", monospace;
-  font-size: clamp(18px, 3.2vw, 28px);
-  letter-spacing: 2px;
-  color: #ffccff;
+  font-size: 24px;
+  display: none; /* default hidden */
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  z-index: 999999; /* above everything */
+  pointer-events: all; /* block touches/clicks */
+}
+
+#rotate-message {
+  max-width: 80%;
+  line-height: 1.5;
   text-shadow: 2px 2px #000;
 }
 
-/* Styled arrow with subtle motion cue */
-.rotate-arrow {
-  stroke: #ff33cc;
-  stroke-dasharray: 10 12;
-  animation: rotate-dash 1.2s linear infinite;
-}
-
-@keyframes rotate-dash {
-  to { stroke-dashoffset: -44; }
-}
-
-/* Make sure the overlay fully blocks input on mobile */
-#rotate-overlay {
-  touch-action: none;
+/* Show overlay in portrait orientation */
+@media screen and (orientation: portrait) {
+  #rotate-overlay {
+    display: flex;
+  }
 }

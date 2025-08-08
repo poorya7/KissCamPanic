@@ -42,28 +42,20 @@ applyCameraFit() {
   const vw = this.scale.width;
   const vh = this.scale.height;
 
-  // Orientation already set in registerResizeHandler()
+  // Base design size for your stage layout
   const fitW = vw / this.DESIGN_W;
   const fitH = vh / this.DESIGN_H;
 
-  // Portrait: fit height; Landscape: fit width
-  let zoom = this.isPortrait ? fitH : fitW;
-
-  // Small margin so HUD isn't glued to edges
-  zoom *= 0.98;
-
-  // Clamp to keep things readable
+  // Fit both dimensions — guarantees no cropping in either orientation
+  let zoom = Math.min(fitW, fitH) * 0.98; // small margin from edges
   zoom = Phaser.Math.Clamp(zoom, 0.8, 2.0);
 
-  // Apply & keep world centered on the stage
   const cam = this.cameras.main;
   cam.setZoom(zoom);
 
-  // StageBuilder centers the stage; use it as anchor
-  if (this.stage) {
-    cam.centerOn(this.stage.x, this.stage.y);
-  }
+  if (this.stage) cam.centerOn(this.stage.x, this.stage.y);
 }
+
 
 	
 
@@ -223,50 +215,35 @@ startGame() {
 // ▶ registerResizeHandler
 // ───────────────────────────────
 registerResizeHandler() {
-  // create the tiny overlay once
-  if (!this._orientEl) {
-    const el = document.createElement('div');
-    el.id = 'orient-debug';
-    Object.assign(el.style, {
-      position: 'fixed',
-      bottom: '8px',
-      left: '8px',
-      padding: '4px 6px',
-      fontFamily: 'monospace',
-      fontSize: '12px',
-      color: '#fff',
-      background: 'rgba(0,0,0,0.7)',
-      borderRadius: '4px',
-      zIndex: 99999,
-      pointerEvents: 'none',
-    });
-    document.body.appendChild(el);
-    this._orientEl = el;
-  }
+  // remove old overlay if it exists
+  const old = document.getElementById('orient-debug');
+  if (old) old.remove();
 
   this._onResize = (gameSize) => {
     const width  = gameSize?.width  ?? this.scale.width;
     const height = gameSize?.height ?? this.scale.height;
 
-    // keep your existing background sizing
     if (this.background) this.background.setSize(width, height);
 
     this.isPortrait = height > width;
 
-    // update overlay text
-    this._orientEl.textContent = `${width}×${height} · ${this.isPortrait ? 'PORTRAIT' : 'LANDSCAPE'}`;
+    // Apply camera fit on every resize
+    this.applyCameraFit();
   };
 
   // avoid duplicates
   this.scale.off('resize', this._onResize, this);
   this.scale.on('resize', this._onResize, this);
 
+  // iOS Safari sometimes misses resize on rotate — nudge it
+  this._onOrientation = () => setTimeout(() => this._onResize(), 60);
+  window.removeEventListener('orientationchange', this._onOrientation);
+  window.addEventListener('orientationchange', this._onOrientation);
+
   // run once immediately
   this._onResize();
-  
-  this.applyCameraFit();
-
 }
+
 
 
   // ───────────────────────────────

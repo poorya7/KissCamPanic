@@ -181,7 +181,8 @@ enableSwipeControls() {
   this.swipeActive = false;
   this.lastTouchPos = null; // dynamic center
   this.touchDir = null;     // normalized vector {x,y}
-  this.deadzone = 5;        // px movement before we count it
+
+  this.deadzone = 10; // px movement before counting
 
   if (!this.isTouchDevice) return;
 
@@ -203,8 +204,7 @@ enableSwipeControls() {
 
     // deadzone to kill jitter
     if (v.length() < this.deadzone) {
-      this.touchDir = null;
-      return;
+      return; // ✅ keep the previous this.touchDir instead of clearing it
     }
 
     // normalized direction vector
@@ -215,7 +215,7 @@ enableSwipeControls() {
   this.input.on("pointerup", () => {
     this.swipeActive = false;
     this.lastTouchPos = null;
-    this.touchDir = null;
+    this.touchDir = null; // stop moving when finger lifted
     if (this.player && !this.player.disableMovement) {
       this.player.setVelocity(0, 0);
     }

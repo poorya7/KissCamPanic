@@ -140,11 +140,25 @@ this.powerupManager.staplerManager = this.staplerManager;
 this.mugManager.enableCollision(() => {});
 
 
+  if (window.matchMedia("(pointer: fine)").matches) {
   this.input.keyboard.on("keydown-SPACE", (event) => {
     if (!event.repeat) {
       this.player.manualShoot();
     }
   });
+} else {
+  // Mobile → enable auto shooting
+  this.time.addEvent({
+    delay: 500, // adjust fire rate as needed
+    loop: true,
+    callback: () => {
+      if (this.gameStarted) {
+        this.player.manualShoot();
+      }
+    }
+  });
+}
+
 }
   
    // ───────────────────────────────

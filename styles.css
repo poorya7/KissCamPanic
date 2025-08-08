@@ -295,3 +295,29 @@ canvas {
     display: flex;
   }
 }
+
+
+/* Hide keyboard control hint on touch devices */
+@media (pointer: coarse) {
+  #controls-hint {
+    display: none;
+  }
+}
+
+/* Hide mobile hint on desktop, show desktop hint only on non-touch */
+#mobile-controls-hint {
+  display: none;
+  font-family: 'C64', monospace;
+  font-size: 14px;
+  color: #ffafff;
+  margin-top: 35px;
+  text-align: center;
+  text-shadow: 1px 1px #000;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+@media (pointer: coarse) {
+  #controls-hint { display: none; }
+  #mobile-controls-hint { display: block; }
+}

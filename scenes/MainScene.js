@@ -176,36 +176,47 @@ this.debugText = this.add.text(10, 10, "", {
 // ───────────────────────────────
 // ▶ enableSwipeControls
 // ───────────────────────────────
+
 enableSwipeControls() {
   this.isTouchDevice = window.matchMedia("(pointer: coarse)").matches;
   this.swipeActive = false;
-  this.swipeStart = null;
-  this.touchDir = null; // normalized vector {x,y}
+  this.lastTouchPos = null; // dynamic center
+  this.touchDir = null;     // normalized vector {x,y}
+  this.deadzone = 2;        // px movement before we count it
 
   if (!this.isTouchDevice) return;
 
-  // Start swipe
+  // Start touch
   this.input.on("pointerdown", (p) => {
     this.swipeActive = true;
-    this.swipeStart = new Phaser.Math.Vector2(p.x, p.y);
+    this.lastTouchPos = new Phaser.Math.Vector2(p.x, p.y);
     this.touchDir = null;
   });
 
-  // Track direction
+  // Track direction relative to last frame's touch
   this.input.on("pointermove", (p) => {
-    if (!this.swipeActive || !this.swipeStart) return;
-    const v = new Phaser.Math.Vector2(p.x, p.y).subtract(this.swipeStart);
-    // small deadzone to avoid jitter
-    if (v.length() < 2) { this.touchDir = null; return; }
+    if (!this.swipeActive || !this.lastTouchPos) return;
+
+    const v = new Phaser.Math.Vector2(p.x, p.y).subtract(this.lastTouchPos);
+
+    // reset "center" every frame
+    this.lastTouchPos.set(p.x, p.y);
+
+    // deadzone to kill jitter
+    if (v.length() < this.deadzone) {
+      this.touchDir = null;
+      return;
+    }
+
+    // normalized direction vector
     this.touchDir = v.normalize();
   });
 
-  // End swipe
+  // End touch
   this.input.on("pointerup", () => {
     this.swipeActive = false;
-    this.swipeStart = null;
+    this.lastTouchPos = null;
     this.touchDir = null;
-    // stop motion immediately
     if (this.player && !this.player.disableMovement) {
       this.player.setVelocity(0, 0);
     }

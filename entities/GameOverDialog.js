@@ -290,6 +290,9 @@ this.scene.input.keyboard.enabled = true;
       });
     }
   });
+  
+  window.setTouchCaptureEnabled(true);
+
 }
 
 
@@ -414,6 +417,8 @@ show(score = 0, rank = "#58 / 321") {
   this.setVisible(true);
   this.setAlpha(0);
   this.setScale(0.8);
+  
+  window.setTouchCaptureEnabled(false);
 
   // 👇 Store refs to text for cleanup later
   this.titleText = this.scene.add.text(0, -90, "YOU WERE CAUGHT!", {

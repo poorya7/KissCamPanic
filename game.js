@@ -6,8 +6,11 @@ import SoundManager from "./utils/SoundManager.js";
 
 window.setTouchCaptureEnabled = (on) => {
   const el = document.getElementById("touch-capture");
-  if (el) el.style.pointerEvents = on ? "auto" : "none";
+  if (!el) return;
+  const isTouch = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+  el.style.pointerEvents = on && isTouch ? "auto" : "none";
 };
+
 // start with it OFF so menus/buttons work
 window.setTouchCaptureEnabled(false);
 

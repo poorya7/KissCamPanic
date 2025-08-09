@@ -5,6 +5,12 @@ export default class CanvasConfirm {
 
     const container = scene.add.container(cx, cy).setDepth(100000).setScrollFactor(0);
 
+    // Fullscreen transparent blocker so taps don't hit the game underneath
+    const blocker = scene.add.zone(-cx, -cy, scene.scale.width, scene.scale.height)
+      .setOrigin(0, 0)
+      .setScrollFactor(0)
+      .setInteractive(); // absorbs taps
+
     // Card
     const w = Math.min(320, Math.floor(scene.scale.width * 0.8));
     const h = 160;
@@ -33,18 +39,20 @@ export default class CanvasConfirm {
       align: "center",
     }).setOrigin(0.5);
 
-    // BIG invisible hit zone around the button (easier mobile taps)
+    // BIG invisible hit zone (easy mobile taps)
     const hitW = Math.max(btn.width + 60, 200);
     const hitH = Math.max(btn.height + 20, 48);
     const hit = scene.add.rectangle(0, 28, hitW, hitH, 0x000000, 0.001)
       .setOrigin(0.5)
       .setInteractive({ useHandCursor: true });
 
-    // Visual feedback on press
     const press = () => btn.setStyle({ backgroundColor: "#ff33bb" });
     const release = () => btn.setStyle({ backgroundColor: "#ff00aa" });
 
+    let done = false;
     const confirm = () => {
+      if (done) return;
+      done = true;
       // 🔊 Guaranteed unlock on canvas gesture
       try {
         const sm = scene.sound;
@@ -56,7 +64,7 @@ export default class CanvasConfirm {
       onConfirm?.();
     };
 
-    // Listen on both the big hit zone AND the text (belt & suspenders)
+    // Button-specific handlers
     hit.on("pointerdown", press);
     hit.on("pointerup",   () => { release(); confirm(); });
     hit.on("pointerout",  release);
@@ -66,7 +74,18 @@ export default class CanvasConfirm {
     btn.on("pointerup",   () => { release(); confirm(); });
     btn.on("pointerout",  release);
 
-    container.add([gfx, title, hit, btn]);
+    // 🔒 Fallback: if button events don’t fire, ANY first tap on canvas will confirm
+    const onceAnyTap = () => confirm();
+    scene.input.once("pointerdown", onceAnyTap);
+
+    // Clean up the fallback if button handled it
+    const cleanupAfter = () => {
+      scene.input.off("pointerdown", onceAnyTap);
+    };
+    hit.on("pointerup", cleanupAfter);
+    btn.on("pointerup", cleanupAfter);
+
+    container.add([blocker, gfx, title, hit, btn]);
     return container;
   }
 }

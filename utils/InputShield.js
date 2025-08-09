@@ -1,7 +1,10 @@
 // utils/InputShield.js
 let shieldEl = null;
-let boundStart = null;
-let boundMove = null;
+let onStart = null;
+let onMove = null;
+
+// remember styles so we can restore
+let saved = null;
 
 function ensureShield() {
   if (shieldEl) return shieldEl;
@@ -12,37 +15,96 @@ function ensureShield() {
     inset: "0",
     width: "100vw",
     height: "100dvh",
-    zIndex: "999997",          // just under your tutorial overlay
+    // Make sure it's above EVERYTHING
+    zIndex: "2147483647",
     pointerEvents: "auto",
-    touchAction: "none",       // hint: don't treat as scroll/zoom
-    background: "transparent", // invisible
+    touchAction: "none",       // hint to browsers
+    background: "transparent",
     userSelect: "none",
   });
   return shieldEl;
 }
 
 export function enableInputShield() {
-  if (!shieldEl) ensureShield();
+  ensureShield();
+
   if (!document.body.contains(shieldEl)) {
     document.body.appendChild(shieldEl);
   }
 
-  // prevent scroll / pull-to-refresh
-  if (!boundStart) {
-    boundStart = (e) => e.preventDefault();
-    boundMove  = (e) => e.preventDefault();
-    document.addEventListener("touchstart", boundStart, { passive: false });
-    document.addEventListener("touchmove",  boundMove,  { passive: false });
+  // iOS/Safari: preventDefault must be on the event target
+  if (!onStart) {
+    onStart = (e) => e.preventDefault();
+    onMove  = (e) => e.preventDefault();
+    shieldEl.addEventListener("touchstart", onStart, { passive: false });
+    shieldEl.addEventListener("touchmove",  onMove,  { passive: false });
+  }
+
+  // Lock scroll everywhere (Chrome pull-to-refresh, scrollable sidebars, etc.)
+  if (!saved) {
+    const html = document.documentElement;
+    const body = document.body;
+    const rightSidebar = document.getElementById("right-sidebar");
+
+    saved = {
+      scrollY: window.scrollY,
+      htmlOverflow: html.style.overflow,
+      bodyOverflow: body.style.overflow,
+      htmlOverscroll: html.style.overscrollBehavior,
+      bodyOverscroll: body.style.overscrollBehavior,
+      bodyPos: body.style.position,
+      bodyTop: body.style.top,
+      sidebarOverflow: rightSidebar ? rightSidebar.style.overflow : null,
+    };
+
+    // Stop global scroll & pull-to-refresh
+    html.style.overflow = "hidden";
+    body.style.overflow = "hidden";
+    html.style.overscrollBehavior = "none";
+    body.style.overscrollBehavior = "none";
+
+    // Freeze body position so page can't move
+    body.style.position = "fixed";
+    body.style.top = `-${saved.scrollY}px`;
+
+    // Also stop the highscores panel specifically
+    if (rightSidebar) rightSidebar.style.overflow = "hidden";
   }
 }
 
 export function disableInputShield() {
+  // Remove listeners
+  if (onStart) {
+    shieldEl.removeEventListener("touchstart", onStart, { passive: false });
+    shieldEl.removeEventListener("touchmove",  onMove,  { passive: false });
+    onStart = onMove = null;
+  }
+
+  // Remove shield
   if (shieldEl && shieldEl.parentNode) {
     shieldEl.parentNode.removeChild(shieldEl);
   }
-  if (boundStart) {
-    document.removeEventListener("touchstart", boundStart, { passive: false });
-    document.removeEventListener("touchmove",  boundMove,  { passive: false });
-    boundStart = boundMove = null;
+
+  // Restore scroll styles/position
+  if (saved) {
+    const html = document.documentElement;
+    const body = document.body;
+    const rightSidebar = document.getElementById("right-sidebar");
+
+    html.style.overflow = saved.htmlOverflow ?? "";
+    body.style.overflow = saved.bodyOverflow ?? "";
+    html.style.overscrollBehavior = saved.htmlOverscroll ?? "";
+    body.style.overscrollBehavior = saved.bodyOverscroll ?? "";
+    body.style.position = saved.bodyPos ?? "";
+    body.style.top = saved.bodyTop ?? "";
+
+    // restore scroll position
+    window.scrollTo(0, saved.scrollY || 0);
+
+    if (rightSidebar && saved.sidebarOverflow != null) {
+      rightSidebar.style.overflow = saved.sidebarOverflow;
+    }
+
+    saved = null;
   }
 }

@@ -33,34 +33,48 @@ function bootWhenLandscape(bootFn) {
 }
 
 // ───────────────────────────────
-// ▶ iOS Safari swipe/bounce blocker
+// ▶ iOS Safari swipe/bounce blocker (hardened)
 // ───────────────────────────────
 const __isTouch = () => window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
 const __isIOS = () =>
   /iPad|iPhone|iPod/.test(navigator.userAgent) ||
   (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 
-// Hoisted function reference so removeEventListener works
-const __preventScroll = (e) => e.preventDefault();
+// One shared listener so removeEventListener works
+const __preventScroll = (e) => {
+  if (e.cancelable) {
+    e.preventDefault();
+  }
+};
 
 let __iosBlockEnabled = false;
 
 function enableIOSSwipeBlock() {
   if (!__isIOS() || !__isTouch()) return;
-  // Always re-attach when called in landscape
-  document.addEventListener("touchmove", __preventScroll, { passive: false });
-  document.addEventListener("gesturestart", __preventScroll, { passive: false });
+
+  // Attach to multiple levels in capture phase for stubborn Safari cases
+  const opts = { passive: false, capture: true };
+  [window, document, document.documentElement, document.body].forEach((t) => {
+    t.addEventListener("touchstart", __preventScroll, opts);
+    t.addEventListener("touchmove", __preventScroll, opts);
+    t.addEventListener("gesturestart", __preventScroll, opts);
+  });
+
   __iosBlockEnabled = true;
 }
 
-
 function disableIOSSwipeBlock() {
   if (!__iosBlockEnabled) return;
-  document.removeEventListener("touchmove", __preventScroll);
-  document.removeEventListener("gesturestart", __preventScroll);
-  __iosBlockEnabled = false; // reset so enable works next time
-}
 
+  const opts = { capture: true };
+  [window, document, document.documentElement, document.body].forEach((t) => {
+    t.removeEventListener("touchstart", __preventScroll, opts);
+    t.removeEventListener("touchmove", __preventScroll, opts);
+    t.removeEventListener("gesturestart", __preventScroll, opts);
+  });
+
+  __iosBlockEnabled = false;
+}
 
 // ───────────────────────────────
 // ▶ Window Onload

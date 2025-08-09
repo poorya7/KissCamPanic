@@ -14,6 +14,7 @@ import PowerupManager from "../entities/powerups/PowerupManager.js";
 import StageBuilder from "../entities/StageBuilder.js";
 import StartDialog from "../entities/StartDialog.js"; 	
 import BlockerManager from "../entities/BlockerManager.js"; 
+import StartPrompt from "../entities/ui/StartPrompt.js";
 
 
 
@@ -73,7 +74,7 @@ this.debugText = this.add.text(10, 10, "", {
   this.gameStarted = false;
 
   SoundManager.init(this);
-  StartDialog.show(this, () => this.startGame());
+  StartPrompt.show(this, () => this.startGame());
 
   this.powerupManager = new PowerupManager(this);
   this.staplerManager = new StaplerManager(this, this.player);

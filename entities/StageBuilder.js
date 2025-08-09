@@ -64,15 +64,17 @@ export default class StageBuilder {
     }
 
     // ───── Top Wall (draw full width on mobile; otherwise to exit door) ─────
-    const wallTopWidth = !isMobile && scene.exitDoor
-      ? (scene.exitDoor.x - 20)
-      : (scene.scale.width - 20);
+    // ───── Top Wall (draw full width on mobile; otherwise to exit door) ─────
+const wallTopWidth = (!isMobile && scene.exitDoor)
+  ? Math.floor(scene.exitDoor.x - 20)   // stop before the door on desktop
+  : Math.ceil(scene.scale.width);       // full width on mobile (no gap)
 
-    scene.wallTop = scene.add
-      .tileSprite(0, 0, wallTopWidth, 128, "wall_top")
-      .setOrigin(0, 0)
-      .setDepth(-11)
-      .setTileScale(0.5 * propRatio, 0.5 * propRatio);
+scene.wallTop = scene.add
+  .tileSprite(0, 0, wallTopWidth, 128, "wall_top")
+  .setOrigin(0, 0)
+  .setDepth(-11)
+  .setTileScale(0.5 * propRatio, 0.5 * propRatio);
+
 
     // ───── Cameraguy (uses propScale) ─────
     scene.cameraGuy = scene.add

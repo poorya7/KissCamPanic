@@ -1,40 +1,29 @@
+import CanvasConfirm from "./CanvasConfirm.js";
+
+
 export default class StartDialog {
   static _alreadyShown = false;
 
   static show(scene, onStart) {
 
-    // ────────────────
-    // 📱 Mobile: show swipe overlay instead of dialog
-    // ────────────────
-    if (window.matchMedia && window.matchMedia("(pointer: coarse)").matches) {
-      SwipeAnyOverlay.show("swipe anywhere to move", () => {
-        try {
-          const sm = scene.sound;
-          const ctx = sm?.context;
+    // ───────────────
+	// 📱 Mobile: full-screen overlay, then tiny canvas confirm
+   // ────────────────
+if (window.matchMedia && window.matchMedia("(pointer: coarse)").matches) {
+  SwipeAnyOverlay.show("swipe anywhere to move", () => {
+    // Allow taps to reach the canvas confirm
+    window.setTouchCaptureEnabled(false);
 
-          // Resume context if paused
-          if (ctx && ctx.state !== "running") {
-            ctx.resume();
-          }
+    CanvasConfirm.show(scene, "Ready?", "LET'S GO", () => {
+      // Re-enable global capture for gameplay swipes
+      window.setTouchCaptureEnabled(true);
+      onStart?.();
+    });
+  });
+  return;
+}
 
-          // 🔊 Warm-up: brief inaudible blip to unlock audio
-          if (ctx) {
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            gain.gain.value = 0.00001; // effectively silent
-            osc.connect(gain).connect(ctx.destination);
-            osc.start(0);
-            osc.stop(ctx.currentTime + 0.01);
-          }
 
-          // Phaser's own unlock (safe if already unlocked)
-          if (sm?.locked) sm.unlock();
-        } catch {}
-
-        onStart?.();
-      });
-      return;
-    }
 
     // ────────────────
     // 🖥 Desktop: show original dialog

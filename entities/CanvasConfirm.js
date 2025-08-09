@@ -1,0 +1,59 @@
+export default class CanvasConfirm {
+  static show(scene, titleText = "Ready?", buttonText = "LET'S GO", onConfirm) {
+    // Container centered on game canvas
+    const cx = scene.scale.width / 2;
+    const cy = scene.scale.height / 2;
+
+    const container = scene.add.container(cx, cy).setDepth(100000).setScrollFactor(0);
+
+    // Backdrop (rounded rect)
+    const w = Math.min(320, Math.floor(scene.scale.width * 0.8));
+    const h = 160;
+
+    const gfx = scene.add.graphics().setScrollFactor(0);
+    gfx.fillStyle(0x000000, 0.85);
+    gfx.fillRoundedRect(-w / 2, -h / 2, w, h, 12);
+    gfx.lineStyle(2, 0xffffff, 1);
+    gfx.strokeRoundedRect(-w / 2, -h / 2, w, h, 12);
+
+    // Title
+    const title = scene.add.text(0, -34, titleText, {
+      fontFamily: "C64",
+      fontSize: "20px",
+      color: "#FFFFFF",
+      stroke: "#000000",
+      strokeThickness: 3,
+      align: "center",
+    }).setOrigin(0.5);
+
+    // Button
+    const btn = scene.add.text(0, 28, ` ${buttonText} `, {
+      fontFamily: "C64",
+      fontSize: "18px",
+      color: "#ffffff",
+      backgroundColor: "#ff00aa",
+      padding: { x: 12, y: 6 },
+      align: "center",
+    }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+
+    // Button handlers
+    const confirm = () => {
+      // 🔊 Final, guaranteed unlock on canvas gesture
+      try {
+        const sm = scene.sound;
+        const ctx = sm?.context;
+        if (ctx && ctx.state !== "running") ctx.resume();
+        if (sm?.locked) sm.unlock();
+      } catch {}
+      container.destroy(true);
+      onConfirm?.();
+    };
+
+    btn.on("pointerdown", confirm);
+    btn.on("pointerover", () => btn.setStyle({ backgroundColor: "#ff33bb" }));
+    btn.on("pointerout",  () => btn.setStyle({ backgroundColor: "#ff00aa" }));
+
+    container.add([gfx, title, btn]);
+    return container;
+  }
+}

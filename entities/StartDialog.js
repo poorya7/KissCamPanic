@@ -5,31 +5,25 @@ export default class StartDialog {
   static _alreadyShown = false;
 
   static show(scene, onStart) {
+    // ✅ one-time guard for BOTH desktop & mobile
+    if (StartDialog._alreadyShown) return;
+    StartDialog._alreadyShown = true;
 
-    // ───────────────
-	// 📱 Mobile: full-screen overlay, then tiny canvas confirm
-   // ────────────────
-if (window.matchMedia && window.matchMedia("(pointer: coarse)").matches) {
-  SwipeAnyOverlay.show("swipe anywhere to move", () => {
-    // Allow taps to reach the canvas confirm
-    window.setTouchCaptureEnabled(false);
-
-    CanvasConfirm.show(scene, "Ready?", "LET'S GO", () => {
-      // Re-enable global capture for gameplay swipes
-      window.setTouchCaptureEnabled(true);
-      onStart?.();
-    });
-  });
-  return;
-}
-
-
+    // 📱 Mobile: overlay → canvas confirm (your existing mobile branch stays here)
+    if (window.matchMedia && window.matchMedia("(pointer: coarse)").matches) {
+      SwipeAnyOverlay.show("swipe anywhere to move", () => {
+        window.setTouchCaptureEnabled(false);
+        CanvasConfirm.show(scene, "Ready?", "LET'S GO", () => {
+          window.setTouchCaptureEnabled(true);
+          onStart?.();
+        });
+      });
+      return;
+    }
 
     // ────────────────
     // 🖥 Desktop: show original dialog
     // ────────────────
-    if (StartDialog._alreadyShown) return;
-    StartDialog._alreadyShown = true;
 
     const dialog = scene.add
       .container(scene.scale.width / 2, scene.scale.height / 2)

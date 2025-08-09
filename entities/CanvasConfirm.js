@@ -50,16 +50,23 @@ export default class CanvasConfirm {
     const release = () => btn.setStyle({ backgroundColor: "#ff00aa" });
 
     let done = false;
+    let onceAnyTap; // declare so we can remove it
+
     const confirm = () => {
       if (done) return;
       done = true;
-      // 🔊 Guaranteed unlock on canvas gesture
+
+      // remove the fallback listener in case it hasn't fired yet
+      try { scene.input.off("pointerdown", onceAnyTap); } catch {}
+
+      // 🔊 guaranteed unlock
       try {
         const sm = scene.sound;
         const ctx = sm?.context;
         if (ctx && ctx.state !== "running") ctx.resume();
         if (sm?.locked) sm.unlock();
       } catch {}
+
       container.destroy(true);
       onConfirm?.();
     };
@@ -75,15 +82,8 @@ export default class CanvasConfirm {
     btn.on("pointerout",  release);
 
     // 🔒 Fallback: if button events don’t fire, ANY first tap on canvas will confirm
-    const onceAnyTap = () => confirm();
+    onceAnyTap = () => confirm();
     scene.input.once("pointerdown", onceAnyTap);
-
-    // Clean up the fallback if button handled it
-    const cleanupAfter = () => {
-      scene.input.off("pointerdown", onceAnyTap);
-    };
-    hit.on("pointerup", cleanupAfter);
-    btn.on("pointerup", cleanupAfter);
 
     container.add([blocker, gfx, title, hit, btn]);
     return container;

@@ -11,27 +11,6 @@ window.setTouchCaptureEnabled = (on) => {
   el.style.pointerEvents = on && isTouch ? "auto" : "none";
 };
 
-// Allow clicks through the capture layer in specific areas
-const touchCaptureEl = document.getElementById("touch-capture");
-if (touchCaptureEl) {
-  touchCaptureEl.addEventListener("pointerdown", (e) => {
-    const target = e.target;
-    // If the tap is inside socials or mute buttons, ignore the capture
-    if (
-      e.clientY >= window.innerHeight - 80 && // bottom area of screen
-      (document.getElementById("socials")?.contains(document.elementFromPoint(e.clientX, e.clientY)) ||
-       document.getElementById("mute-buttons")?.contains(document.elementFromPoint(e.clientX, e.clientY)))
-    ) {
-      e.stopPropagation();
-      e.preventDefault();
-      // Manually trigger click on the element under the capture layer
-      const elUnder = document.elementFromPoint(e.clientX, e.clientY);
-      elUnder?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    }
-  });
-}
-
-
 // start with it OFF so menus/buttons work
 window.setTouchCaptureEnabled(false);
 
@@ -146,6 +125,48 @@ function disableIOSSwipeBlock() {
 // ───────────────────────────────
 window.onload = () => {
   const wrapper = document.getElementById("game-wrapper");
+  
+
+
+// Let taps on socials/mute pass through the overlay (mobile only)
+const setupMobilePassThrough = () => {
+  const overlay = document.getElementById("touch-capture");
+  if (!overlay) return;
+
+  const forward = (e) => {
+    const isTouch = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+    if (!isTouch) return;
+
+    // Peek UNDER the overlay
+    const prev = overlay.style.pointerEvents;
+    overlay.style.pointerEvents = "none";
+    const elUnder = document.elementFromPoint(e.clientX, e.clientY);
+    overlay.style.pointerEvents = prev;
+
+    const hitAllowed = elUnder && (elUnder.closest("#socials") || elUnder.closest("#mute-buttons"));
+    if (!hitAllowed) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    const tgt = elUnder.closest("a, button, img") || elUnder;
+
+    // Fire both pointer and click so all handlers get it
+    tgt.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, cancelable: true, pointerId: 1 }));
+    tgt.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
+  };
+
+  overlay.addEventListener("pointerdown", forward, { passive: false });
+  overlay.addEventListener("click", forward, { passive: false });
+};
+
+
+
+
+setupMobilePassThrough();
+
+
+
 
   const bootGame = () => {
     // iOS Safari: block bounce / pull-to-refresh while game is active

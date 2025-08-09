@@ -268,7 +268,7 @@ hideWithAnimation() {
       this.setScale(1);
       this.y = this.scene.cameras.main.centerY;
 
-      ScoreService.getTopScores(); // 🔄 Refresh highscore panel
+      ScoreService.getTopScores();
 
       ScoreService.getAllScores().then(scoreList => {
         this.scene.scoreUI.scoreList = scoreList;
@@ -276,23 +276,23 @@ hideWithAnimation() {
         const rawScore = this.scene.scoreUI.getRawScore();
         const higherScores = scoreList.filter(s => s > rawScore).length;
         const rank = higherScores + 1;
-
         this.scene.scoreUI.updateRankDisplay?.(rank);
 
-if (this.mobileInputDom) {
-  this.mobileInputDom.destroy();
-  this.mobileInputDom = null;
-}
-// re-enable keyboard capture after dialog closes
-this.scene.input.keyboard.enabled = true;
+        if (this.mobileInputDom) {
+          this.mobileInputDom.destroy();
+          this.mobileInputDom = null;
+        }
+        // re-enable keyboard capture after dialog closes
+        this.scene.input.keyboard.enabled = true;
 
-        this.scene.resetGame(); // 🔁 Restart only after rank is recalculated
+        // ✅ NOW that the dialog is gone, re-enable full-window swipe
+        window.setTouchCaptureEnabled(true);
+
+        this.scene.resetGame(); // restart after rank update
       });
     }
   });
   
-  window.setTouchCaptureEnabled(true);
-
 }
 
 

@@ -36,15 +36,13 @@ export default class SwipeTutorialOverlay {
 
     this.container = scene.add.container(0, 0).setDepth(100000).setScrollFactor(0);
 
-    // --- Solid black background (always fully opaque) ---
-    const bgSolid = scene.add.rectangle(0, 0, w, h, 0x000000, 1).setOrigin(0);
-    this.container.add(bgSolid);
+    // Single rectangle, alpha depends on fullBlack or opacity
+const bg = scene.add.rectangle(
+  0, 0, w, h, 0x000000,
+  this.fullBlack ? 1 : this.opacity
+).setOrigin(0);
+this.container.add(bg);
 
-    // If you want a dim look instead, pass { fullBlack:false, opacity:0.7 }
-    if (!this.fullBlack) {
-      const bgDim = scene.add.rectangle(0, 0, w, h, 0x000000, this.opacity).setOrigin(0);
-      this.container.add(bgDim);
-    }
 
     const title = scene.add.text(
       w / 2, h * 0.38,

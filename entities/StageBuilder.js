@@ -15,7 +15,7 @@ export default class StageBuilder {
     const stageScale = opts.stageScale ?? (isMobile ? 0.4 : BASE_STAGE);
     const propScale  = opts.propScale  ?? BASE_PROP;
 
-    // Mobile Y offset (default = move stage up 40px on mobile)
+    // Mobile Y offset (default = move stage up 60px on mobile)
     const mobileStageOffsetY = opts.mobileStageOffsetY ?? 60;
 
     // Ratios vs your old 0.5 baseline
@@ -39,34 +39,37 @@ export default class StageBuilder {
     let stageY = 100;
 
     // Move stage up if mobile
-    if (isMobile) {
-      stageY -= mobileStageOffsetY;
-    }
-	scene.stageMobileYOffset = isMobile ? mobileStageOffsetY : 0;
+    if (isMobile) stageY -= mobileStageOffsetY;
+    scene.stageMobileYOffset = isMobile ? mobileStageOffsetY : 0;
 
-    // ───── Stage (uses stageScale ONLY) ─────
+    // ───── Stage (swap sprite on mobile; uses stageScale ONLY) ─────
     scene.stage = scene.add
-      .image(centerX, stageY, "stage")
+      .image(centerX, stageY, isMobile ? "stage_mobile" : "stage")
       .setOrigin(0.48, 0.12)
       .setScale(stageScale);
 
-    // ───── Exit Door (uses propScale) ─────
-    scene.exitDoor = scene.add
-      .image(scene.scale.width - 20, 0, "exitdoor")
-      .setOrigin(0.9, 0)
-      .setDepth(-10)
-      .setDisplaySize(325 * propRatio, 128 * propRatio);
+    // ───── Exit Door + Tape (SKIP on mobile) ─────
+    if (!isMobile) {
+      scene.exitDoor = scene.add
+        .image(scene.scale.width - 20, 0, "exitdoor")
+        .setOrigin(0.9, 0)
+        .setDepth(-10)
+        .setDisplaySize(325 * propRatio, 128 * propRatio);
 
-    // ───── Police Tape (uses propScale) ─────
-    scene.policetape = scene.add
-      .image(scene.scale.width - 240, 65, "policetape")
-      .setOrigin(0.9, 0)
-      .setDepth(-10)
-      .setScale(0.33 * propRatio);
+      scene.policetape = scene.add
+        .image(scene.scale.width - 240, 65, "policetape")
+        .setOrigin(0.9, 0)
+        .setDepth(-10)
+        .setScale(0.33 * propRatio);
+    }
 
-    // ───── Top Wall (uses propScale) ─────
+    // ───── Top Wall (draw full width on mobile; otherwise to exit door) ─────
+    const wallTopWidth = !isMobile && scene.exitDoor
+      ? (scene.exitDoor.x - 20)
+      : (scene.scale.width - 20);
+
     scene.wallTop = scene.add
-      .tileSprite(0, 0, scene.exitDoor.x - 20, 128, "wall_top")
+      .tileSprite(0, 0, wallTopWidth, 128, "wall_top")
       .setOrigin(0, 0)
       .setDepth(-11)
       .setTileScale(0.5 * propRatio, 0.5 * propRatio);
@@ -85,18 +88,19 @@ export default class StageBuilder {
       .setDepth(-9)
       .setScale(0.15 * propRatio);
 
+    if (isMobile) {
+      scene.cameraGuy.x += 80; // tweak to taste
+      scene.vip.x += 280;      // tweak to taste
+    }
 
-if (isMobile) {
-  scene.cameraGuy.x += 80; // tweak pixels to taste
-  scene.vip.x += 280;        // tweak pixels to taste
-}
-
-    // ───── Curtain (uses propScale) ─────
-    scene.curtain = scene.add
-      .image(0, 0, "curtain")
-      .setOrigin(-1.5, -0.13)
-      .setDepth(-9)
-      .setScale(0.18 * propRatio);
+    // ───── Curtain (SKIP on mobile) ─────
+    if (!isMobile) {
+      scene.curtain = scene.add
+        .image(0, 0, "curtain")
+        .setOrigin(-1.5, -0.13)
+        .setDepth(-9)
+        .setScale(0.18 * propRatio);
+    }
 
     // ───── Plant (uses propScale) ─────
     scene.plant = scene.add

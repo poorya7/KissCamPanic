@@ -1,5 +1,4 @@
-// ui/StartPrompt.js
-import StartDialog from "./StartDialog.js";           // your existing class
+import StartDialog from "../StartDialog.js";
 import SwipeTutorialOverlay from "./SwipeTutorialOverlay.js";
 
 function isMobile() {

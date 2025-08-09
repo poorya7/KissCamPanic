@@ -23,7 +23,8 @@ window.SwipeAnyOverlay = (() => {
   const hide = () => {
     const el = getEl();
     if (!el) return;
-    el.classList.remove("show");
+    el.classList.remove("overlay-active");
+
     el.innerHTML = "";
     // Keep capture ON for gameplay (no browser refresh/scroll during play)
     window.setTouchCaptureEnabled(true);
@@ -35,7 +36,7 @@ const show = (msg = "swipe anywhere to move", onDismiss) => {
   const el = getEl();
   if (!el) return;
 
-  el.classList.add("show");
+  el.classList.add("overlay-active");
   el.innerHTML = `<div class="overlay-msg">${msg}</div>`;
 
   window.setTouchCaptureEnabled(true);

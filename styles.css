@@ -349,22 +349,16 @@ canvas {
 /* Full-screen overlay that can sit above game, highscores, and bottom bar */
 #touch-capture {
   position: fixed;
-  inset: 0;                    /* top:0; right:0; bottom:0; left:0 */
-  z-index: 2147483647;         /* above everything */
-  background: rgba(0, 0, 0, 0.8); /* 80% black */
-  display: none;               /* hidden by default */
-  pointer-events: none;        /* JS will flip via setTouchCaptureEnabled(true/false) */
+  inset: 0;
+  z-index: 2147483647;
+  background: transparent;     /* transparent by default */
+  display: block;              /* keep it in the flow to capture */
+  pointer-events: none;        /* JS toggles this */
   touch-action: none;          /* block native gestures */
 }
 
-/* When visible, center the message */
-#touch-capture.show {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 /* Center text style */
+
 #touch-capture .overlay-msg {
   font-family: "C64", monospace;
   font-size: clamp(18px, 4vw, 28px);
@@ -374,3 +368,12 @@ canvas {
   user-select: none;
   padding: 16px;
 }
+
+
+#touch-capture.overlay-active {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.8); /* 80% black */
+}
+

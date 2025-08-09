@@ -1,5 +1,5 @@
 // entities/ui/SwipeTutorialOverlay.js
-import { enableInputShield, disableInputShield } from "../../utils/InputShield.js";
+import { enableInputShield /*, disableInputShield */ } from "../../utils/InputShield.js";
 
 export default class SwipeTutorialOverlay {
   constructor(scene, opts = {}) {
@@ -100,10 +100,10 @@ export default class SwipeTutorialOverlay {
   }
 
   hide() {
-    // Remove swipe listeners + shield
+    // Remove swipe listeners (we keep the InputShield active during gameplay)
     document.removeEventListener("touchstart", this._onDocStart, { passive: false });
     document.removeEventListener("touchmove",  this._onDocMove,  { passive: false });
-    disableInputShield();
+    // disableInputShield(); // <= NOT here
 
     // Remove DOM
     if (this._root && this._root.parentNode) this._root.parentNode.removeChild(this._root);

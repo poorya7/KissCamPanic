@@ -1,3 +1,4 @@
+
 // utils/InputShield.js
 let shieldEl = null;
 let onStart = null;
@@ -45,6 +46,7 @@ export function enableInputShield() {
     const html = document.documentElement;
     const body = document.body;
     const rightSidebar = document.getElementById("right-sidebar");
+    const bottomBar = document.getElementById("bottom-bar"); // optional
 
     saved = {
       scrollY: window.scrollY,
@@ -55,6 +57,8 @@ export function enableInputShield() {
       bodyPos: body.style.position,
       bodyTop: body.style.top,
       sidebarOverflow: rightSidebar ? rightSidebar.style.overflow : null,
+      sidebarPointer: rightSidebar ? rightSidebar.style.pointerEvents : null,
+      bottomPointer: bottomBar ? bottomBar.style.pointerEvents : null,
     };
 
     // Stop global scroll & pull-to-refresh
@@ -67,8 +71,14 @@ export function enableInputShield() {
     body.style.position = "fixed";
     body.style.top = `-${saved.scrollY}px`;
 
-    // Also stop the highscores panel specifically
-    if (rightSidebar) rightSidebar.style.overflow = "hidden";
+    // Also stop the highscores panel specifically + let touches pass through
+    if (rightSidebar) {
+      rightSidebar.style.overflow = "hidden";
+      rightSidebar.style.pointerEvents = "none";
+    }
+    if (bottomBar) {
+      bottomBar.style.pointerEvents = "none";
+    }
   }
 }
 
@@ -90,6 +100,7 @@ export function disableInputShield() {
     const html = document.documentElement;
     const body = document.body;
     const rightSidebar = document.getElementById("right-sidebar");
+    const bottomBar = document.getElementById("bottom-bar");
 
     html.style.overflow = saved.htmlOverflow ?? "";
     body.style.overflow = saved.bodyOverflow ?? "";
@@ -101,8 +112,12 @@ export function disableInputShield() {
     // restore scroll position
     window.scrollTo(0, saved.scrollY || 0);
 
-    if (rightSidebar && saved.sidebarOverflow != null) {
-      rightSidebar.style.overflow = saved.sidebarOverflow;
+    if (rightSidebar) {
+      if (saved.sidebarOverflow != null) rightSidebar.style.overflow = saved.sidebarOverflow;
+      if (saved.sidebarPointer != null)  rightSidebar.style.pointerEvents = saved.sidebarPointer;
+    }
+    if (bottomBar && saved.bottomPointer != null) {
+      bottomBar.style.pointerEvents = saved.bottomPointer;
     }
 
     saved = null;

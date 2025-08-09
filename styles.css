@@ -344,3 +344,28 @@ canvas {
   padding-right: calc(16px + var(--safe-right));
   box-sizing: border-box;
 }
+ 
+ 
+ 
+ 
+ /* ── Step 1: Lock page scroll & browser gestures ───────────────────────── */
+html, body {
+  /* Kill pull-to-refresh / overscroll (Chrome/Android) */
+  overscroll-behavior: none;
+
+  /* Prevent page scrolling/jumping on mobile */
+  height: 100dvh;
+  overflow: hidden;
+
+  /* Just in case */
+  margin: 0;
+  padding: 0;
+}
+
+/* Tell the browser not to interpret touch gestures; we’ll handle them */
+#layout,
+#left-column,
+#right-sidebar,
+#game-wrapper {
+  touch-action: none;
+}

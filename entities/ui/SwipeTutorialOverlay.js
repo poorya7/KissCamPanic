@@ -4,37 +4,47 @@ import { enableInputShield, disableInputShield } from "../../utils/InputShield.j
 export default class SwipeTutorialOverlay {
   constructor(scene, opts = {}) {
     this.scene = scene;
-    this.opacity = opts.opacity ?? 0.95;   // darker so message pops
-    this.deadzone = opts.deadzone ?? 8;
 
-    this.container = null;
-    this._tween = null;
+    // Options
+    this.fullBlack = opts.fullBlack ?? true;   // <- true = solid black backdrop
+    this.opacity   = opts.opacity   ?? 0.75;   // used only if fullBlack === false
+    this.deadzone  = opts.deadzone  ?? 8;
 
-    // document-level swipe tracking (works even outside canvas)
+    // State
+    this.container   = null;
+    this._tween      = null;
     this._touchStart = null;
+    this._onStartCb  = null;
+
+    // Doc-level handlers (so swipes outside canvas count)
     this._onDocStart = this._onDocStart.bind(this);
     this._onDocMove  = this._onDocMove.bind(this);
-
-    this._onStartCb = null;
   }
 
   show(onStart) {
     this._onStartCb = onStart;
 
-    // 1) Block page scroll & capture touches everywhere
+    // 1) Block page scroll & capture swipes across the entire window
     enableInputShield();
     document.addEventListener("touchstart", this._onDocStart, { passive: false });
     document.addEventListener("touchmove",  this._onDocMove,  { passive: false });
 
-    // 2) Draw the overlay INSIDE Phaser (covers canvas area visually)
+    // 2) Draw the overlay INSIDE Phaser (visuals over the canvas)
     const { scene } = this;
     const w = scene.scale.width;
     const h = scene.scale.height;
 
     this.container = scene.add.container(0, 0).setDepth(100000).setScrollFactor(0);
 
-    const bg = scene.add.rectangle(0, 0, w, h, 0x000000, this.opacity).setOrigin(0);
-    this.container.add(bg);
+    // --- Solid black background (always fully opaque) ---
+    const bgSolid = scene.add.rectangle(0, 0, w, h, 0x000000, 1).setOrigin(0);
+    this.container.add(bgSolid);
+
+    // If you want a dim look instead, pass { fullBlack:false, opacity:0.7 }
+    if (!this.fullBlack) {
+      const bgDim = scene.add.rectangle(0, 0, w, h, 0x000000, this.opacity).setOrigin(0);
+      this.container.add(bgDim);
+    }
 
     const title = scene.add.text(
       w / 2, h * 0.38,
@@ -67,15 +77,19 @@ export default class SwipeTutorialOverlay {
       repeat: -1
     });
 
-    const hint = scene.add.text(w / 2, h * 0.52, "first swipe starts the game", {
-      fontFamily: "C64",
-      fontSize: "14px",
-      color: "#ffccff",
-      align: "center",
-      stroke: "#000000",
-      strokeThickness: 4,
-      wordWrap: { width: Math.min(520, Math.floor(w * 0.9)) }
-    }).setOrigin(0.5);
+    const hint = scene.add.text(
+      w / 2, h * 0.52,
+      "first swipe starts the game",
+      {
+        fontFamily: "C64",
+        fontSize: "14px",
+        color: "#ffccff",
+        align: "center",
+        stroke: "#000000",
+        strokeThickness: 4,
+        wordWrap: { width: Math.min(520, Math.floor(w * 0.9)) }
+      }
+    ).setOrigin(0.5);
     this.container.add(hint);
   }
 
@@ -95,10 +109,10 @@ export default class SwipeTutorialOverlay {
     }
 
     this._touchStart = null;
-    this._onStartCb = null;
+    this._onStartCb  = null;
   }
 
-  // ---- document-level swipe detection (so swipes on sidebar count) ----
+  // ---- document-level swipe detection ----
   _onDocStart(ev) {
     ev.preventDefault(); // block scroll start
     const t = ev.touches && ev.touches[0];
@@ -119,7 +133,7 @@ export default class SwipeTutorialOverlay {
     if (dist >= this.deadzone) {
       const cb = this._onStartCb;
       this.hide();
-      if (cb) cb(); // start the game
+      if (cb) cb();
     }
   }
 }

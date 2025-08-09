@@ -100,43 +100,50 @@ this.debugText = this.add.text(10, 10, "", {
 // ───────────────────────────────
 // ▶ enableSwipeControls
 // ───────────────────────────────
+// ───────────────────────────────
+// ▶ enableSwipeControls (full-window)
+// ───────────────────────────────
 enableSwipeControls() {
   this.isTouchDevice = window.matchMedia("(pointer: coarse)").matches;
   this.swipeActive = false;
   this.lastTouchPos = null; // dynamic center
   this.touchDir = null;     // normalized vector {x,y}
-
-  this.deadzone = 4; // px movement before counting
+  this.deadzone = 4;        // px movement before counting
 
   if (!this.isTouchDevice) return;
 
+  const captureEl = document.getElementById("touch-capture");
+  if (!captureEl) return;
+
   // Start touch
-  this.input.on("pointerdown", (p) => {
+  captureEl.addEventListener("touchstart", (ev) => {
+    if (!ev.touches.length) return;
+    const t = ev.touches[0];
     this.swipeActive = true;
-    this.lastTouchPos = new Phaser.Math.Vector2(p.x, p.y);
+    this.lastTouchPos = new Phaser.Math.Vector2(t.clientX, t.clientY);
     this.touchDir = null;
-  });
+    ev.preventDefault();
+  }, { passive: false });
 
   // Track direction relative to last frame's touch
-  this.input.on("pointermove", (p) => {
-    if (!this.swipeActive || !this.lastTouchPos) return;
-
-    const v = new Phaser.Math.Vector2(p.x, p.y).subtract(this.lastTouchPos);
+  captureEl.addEventListener("touchmove", (ev) => {
+    if (!this.swipeActive || !this.lastTouchPos || !ev.touches.length) return;
+    const t = ev.touches[0];
+    const v = new Phaser.Math.Vector2(t.clientX, t.clientY).subtract(this.lastTouchPos);
 
     // reset "center" every frame
-    this.lastTouchPos.set(p.x, p.y);
+    this.lastTouchPos.set(t.clientX, t.clientY);
 
     // deadzone to kill jitter
-    if (v.length() < this.deadzone) {
-      return; // ✅ keep the previous this.touchDir instead of clearing it
-    }
+    if (v.length() < this.deadzone) return;
 
     // normalized direction vector
     this.touchDir = v.normalize();
-  });
+    ev.preventDefault();
+  }, { passive: false });
 
   // End touch
-  this.input.on("pointerup", () => {
+  captureEl.addEventListener("touchend", () => {
     this.swipeActive = false;
     this.lastTouchPos = null;
     this.touchDir = null; // stop moving when finger lifted

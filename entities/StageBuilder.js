@@ -12,7 +12,7 @@ export default class StageBuilder {
     const BASE_PROP  = 0.5;
     const isMobile = window.matchMedia("(pointer: coarse)").matches;
 
-    const stageScale = opts.stageScale ?? (isMobile ? 0.4 : BASE_STAGE);
+    const stageScale = opts.stageScale ?? (isMobile ? 0.3 : BASE_STAGE);
     const propScale  = opts.propScale  ?? BASE_PROP;
 
     // Mobile Y offset (default = move stage up 60px on mobile)

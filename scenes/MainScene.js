@@ -577,12 +577,15 @@ enableMobileAutoShoot(rateMs = 500) {
   // ───────────────────────────────
   // ▶ handleMovement
   // ───────────────────────────────
-
 handleMovement(baseSpeed = 200) {
   if (this.isTouchDevice && this.touchDir && !this.player.disableMovement) {
-	  baseSpeed=350;
-    let vx = this.touchDir.x * baseSpeed;
-    let vy = this.touchDir.y * baseSpeed;
+    baseSpeed = 350;
+
+    // ✅ If a burst speed override is set (e.g., from mug), use it
+    const speed = this.player.currentSpeedOverride ?? baseSpeed;
+
+    let vx = this.touchDir.x * speed;
+    let vy = this.touchDir.y * speed;
 
     // 🔒 Match desktop’s top-wall rule
     if (vy < 0 && this.player.y < 130) {

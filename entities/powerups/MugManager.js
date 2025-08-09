@@ -82,8 +82,20 @@ if (tooClose) continue;
 
 
 		const isMobile = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
-		const boostSpeed = isMobile ? 1000 : 350; // mobile gets higher burst, PC unchanged
-		this.player.enableBurstMode(750, boostSpeed);
+const boostSpeed = isMobile ? 600 : 350; // you tried 1000; that’ll work too
+
+// keep your existing burst (PC logic stays the same)
+this.player.enableBurstMode(750, boostSpeed);
+
+// NEW: make mobile movement path see the burst
+this.player.currentSpeedOverride = boostSpeed;
+this.scene.time.delayedCall(750, () => {
+  // only clear if we’re still using the same boost (avoids race if you chain mugs)
+  if (this.player.currentSpeedOverride === boostSpeed) {
+    this.player.currentSpeedOverride = null;
+  }
+});
+
 
 		  
         });

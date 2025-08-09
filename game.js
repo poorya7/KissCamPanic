@@ -46,7 +46,14 @@ window.onload = () => {
       physics: { default: "arcade", arcade: { gravity: { y: 0 }, debug: false } },
       dom: { createContainer: true },
       scene: [PreloadScene, MainScene], // 👈 Start with Preload
-      parent: "game-wrapper"
+      parent: "game-wrapper",
+
+      // 👇 NEW: route events from the whole window (not just the canvas)
+      input: {
+        activePointers: 3,
+        mouse: { target: window },
+        touch: { target: window }
+      }
     };
 
     const game = new Phaser.Game(config);

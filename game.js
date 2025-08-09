@@ -11,6 +11,53 @@ window.setTouchCaptureEnabled = (on) => {
 // start with it OFF so menus/buttons work
 window.setTouchCaptureEnabled(false);
 
+// ───────────────────────────────
+// ▶ Full-screen "Swipe Anywhere" overlay helper
+// ───────────────────────────────
+window.SwipeAnyOverlay = (() => {
+  const isMobile = () => window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+  let shown = false;
+
+  const getEl = () => document.getElementById("touch-capture");
+
+  const hide = () => {
+    const el = getEl();
+    if (!el) return;
+    el.classList.remove("show");
+    el.innerHTML = "";
+    // Keep capture ON for gameplay (no browser refresh/scroll during play)
+    window.setTouchCaptureEnabled(true);
+    shown = false;
+  };
+
+const show = (msg = "swipe anywhere to move", onDismiss) => {
+  if (!isMobile() || shown) return;
+  const el = getEl();
+  if (!el) return;
+
+  el.classList.add("show");
+  el.innerHTML = `<div class="overlay-msg">${msg}</div>`;
+
+  window.setTouchCaptureEnabled(true);
+
+  const dismiss = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    hide();
+    try { onDismiss && onDismiss(); } catch {}
+  };
+
+  el.addEventListener("pointerdown", dismiss, { once: true });
+  el.addEventListener("touchstart", dismiss, { once: true });
+  el.addEventListener("mousedown", dismiss, { once: true });
+
+  shown = true;
+};
+
+
+
+  return { show, hide, isShown: () => shown };
+})();
 
 
 let __gameBooted = false;

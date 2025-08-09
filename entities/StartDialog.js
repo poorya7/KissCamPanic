@@ -2,6 +2,15 @@ export default class StartDialog {
   static _alreadyShown = false;
 
   static show(scene, onStart) {
+	  
+	  // Mobile: show swipe overlay instead of dialog
+if (window.matchMedia && window.matchMedia("(pointer: coarse)").matches) {
+  SwipeAnyOverlay.show("swipe anywhere to move", onStart);
+  return;
+}
+
+
+
     if (StartDialog._alreadyShown) return;
     StartDialog._alreadyShown = true;
 

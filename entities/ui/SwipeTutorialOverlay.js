@@ -4,7 +4,7 @@ import { enableInputShield, disableInputShield } from "../../utils/InputShield.j
 export default class SwipeTutorialOverlay {
   constructor(scene, opts = {}) {
     this.scene = scene;
-    this.opacity = opts.opacity ?? 0.75;   // darker so message pops
+    this.opacity = opts.opacity ?? 0.95;   // darker so message pops
     this.deadzone = opts.deadzone ?? 8;
 
     this.container = null;

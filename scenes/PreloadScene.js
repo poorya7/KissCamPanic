@@ -2,81 +2,108 @@
 import MainScene from "./MainScene.js";
 
 export default class PreloadScene extends Phaser.Scene {
-  constructor() {
-    super("PreloadScene");
-  }
+  constructor() { super("PreloadScene"); }
 
   preload() {
-    // ---- Progress UI ----
-    const w = this.scale.width;
-    const h = this.scale.height;
+    const w = this.scale.width, h = this.scale.height;
+    const BAR_W = Math.min(460, Math.floor(w * 0.7));
+    const BAR_H = 22;
+    const X = Math.floor((w - BAR_W) / 2);
+    const Y = Math.floor(h * 0.40);
 
-    const barWidth = Math.min(420, Math.floor(w * 0.7));
-    const barHeight = 20;
-    const x = Math.floor((w - barWidth) / 2);
-    const y = Math.floor(h * 0.5);
+    const COL_BG = 0x000000;
+    const COL_FRAME = 0xffffff;
+    const COL_FROM = Phaser.Display.Color.ValueToColor(0x33CC33); 
+    const COL_TO   = Phaser.Display.Color.ValueToColor(0x33CC33); 
 
-    const bg = this.add.rectangle(x, y, barWidth, barHeight, 0x111111).setOrigin(0);
-    const fg = this.add.rectangle(x + 2, y + 2, 1, barHeight - 4, 0xffffff).setOrigin(0);
+    this.cameras.main.setBackgroundColor(COL_BG);
 
-    const title = this.add.text(w / 2, h * 0.62, "KISS CAM PANIC", {
+    // --- Title above bar ---
+    const title = this.add.text(w / 2, Y - 26, "LOADING...", {
       fontFamily: "C64, monospace",
-      fontSize: "28px",
-      color: "#ffffff"
-    }).setOrigin(0.5);
+      fontSize: "22px",
+      color: "#CFA9FF " // pink
+    })
+    .setOrigin(0.5)
+    .setStroke("#000000", 6)
+    .setDepth(10);
 
-    const pctText = this.add.text(w / 2, y + barHeight + 10, "0%", {
+    this.time.addEvent({
+      delay: 350, loop: true,
+      callback: () => {
+        const t = title.text.endsWith("...") ? "LOADING..." : "LOADING...";
+        title.setText(t);
+      }
+    });
+
+    // --- Bar frame ---
+    const g = this.add.graphics().setDepth(5);
+    g.lineStyle(2, COL_FRAME, 1);
+    g.strokeRect(X, Y, BAR_W, BAR_H);
+    g.fillStyle(0x111111, 1);
+    g.fillRect(X + 1, Y + 1, BAR_W - 2, BAR_H - 2);
+
+    const fill = this.add.graphics().setDepth(6);
+
+    const pctText = this.add.text(X + BAR_W / 2, Y + BAR_H / 2 + 1, "0%", {
       fontFamily: "C64, monospace",
       fontSize: "14px",
       color: "#ffffff"
-    }).setOrigin(0.5);
+    })
+    .setOrigin(0.5)
+    .setStroke("#000000", 6)
+    .setDepth(10);
 
-    // Optional: subtle backdrop so it's not just black
-    this.cameras.main.setBackgroundColor("#000000");
+    this.load.on("progress", (v) => {
+      const innerW = Math.max(0, Math.floor((BAR_W - 4) * v));
+      const c = Phaser.Display.Color.Interpolate.ColorWithColor(
+        COL_FROM, COL_TO, 100, Math.round(v * 100)
+      );
+      const col = Phaser.Display.Color.GetColor(c.r, c.g, c.b);
 
-    // ---- Loader events ----
-    this.load.on("progress", (value) => {
-      const innerW = Math.floor((barWidth - 4) * value);
-      fg.width = Math.max(1, innerW);
-      pctText.setText(`${Math.round(value * 100)}%`);
+      fill.clear();
+      fill.fillStyle(col, 1);
+      fill.fillRect(X + 2, Y + 2, innerW, BAR_H - 4);
+
+      // pixel ticks
+      if (innerW > 0) {
+        fill.lineStyle(1, 0x000000, 0.18);
+        for (let i = 0; i <= innerW; i += 6) {
+          fill.beginPath();
+          fill.moveTo(X + 2 + i, Y + 2);
+          fill.lineTo(X + 2 + i, Y + BAR_H - 2);
+          fill.strokePath();
+        }
+      }
+
+      pctText.setText(`${Math.round(v * 100)}%`);
     });
 
     this.load.on("complete", async () => {
-      // Wait for webfonts if needed so first frame uses correct font
       if (!window.fontsReady && document?.fonts?.ready) {
         try { await document.fonts.ready; } catch {}
         window.fontsReady = true;
       }
-      // Start the main scene
       this.scene.start("MainScene");
     });
 
-    // ---- ASSET LOADS (moved here from MainScene.preload) ----
-    // Players
+    // ---- asset loads ----
     this.load.image("ceo1", "sprites/ceo1.png");
     this.load.image("ceo2", "sprites/ceo2.png");
     this.load.image("hr1", "sprites/hr1.png");
     this.load.image("hr2", "sprites/hr2.png");
-
-    // Crowd
     this.load.image("adult/skin", "sprites/crowd/adult/skin.png");
     this.load.image("adult/shirt", "sprites/crowd/adult/shirt.png");
     this.load.image("adult/pants", "sprites/crowd/adult/pants.png");
     this.load.image("adult/hair_f", "sprites/crowd/adult/hair_f.png");
     this.load.image("adult/hair_m", "sprites/crowd/adult/hair_m.png");
-
     this.load.image("teen/skin", "sprites/crowd/teen/skin.png");
     this.load.image("teen/shirt", "sprites/crowd/teen/shirt.png");
     this.load.image("teen/pants", "sprites/crowd/teen/pants.png");
     this.load.image("teen/hair_f", "sprites/crowd/teen/hair_f.png");
     this.load.image("teen/hair_m", "sprites/crowd/teen/hair_m.png");
     this.load.image("adult/sunglass", "sprites/crowd/adult/sunglass.png");
-
-    for (let i = 1; i <= 4; i++) {
-      this.load.image(`alien/a${i}`, `sprites/crowd/alien/a${i}.png`);
-    }
-
-    // Props / UI
+    for (let i = 1; i <= 4; i++) this.load.image(`alien/a${i}`, `sprites/crowd/alien/a${i}.png`);
     this.load.image("credit_card", "sprites/cc.png");
     this.load.image("briefcase", "sprites/case.png");
     this.load.image("stage", "sprites/stage.png");
@@ -102,8 +129,6 @@ export default class PreloadScene extends Phaser.Scene {
     this.load.image("powerup_bar", "sprites/powerups/powerup_bar.png");
     this.load.image("powerup_fill", "sprites/powerups/powerup_fill2.png");
     this.load.image("bubble_kisscam", "sprites/props/bubble_kisscam.png");
-
-    // Audio
     this.load.audio("shoot1", "sounds/fx/shoot1.wav");
     this.load.audio("shoot2", "sounds/fx/shoot2.wav");
     this.load.audio("hit", "sounds/fx/hit.wav");

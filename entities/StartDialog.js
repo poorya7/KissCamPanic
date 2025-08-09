@@ -55,12 +55,16 @@ export default class StartDialog {
       align: "center"
     }).setOrigin(0.5);
 	
-	const swipe = scene.add.text(0, 10, "SWIPE TO MOVE!", {
-  fontFamily: "C64",
-  fontSize: "18px",
-  color: "#ffffff",
-  align: "center"
-}).setOrigin(0.5);
+let swipe;
+if (isMobile) {
+  swipe = scene.add.text(0, 10, "SWIPE TO MOVE!", {
+    fontFamily: "C64",
+    fontSize: "18px",
+    color: "#ffffff",
+    align: "center"
+  }).setOrigin(0.5);
+}
+
 
 
     const okBtn = scene.make.text({

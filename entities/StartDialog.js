@@ -1,22 +1,18 @@
-
-
 export default class StartDialog {
   static _alreadyShown = false;
-  
 
   static show(scene, onStart) {
     if (StartDialog._alreadyShown) return;
-	
-	const isMobile = window.matchMedia("(pointer: coarse)").matches;
 
-	
+    const isMobile = window.matchMedia("(pointer: coarse)").matches;
     StartDialog._alreadyShown = true;
 
-    const dialog = scene.add.container(scene.scale.width / 2, scene.scale.height / 2)
+    const dialog = scene.add
+      .container(scene.scale.width / 2, scene.scale.height / 2)
       .setDepth(99999)
       .setScrollFactor(0);
-	  
-	  if (isMobile) dialog.setScale(0.7);
+
+    if (isMobile) dialog.setScale(0.7);
 
     const bg = scene.add.image(0, 0, "dialog_end").setScale(0.3, 0.35);
 
@@ -34,38 +30,37 @@ export default class StartDialog {
       align: "center"
     }).setOrigin(0.5);
 
-    const controls = scene.add.text(0, -25, "← ↑ → ↓  TO MOVE", {
-      fontFamily: "C64",
-      fontSize: "15px",
-      color: "#00ffff",
-      align: "center"
-    }).setOrigin(0.5);
+    let controls, shoot, hype, swipe;
 
-    const shoot = scene.add.text(0, 0, "SPACE TO SHOOT", {
-      fontFamily: "C64",
-      fontSize: "15px",
-      color: "#00ff66",
-      align: "center"
-    }).setOrigin(0.5);
+    if (isMobile) {
+      swipe = scene.add.text(0, 10, "SWIPE TO MOVE!", {
+        fontFamily: "C64",
+        fontSize: "18px",
+        color: "#ffffff",
+        align: "center"
+      }).setOrigin(0.5);
+    } else {
+      controls = scene.add.text(0, -25, "← ↑ → ↓  TO MOVE", {
+        fontFamily: "C64",
+        fontSize: "15px",
+        color: "#00ffff",
+        align: "center"
+      }).setOrigin(0.5);
 
-    const hype = scene.add.text(0, 35, "LET'S GO!!", {
-      fontFamily: "C64",
-      fontSize: "20px",
-      color: "#ffffff",
-      align: "center"
-    }).setOrigin(0.5);
-	
-let swipe;
-if (isMobile) {
-  swipe = scene.add.text(0, 10, "SWIPE TO MOVE!", {
-    fontFamily: "C64",
-    fontSize: "18px",
-    color: "#ffffff",
-    align: "center"
-  }).setOrigin(0.5);
-}
+      shoot = scene.add.text(0, 0, "SPACE TO SHOOT", {
+        fontFamily: "C64",
+        fontSize: "15px",
+        color: "#00ff66",
+        align: "center"
+      }).setOrigin(0.5);
 
-
+      hype = scene.add.text(0, 35, "LET'S GO!!", {
+        fontFamily: "C64",
+        fontSize: "20px",
+        color: "#ffffff",
+        align: "center"
+      }).setOrigin(0.5);
+    }
 
     const okBtn = scene.make.text({
       x: 0,
@@ -85,12 +80,9 @@ if (isMobile) {
     // --- Handlers with cleanup ---
     const destroyAndStart = () => {
       dialog.destroy();
-
-      // 🧹 Remove key listeners
       scene.input.keyboard.off("keydown-ENTER", enterHandler);
       scene.input.keyboard.off("keydown-SPACE", spaceHandler);
       scene.input.keyboard.off("keydown-ESC", escHandler);
-
       onStart?.();
     };
 
@@ -104,10 +96,9 @@ if (isMobile) {
     scene.input.keyboard.once("keydown-ESC", escHandler);
 
     dialog.add(
-  isMobile
-    ? [bg, title, subtitle, swipe, okBtn]
-    : [bg, title, subtitle, controls, shoot, hype, okBtn]
-);
-
+      isMobile
+        ? [bg, title, subtitle, swipe, okBtn]
+        : [bg, title, subtitle, controls, shoot, hype, okBtn]
+    );
   }
 }

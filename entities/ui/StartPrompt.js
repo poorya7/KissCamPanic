@@ -19,8 +19,8 @@ export default class StartPrompt {
 
     if (isMobile() && isLandscape()) {
       // inside StartPrompt.show(...)
-const swipe = new SwipeTutorialOverlay(scene, { fullBlack: true }); // or { fullBlack:false, opacity:0.8 }
-swipe.show(onStart);
+	const swipe = new SwipeTutorialOverlay(scene, { fullBlack: false, opacity: 0.9 });
+	swipe.show(onStart);
 
     } else {
       StartDialog.show(scene, onStart);

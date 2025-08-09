@@ -19,7 +19,7 @@ export default class StartPrompt {
 
     if (isMobile() && isLandscape()) {
       // inside StartPrompt.show(...)
-	const swipe = new SwipeTutorialOverlay(scene, { fullBlack: false, opacity: 0.9 });
+	const swipe = new SwipeTutorialOverlay(scene, { fullBlack: false, opacity: 0.8 });
 	swipe.show(onStart);
 
     } else {

@@ -11,6 +11,27 @@ window.setTouchCaptureEnabled = (on) => {
   el.style.pointerEvents = on && isTouch ? "auto" : "none";
 };
 
+// Allow clicks through the capture layer in specific areas
+const touchCaptureEl = document.getElementById("touch-capture");
+if (touchCaptureEl) {
+  touchCaptureEl.addEventListener("pointerdown", (e) => {
+    const target = e.target;
+    // If the tap is inside socials or mute buttons, ignore the capture
+    if (
+      e.clientY >= window.innerHeight - 80 && // bottom area of screen
+      (document.getElementById("socials")?.contains(document.elementFromPoint(e.clientX, e.clientY)) ||
+       document.getElementById("mute-buttons")?.contains(document.elementFromPoint(e.clientX, e.clientY)))
+    ) {
+      e.stopPropagation();
+      e.preventDefault();
+      // Manually trigger click on the element under the capture layer
+      const elUnder = document.elementFromPoint(e.clientX, e.clientY);
+      elUnder?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    }
+  });
+}
+
+
 // start with it OFF so menus/buttons work
 window.setTouchCaptureEnabled(false);
 

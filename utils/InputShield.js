@@ -18,7 +18,7 @@ function ensureShield() {
     height: "100dvh",
     // Make sure it's above EVERYTHING
     zIndex: "2147483647",
-    pointerEvents: "auto",
+    pointerEvents: "none",
     touchAction: "none",       // hint to browsers
     background: "transparent",
     userSelect: "none",
@@ -37,8 +37,8 @@ export function enableInputShield() {
   if (!onStart) {
     onStart = (e) => e.preventDefault();
     onMove  = (e) => e.preventDefault();
-    shieldEl.addEventListener("touchstart", onStart, { passive: false });
-    shieldEl.addEventListener("touchmove",  onMove,  { passive: false });
+    //shieldEl.addEventListener("touchstart", onStart, { passive: false });
+    //shieldEl.addEventListener("touchmove",  onMove,  { passive: false });
   }
 
   // Lock scroll everywhere (Chrome pull-to-refresh, scrollable sidebars, etc.)

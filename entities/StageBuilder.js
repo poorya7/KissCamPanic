@@ -102,6 +102,15 @@ scene.wallTop = scene.add
         .setOrigin(-1.5, -0.13)
         .setDepth(-9)
         .setScale(0.18 * propRatio);
+		// After: scene.curtain = scene.add.image(...).setOrigin(-1.5, -0.13)...
+if (isMobile) {
+  // Center the curtain to the stage on mobile
+  const stageOffsetX = (scene.stage.originX - 0.5) * scene.stage.displayWidth; // accounts for 0.48 origin
+  scene.curtain
+    .setOrigin(0.5, -0.13)  // use centered origin horizontally on mobile
+    .setX(centerX + stageOffsetX);
+}
+
    // }
 
     // ───── Plant (uses propScale) ─────

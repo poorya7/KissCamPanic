@@ -2,14 +2,21 @@
 
 export default class StartDialog {
   static _alreadyShown = false;
+  
 
   static show(scene, onStart) {
     if (StartDialog._alreadyShown) return;
+	
+	const isMobile = window.matchMedia("(pointer: coarse)").matches;
+
+	
     StartDialog._alreadyShown = true;
 
     const dialog = scene.add.container(scene.scale.width / 2, scene.scale.height / 2)
       .setDepth(99999)
       .setScrollFactor(0);
+	  
+	  if (isMobile) dialog.setScale(0.7);
 
     const bg = scene.add.image(0, 0, "dialog_end").setScale(0.3, 0.35);
 
@@ -47,6 +54,14 @@ export default class StartDialog {
       color: "#ffffff",
       align: "center"
     }).setOrigin(0.5);
+	
+	const swipe = scene.add.text(0, 10, "SWIPE TO MOVE!", {
+  fontFamily: "C64",
+  fontSize: "18px",
+  color: "#ffffff",
+  align: "center"
+}).setOrigin(0.5);
+
 
     const okBtn = scene.make.text({
       x: 0,
@@ -84,6 +99,11 @@ export default class StartDialog {
     scene.input.keyboard.once("keydown-SPACE", spaceHandler);
     scene.input.keyboard.once("keydown-ESC", escHandler);
 
-    dialog.add([bg, title, subtitle, controls, shoot, hype, okBtn]);
+    dialog.add(
+  isMobile
+    ? [bg, title, subtitle, swipe, okBtn]
+    : [bg, title, subtitle, controls, shoot, hype, okBtn]
+);
+
   }
 }

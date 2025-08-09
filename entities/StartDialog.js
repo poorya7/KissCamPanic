@@ -2,31 +2,48 @@ export default class StartDialog {
   static _alreadyShown = false;
 
   static show(scene, onStart) {
-	  
-	  // Mobile: show swipe overlay instead of dialog
-// Mobile: show swipe overlay instead of dialog
-if (window.matchMedia && window.matchMedia("(pointer: coarse)").matches) {
-  SwipeAnyOverlay.show("swipe anywhere to move", () => {
-    // 🔊 Unlock audio context on the same user gesture
-    try {
-      if (scene.sound?.locked) {
-        scene.sound.unlock();
-      } else {
-        scene.sound?.context?.resume?.();
-      }
-    } catch {}
 
-    onStart?.();
-  });
-  return;
-}
+    // ────────────────
+    // 📱 Mobile: show swipe overlay instead of dialog
+    // ────────────────
+    if (window.matchMedia && window.matchMedia("(pointer: coarse)").matches) {
+      SwipeAnyOverlay.show("swipe anywhere to move", () => {
+        try {
+          const sm = scene.sound;
+          const ctx = sm?.context;
 
+          // Resume context if paused
+          if (ctx && ctx.state !== "running") {
+            ctx.resume();
+          }
 
+          // 🔊 Warm-up: brief inaudible blip to unlock audio
+          if (ctx) {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            gain.gain.value = 0.00001; // effectively silent
+            osc.connect(gain).connect(ctx.destination);
+            osc.start(0);
+            osc.stop(ctx.currentTime + 0.01);
+          }
 
+          // Phaser's own unlock (safe if already unlocked)
+          if (sm?.locked) sm.unlock();
+        } catch {}
+
+        onStart?.();
+      });
+      return;
+    }
+
+    // ────────────────
+    // 🖥 Desktop: show original dialog
+    // ────────────────
     if (StartDialog._alreadyShown) return;
     StartDialog._alreadyShown = true;
 
-    const dialog = scene.add.container(scene.scale.width / 2, scene.scale.height / 2)
+    const dialog = scene.add
+      .container(scene.scale.width / 2, scene.scale.height / 2)
       .setDepth(99999)
       .setScrollFactor(0);
 

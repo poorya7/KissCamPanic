@@ -145,7 +145,9 @@ window.onload = () => {
       parent: "game-wrapper"
     };
 
-    const game = new Phaser.Game(config);
+   const game = new Phaser.Game(config);
+window.__phaserCanvas = game.canvas; // ← add this line
+
 
     // Kick off top scores once fonts are ready
     if (window.fontsReady) {

@@ -46,18 +46,21 @@ const __preventScroll = (e) => e.preventDefault();
 let __iosBlockEnabled = false;
 
 function enableIOSSwipeBlock() {
-  if (!__isIOS() || !__isTouch() || __iosBlockEnabled) return;
+  if (!__isIOS() || !__isTouch()) return;
+  // Always re-attach when called in landscape
   document.addEventListener("touchmove", __preventScroll, { passive: false });
   document.addEventListener("gesturestart", __preventScroll, { passive: false });
   __iosBlockEnabled = true;
 }
 
+
 function disableIOSSwipeBlock() {
   if (!__iosBlockEnabled) return;
   document.removeEventListener("touchmove", __preventScroll);
   document.removeEventListener("gesturestart", __preventScroll);
-  __iosBlockEnabled = false;
+  __iosBlockEnabled = false; // reset so enable works next time
 }
+
 
 // ───────────────────────────────
 // ▶ Window Onload

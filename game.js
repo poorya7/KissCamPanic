@@ -3,6 +3,16 @@ import PreloadScene from "./scenes/PreloadScene.js";
 import ScoreService from "./services/ScoreService.js";
 import SoundManager from "./utils/SoundManager.js";
 
+
+window.setTouchCaptureEnabled = (on) => {
+  const el = document.getElementById("touch-capture");
+  if (el) el.style.pointerEvents = on ? "auto" : "none";
+};
+// start with it OFF so menus/buttons work
+window.setTouchCaptureEnabled(false);
+
+
+
 let __gameBooted = false;
 
 // ───────────────────────────────

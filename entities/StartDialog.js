@@ -72,8 +72,20 @@ export default class StartDialog {
       scene.input.keyboard.off("keydown-SPACE", spaceHandler);
       scene.input.keyboard.off("keydown-ESC", escHandler);
 
-      onStart?.();
-    };
+      const destroyAndStart = () => {
+  dialog.destroy();
+
+  // 🧹 Remove key listeners
+  scene.input.keyboard.off("keydown-ENTER", enterHandler);
+  scene.input.keyboard.off("keydown-SPACE", spaceHandler);
+  scene.input.keyboard.off("keydown-ESC", escHandler);
+
+  // ✅ Enable swipe capture overlay for gameplay
+  window.setTouchCaptureEnabled(true);
+
+  onStart?.();
+};
+
 
     const enterHandler = () => destroyAndStart();
     const spaceHandler = () => destroyAndStart();

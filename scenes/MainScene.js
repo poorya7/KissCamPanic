@@ -98,9 +98,6 @@ this.debugText = this.add.text(10, 10, "", {
 
 
 // ───────────────────────────────
-// ▶ enableSwipeControls
-// ───────────────────────────────
-// ───────────────────────────────
 // ▶ enableSwipeControls (full-window)
 // ───────────────────────────────
 enableSwipeControls() {

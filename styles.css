@@ -347,14 +347,13 @@ canvas {
  
  
 
-/* Full-window transparent input layer */
 #touch-capture {
   position: fixed;
-  inset: 0;             /* top:0; right:0; bottom:0; left:0 */
-  z-index: 9999;        /* above everything */
+  inset: 0;
+  z-index: 9999;
   background: transparent;
-  touch-action: none;   /* let us interpret gestures */
-  pointer-events: auto; /* actually capture touches */
+  touch-action: none;
+  pointer-events: none; /* was auto */
 }
 
 

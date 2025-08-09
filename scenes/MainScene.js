@@ -580,9 +580,13 @@ enableMobileAutoShoot(rateMs = 500) {
 
 handleMovement(baseSpeed = 200) {
   if (this.isTouchDevice && this.touchDir && !this.player.disableMovement) {
-	  baseSpeed=350;
-    let vx = this.touchDir.x * baseSpeed;
-    let vy = this.touchDir.y * baseSpeed;
+    const currentSpeed =
+      (this.player.burstModeActive && typeof this.player.burstSpeed === "number")
+        ? this.player.burstSpeed
+        : baseSpeed;
+
+    let vx = this.touchDir.x * currentSpeed;
+    let vy = this.touchDir.y * currentSpeed;
 
     // 🔒 Match desktop’s top-wall rule
     if (vy < 0 && this.player.y < 130) {
@@ -596,7 +600,7 @@ handleMovement(baseSpeed = 200) {
       const faceLeft = vx < 0;
       this.player.setFlipX(faceLeft);
       this.hr?.setFlipX(faceLeft);
-      this.player.facingRight = !faceLeft; // ✅ keep shooting direction correct
+      this.player.facingRight = !faceLeft; // keep shooting direction correct
     }
 
     // Keep HR synced like in Player.move()

@@ -82,7 +82,7 @@ if (tooClose) continue;
 
 
 		const isMobile = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
-		const boostSpeed = isMobile ? 600 : 350; // mobile gets higher burst, PC unchanged
+		const boostSpeed = isMobile ? 1000 : 350; // mobile gets higher burst, PC unchanged
 		this.player.enableBurstMode(750, boostSpeed);
 
 		  

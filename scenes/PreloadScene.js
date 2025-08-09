@@ -14,7 +14,7 @@ export default class PreloadScene extends Phaser.Scene {
     const barWidth = Math.min(420, Math.floor(w * 0.7));
     const barHeight = 20;
     const x = Math.floor((w - barWidth) / 2);
-    const y = Math.floor(h * 0.72);
+    const y = Math.floor(h * 0.5);
 
     const bg = this.add.rectangle(x, y, barWidth, barHeight, 0x111111).setOrigin(0);
     const fg = this.add.rectangle(x + 2, y + 2, 1, barHeight - 4, 0xffffff).setOrigin(0);

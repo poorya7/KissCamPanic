@@ -94,13 +94,13 @@ export default class StageBuilder {
     }
 
     // ───── Curtain (SKIP on mobile) ─────
-    if (!isMobile) {
+    //if (!isMobile) {
       scene.curtain = scene.add
         .image(0, 0, "curtain")
         .setOrigin(-1.5, -0.13)
         .setDepth(-9)
         .setScale(0.18 * propRatio);
-    }
+   // }
 
     // ───── Plant (uses propScale) ─────
     scene.plant = scene.add

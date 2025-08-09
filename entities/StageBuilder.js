@@ -107,7 +107,7 @@ if (isMobile) {
   // Center the curtain to the stage on mobile
   const stageOffsetX = (scene.stage.originX - 0.5) * scene.stage.displayWidth; // accounts for 0.48 origin
   scene.curtain
-    .setOrigin(0.3, -0.13)  // use centered origin horizontally on mobile
+    .setOrigin(0.4, -0.13)  // use centered origin horizontally on mobile
     .setX(centerX + stageOffsetX);
 }
 

@@ -81,7 +81,10 @@ if (tooClose) continue;
           callback();
 
 
-		this.player.enableBurstMode(750, 350); // duration, speed (normal speed is 200)
+		const isMobile = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+		const boostSpeed = isMobile ? 600 : 350; // mobile gets higher burst, PC unchanged
+		this.player.enableBurstMode(750, boostSpeed);
+
 		  
         });
       }

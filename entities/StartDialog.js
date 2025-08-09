@@ -4,8 +4,20 @@ export default class StartDialog {
   static show(scene, onStart) {
 	  
 	  // Mobile: show swipe overlay instead of dialog
+// Mobile: show swipe overlay instead of dialog
 if (window.matchMedia && window.matchMedia("(pointer: coarse)").matches) {
-  SwipeAnyOverlay.show("swipe anywhere to move", onStart);
+  SwipeAnyOverlay.show("swipe anywhere to move", () => {
+    // 🔊 Unlock audio context on the same user gesture
+    try {
+      if (scene.sound?.locked) {
+        scene.sound.unlock();
+      } else {
+        scene.sound?.context?.resume?.();
+      }
+    } catch {}
+
+    onStart?.();
+  });
   return;
 }
 

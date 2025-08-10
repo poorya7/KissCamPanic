@@ -144,5 +144,10 @@ export default class PreloadScene extends Phaser.Scene {
     this.load.audio("burst", "sounds/fx/burst.wav");
     this.load.audio("top20", "sounds/fx/win20.wav");
     this.load.audio("top1", "sounds/fx/win1.wav");
+	
+	this.load.audio("nuke_collect",   "sounds/fx/nuke/collect.wav");
+	this.load.audio("nuke_countdown", "sounds/fx/nuke/countdown.wav");
+	this.load.audio("nuke",           "sounds/fx/nuke/nuke2.wav");
+
   }
 }

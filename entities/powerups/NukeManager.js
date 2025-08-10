@@ -6,40 +6,47 @@ export default class NukeManager {
   // ▶ Spawn config (powerup)
   // ───────────────────────────────
   NUKE_FIRST_DELAY_MS = 10000;     // first nuke after 10s
-  NUKE_SPAWN_INTERVAL_MS = 10000;  // every 10s thereafter
+  NUKE_SPAWN_INTERVAL_MS = 20000;  // schedule next spawn this long AFTER the BOOM
   MAX_NUKES_ON_FIELD = 1;          // max at once
 
   // ───────────────────────────────
   // ▶ Refill config (after nuke)
   // ───────────────────────────────
-  TRICKLE_START_DELAY_MS = 2000;   // ⏸ wait before any trickle starts
-  TRICKLE_MIN_DELAY_MS   = 2000;   // earliest respawn after start delay
-  TRICKLE_MAX_DELAY_MS   = 10000;  // latest respawn after start delay
-  TRICKLE_BATCH_SIZE     = 1;      // how many to request per scheduled tick
+  TRICKLE_START_DELAY_MS = 2000;   // wait after the nuke before refill starts
+  TRICKLE_MIN_DELAY_MS   = 2000;   // earliest spawn after start delay
+  TRICKLE_MAX_DELAY_MS   = 10000;  // latest spawn after start delay
+  TRICKLE_BATCH_SIZE     = 1;
+
+  // ───────────────────────────────
+  // ▶ Audio sequence timing
+  // ───────────────────────────────
+  COUNTDOWN_LEAD_MS      = 1000;   // pickup → wait 1s
+  COUNTDOWN_DURATION_MS  = 3000;   // countdown length (3s)
 
   constructor(scene, player) {
     this.scene = scene;
     this.player = player;
     this.nukeGroup = this.scene.physics.add.group();
+
     this._isNuking = false;
+    this._pendingSequence = false; // prevents double pickup sequences
+    this._nextSpawnTimer = null;   // handle to the post-BOOM spawn timer
 
-    // First spawn after delay, then repeat
-    this.scene.time.delayedCall(this.NUKE_FIRST_DELAY_MS, () => {
-      this.trySpawnNuke();
-
-      this.scene.time.addEvent({
-        delay: this.NUKE_SPAWN_INTERVAL_MS,
-        callback: this.trySpawnNuke,
-        callbackScope: this,
-        loop: true
-      });
-    });
+    // First spawn ONLY once after the initial delay
+    this._nextSpawnTimer = this.scene.time.delayedCall(
+      this.NUKE_FIRST_DELAY_MS,
+      () => this.trySpawnNuke()
+    );
   }
 
   // ───────────────────────────────
-  // ▶ Spawning
+  // ▶ Spawning (no repeating loop)
   // ───────────────────────────────
   trySpawnNuke() {
+    // Don't spawn while a sequence or nuke is ongoing
+    if (this._pendingSequence || this._isNuking) return;
+
+    // Respect max on field
     if (this.nukeGroup.countActive(true) >= this.MAX_NUKES_ON_FIELD) return;
 
     const maxAttempts = 20;
@@ -57,35 +64,54 @@ export default class NukeManager {
       if (tooClose) continue;
 
       const nuke = this.scene.physics.add.sprite(x, y, "nuke")
-        .setScale(0.092)        // ← your preferred scale
+        .setScale(0.092)        // your chosen scale
         .setDepth(y - 1)
         .setImmovable(true);
 
       nuke.powerupType = "nuke";
       this.nukeGroup.add(nuke);
-
-      // Sound later if desired: SoundManager.playSFX("powerup");
-      return;
+      return; // ✅ spawned one
     }
 
     console.warn("⚠️ Could not find valid spot to spawn nuke.");
   }
 
   // ───────────────────────────────
-  // ▶ Collision hookup
+  // ▶ Collision → SFX sequence → nuke
   // ───────────────────────────────
-  enableCollision(onPickup) {
+  enableCollision() {
     this.scene.physics.add.overlap(
       this.player,
       this.nukeGroup,
       (player, nuke) => {
-        // remove the pickup instantly
+        if (this._pendingSequence || this._isNuking) return;
+        this._pendingSequence = true;
+
+        // remove pickup
         this.nukeGroup.remove(nuke, true, true);
 
-        // optional SFX later: SoundManager.playSFX("nuke_get");
+        // 1) play collect immediately
+        SoundManager.playSFX("nuke_collect");
 
-        if (onPickup) onPickup();
-        else this.triggerNuke();
+        // Freeze ALL crowd spawns through: lead + countdown + post-nuke delay
+        const totalFreeze =
+          this.COUNTDOWN_LEAD_MS + this.COUNTDOWN_DURATION_MS + this.TRICKLE_START_DELAY_MS;
+        const until = this.scene.time.now + totalFreeze;
+        this.scene._nukeSpawnFreezeUntil = Math.max(
+          this.scene._nukeSpawnFreezeUntil || 0,
+          until
+        );
+
+        // 2) after lead, play countdown
+        this.scene.time.delayedCall(this.COUNTDOWN_LEAD_MS, () => {
+          SoundManager.playSFX("nuke_countdown");
+        });
+
+        // 3) after lead+duration, do the nuke (and play boom)
+        this.scene.time.delayedCall(this.COUNTDOWN_LEAD_MS + this.COUNTDOWN_DURATION_MS, () => {
+          this.triggerNuke();
+          this._pendingSequence = false;
+        });
       },
       null,
       this
@@ -94,32 +120,49 @@ export default class NukeManager {
 
   // ───────────────────────────────
   // ▶ Do the nuke (wipe everyone) + delayed trickle refill
+  //   and schedule NEXT SPAWN after the BOOM.
   // ───────────────────────────────
   triggerNuke() {
     if (this._isNuking) return;
     this._isNuking = true;
 
+    // BOOM
+    SoundManager.playSFX("nuke");
+
     // Clone children so we can safely destroy while iterating
     const members = [...this.scene.crowdGroup.getChildren()];
-
     for (const m of members) {
       if (!m || !m.active) continue;
 
-      // mirror your projectile kill flow
       this.scene.playPoof(m.x, m.y);
       if (m.visuals && m.visuals.destroy) m.visuals.destroy();
       m.destroy();
 
       this.scene.scoreUI?.addToScore(40);
     }
-	
-	// ⏸ block all spawns until this time (respected by CrowdSpawner guards)
-this.scene._nukeSpawnFreezeUntil = this.scene.time.now + this.TRICKLE_START_DELAY_MS;
 
-// ⏸ Add a gap before refill starts (lets old 3s bullet timers fire)
-this.scene.time.delayedCall(this.TRICKLE_START_DELAY_MS, () => {
-  this.scheduleRefill();
-});
+    // Keep freeze at least through the post-nuke delay
+    const minFreeze = this.scene.time.now + this.TRICKLE_START_DELAY_MS;
+    this.scene._nukeSpawnFreezeUntil = Math.max(
+      this.scene._nukeSpawnFreezeUntil || 0,
+      minFreeze
+    );
+
+    // Start trickle after the post-nuke delay
+    this.scene.time.delayedCall(this.TRICKLE_START_DELAY_MS, () => {
+      this.scene._nukeSpawnFreezeUntil = 0; // release freeze
+      this.scheduleRefill();
+    });
+
+    // 👉 Schedule the NEXT nuke spawn AFTER the BOOM (cooldown-from-explosion)
+    if (this._nextSpawnTimer) {
+      this._nextSpawnTimer.remove(false);
+      this._nextSpawnTimer = null;
+    }
+    this._nextSpawnTimer = this.scene.time.delayedCall(
+      this.NUKE_SPAWN_INTERVAL_MS,
+      () => this.trySpawnNuke()
+    );
 
     // allow another nuke after this tick
     this.scene.time.delayedCall(0, () => (this._isNuking = false));
@@ -132,17 +175,13 @@ this.scene.time.delayedCall(this.TRICKLE_START_DELAY_MS, () => {
     const target = this.scene.maxCrowdSize || 0;
     const current = this.scene.crowdGroup.countActive(true);
     const needed = Math.max(0, target - current);
-
     if (needed === 0) return;
 
     for (let i = 0; i < needed; i += this.TRICKLE_BATCH_SIZE) {
       const delay = Phaser.Math.Between(this.TRICKLE_MIN_DELAY_MS, this.TRICKLE_MAX_DELAY_MS);
-
       this.scene.time.delayedCall(delay, () => {
-        // Guard against overspawn if other systems already refilled some
         const activeNow = this.scene.crowdGroup.countActive(true);
         if (activeNow >= target) return;
-
         for (let j = 0; j < this.TRICKLE_BATCH_SIZE; j++) {
           this.scene.crowdSpawner.spawnInLeastCrowdedArea();
         }
@@ -156,5 +195,11 @@ this.scene.time.delayedCall(this.TRICKLE_START_DELAY_MS, () => {
   reset() {
     this.nukeGroup.clear(true, true);
     this._isNuking = false;
+    this._pendingSequence = false;
+
+    if (this._nextSpawnTimer) {
+      this._nextSpawnTimer.remove(false);
+      this._nextSpawnTimer = null;
+    }
   }
 }

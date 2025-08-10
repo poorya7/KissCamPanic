@@ -87,9 +87,7 @@ this.debugText = this.add.text(10, 10, "", {
 
   this.mugManager.enableCollision(() => {});
   
-  this.nukeManager.enableCollision(() => {
-  this.nukeManager.triggerNuke();
-});
+  this.nukeManager.enableCollision();  // remove the old callback
 
 
   // ✅ Only bind manual shooting on desktop

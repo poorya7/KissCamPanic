@@ -217,14 +217,17 @@ spawnAtRandomValidLocation() {
   // ─────────────────────────────────────────────
 
 spawnInLeastCrowdedArea() {
-  // 🔒 Global freeze guard (e.g., right after a nuke)
+  // 🔒 Global freeze guard (right after a nuke)
   const freezeUntil = this.scene._nukeSpawnFreezeUntil || 0;
   const now = this.scene.time.now;
   if (now < freezeUntil) {
-    const delay = Math.max(0, freezeUntil - now + 10); // small buffer
-    this.scene.time.delayedCall(delay, () => this.spawnInLeastCrowdedArea());
+    const remaining = Math.max(0, freezeUntil - now);
+    const jitter = Phaser.Math.Between(500, 1500); // spread calls 0.5–1.5s after unfreeze
+    this.scene.time.delayedCall(remaining + jitter, () => this.spawnInLeastCrowdedArea());
     return;
   }
+
+
 
   const attempts = 50;
   const scanRadius = 150;

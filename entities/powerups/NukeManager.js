@@ -23,6 +23,13 @@ export default class NukeManager {
   COUNTDOWN_LEAD_MS      = 1000;   // pickup → wait 1s
   COUNTDOWN_DURATION_MS  = 3000;   // countdown length (3s)
 
+  // ───────────────────────────────
+  // ▶ Camera shake
+  // ───────────────────────────────
+  SHAKE_DURATION_MS        = 200;     // 180–220 feels good
+  SHAKE_INTENSITY_DESKTOP  = 0.008;   // desktop shake strength
+  SHAKE_INTENSITY_MOBILE   = 0.005;   // mobile shake strength (lower to avoid nausea)
+
   constructor(scene, player) {
     this.scene = scene;
     this.player = player;
@@ -125,6 +132,12 @@ export default class NukeManager {
 
     // BOOM
     SoundManager.playSFX("nuke");
+
+    // 💥 Camera shake
+    const cam = this.scene.cameras.main;
+    const isMobile = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+    const intensity = isMobile ? this.SHAKE_INTENSITY_MOBILE : this.SHAKE_INTENSITY_DESKTOP;
+    cam?.shake?.(this.SHAKE_DURATION_MS, intensity);
 
     // 🔆 Shockwave at the player's position (ground ripple)
     this.spawnShockwave(this.player.x, this.player.y);

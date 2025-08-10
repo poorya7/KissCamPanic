@@ -5,8 +5,14 @@ const volumeMap = {
   powerup: 0.7,
   powerup_get: 3,
   top20: 1.2,
-  top1 :2.2
+  top1: 2.2,
+
+  // ── Nuke SFX ──
+  nuke_collect: 2.0,     // pickup blip
+  nuke_countdown: 1.7,   // 3s countdown
+  nuke: 3.0              // boom (drop to ~1.6 if too hot on mobile)
 };
+
 
 let SoundManager = {
   scene: null,

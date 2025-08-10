@@ -182,9 +182,14 @@ for (let i = 0; i < spawnPoints.length && crowdCount < maxCrowd; i++) {
   }
 
   // ─────────────────────────────────────────────
-  // 🌀 Spawn 1 Crowd Anywhere Valid
+  // 🌀 spawnAtRandomValidLocation
   // ─────────────────────────────────────────────
-  spawnAtRandomValidLocation() {
+spawnAtRandomValidLocation() {
+  // 🔒 Global freeze guard (drop spawns during freeze; no re-queue)
+  const freezeUntil = this.scene._nukeSpawnFreezeUntil || 0;
+  const now = this.scene.time.now;
+  if (now < freezeUntil) return;
+
   const maxAttempts = 100;
 
   for (let i = 0; i < maxAttempts; i++) {
@@ -194,28 +199,29 @@ for (let i = 0; i < spawnPoints.length && crowdCount < maxCrowd; i++) {
     if (!this.isBlocked(x, y)) {
       // Force spawn by skipping random chance
       this.spawnCrowdMember(x, y, { force: true });
-	  this.spawnCrowdMember(x, y, { force: true });
+      this.spawnCrowdMember(x, y, { force: true });
 
-	this.scene.time.delayedCall(100, () => {
-	SoundManager.playSFX("spawn");
-	});
-
-return;
+      this.scene.time.delayedCall(100, () => {
+        SoundManager.playSFX("spawn");
+      });
 
       return;
     }
   }
 
- 
+  console.warn("⚠️ Could not find valid spot to spawn at random");
 }
+
 
 // ─────────────────────────────────────────────
   // 🌀 spawnInLeastCrowdedArea
   // ─────────────────────────────────────────────
-
-
-
 spawnInLeastCrowdedArea() {
+  // 🔒 Global freeze guard (drop spawns during freeze; no re-queue)
+  const freezeUntil = this.scene._nukeSpawnFreezeUntil || 0;
+  const now = this.scene.time.now;
+  if (now < freezeUntil) return;
+
   const attempts = 50;
   const scanRadius = 150;
   const crowdMembers = this.group.getChildren();
@@ -261,8 +267,9 @@ spawnInLeastCrowdedArea() {
   }
 }
 
-
-
+// ─────────────────────────────────────────────
+  // 🌀 spawnRandomEntity
+  // ─────────────────────────────────────────────
 spawnRandomEntity(x, y) {
   if (Phaser.Math.Between(1, 25) === 1) {
     const alienFrames = ["a1", "a2", "a3", "a4"];

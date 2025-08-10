@@ -6,7 +6,7 @@ export default class NukeManager {
   // ▶ Spawn config (powerup)
   // ───────────────────────────────
   NUKE_FIRST_DELAY_MS = 10000;     // first nuke after 10s
-  NUKE_SPAWN_INTERVAL_MS = 15000;  // schedule next spawn this long AFTER the BOOM
+  NUKE_SPAWN_INTERVAL_MS = 17000;  // schedule next spawn this long AFTER the BOOM
   MAX_NUKES_ON_FIELD = 1;          // max at once
 
   // ───────────────────────────────
@@ -26,9 +26,9 @@ export default class NukeManager {
   // ───────────────────────────────
   // ▶ Camera shake
   // ───────────────────────────────
-  SHAKE_DURATION_MS        = 200;     // 180–220 feels good
-  SHAKE_INTENSITY_DESKTOP  = 0.008;   // desktop shake strength
-  SHAKE_INTENSITY_MOBILE   = 0.005;   // mobile shake strength (lower to avoid nausea)
+  SHAKE_DURATION_MS        = 200;
+  SHAKE_INTENSITY_DESKTOP  = 0.008;
+  SHAKE_INTENSITY_MOBILE   = 0.005;
 
   constructor(scene, player) {
     this.scene = scene;
@@ -81,7 +81,8 @@ export default class NukeManager {
   }
 
   // ───────────────────────────────
-  // ▶ Collision → SFX sequence → nuke
+  // ▶ Collision → SFX sequence → BOOM
+  //    (NO FREEZE set here anymore)
   // ───────────────────────────────
   enableCollision() {
     this.scene.physics.add.overlap(
@@ -96,15 +97,6 @@ export default class NukeManager {
 
         // 1) play collect immediately
         SoundManager.playSFX("nuke_collect");
-
-        // Freeze ALL crowd spawns through: lead + countdown + post-nuke delay
-        const totalFreeze =
-          this.COUNTDOWN_LEAD_MS + this.COUNTDOWN_DURATION_MS + this.TRICKLE_START_DELAY_MS;
-        const until = this.scene.time.now + totalFreeze;
-        this.scene._nukeSpawnFreezeUntil = Math.max(
-          this.scene._nukeSpawnFreezeUntil || 0,
-          until
-        );
 
         // 2) after lead, play countdown
         this.scene.time.delayedCall(this.COUNTDOWN_LEAD_MS, () => {
@@ -123,7 +115,7 @@ export default class NukeManager {
   }
 
   // ───────────────────────────────
-  // ▶ Do the nuke (wipe everyone) + delayed trickle refill
+  // ▶ BOOM → wipe → post-BOOM freeze → trickle refill
   //   and schedule NEXT SPAWN after the BOOM.
   // ───────────────────────────────
   triggerNuke() {
@@ -142,32 +134,30 @@ export default class NukeManager {
     // 🔆 Shockwave at the player's position (ground ripple)
     this.spawnShockwave(this.player.x, this.player.y);
 
-    // Clone children so we can safely destroy while iterating
+    // Wipe crowd (mirror projectile kill flow)
     const members = [...this.scene.crowdGroup.getChildren()];
     for (const m of members) {
       if (!m || !m.active) continue;
-
       this.scene.playPoof(m.x, m.y);
       if (m.visuals && m.visuals.destroy) m.visuals.destroy();
       m.destroy();
-
       this.scene.scoreUI?.addToScore(40);
     }
 
-    // Keep freeze at least through the post-nuke delay
+    // ⏸ Start freeze ONLY now (post-BOOM gap)
     const minFreeze = this.scene.time.now + this.TRICKLE_START_DELAY_MS;
     this.scene._nukeSpawnFreezeUntil = Math.max(
       this.scene._nukeSpawnFreezeUntil || 0,
       minFreeze
     );
 
-    // Start trickle after the post-nuke delay
+    // After the gap, release freeze + begin trickle refill
     this.scene.time.delayedCall(this.TRICKLE_START_DELAY_MS, () => {
-      this.scene._nukeSpawnFreezeUntil = 0; // release freeze
+      this.scene._nukeSpawnFreezeUntil = 0;
       this.scheduleRefill();
     });
 
-    // 👉 Schedule the NEXT nuke spawn AFTER the BOOM (cooldown-from-explosion)
+    // 👉 Schedule the NEXT nuke spawn AFTER the BOOM
     if (this._nextSpawnTimer) {
       this._nextSpawnTimer.remove(false);
       this._nextSpawnTimer = null;
@@ -190,23 +180,23 @@ export default class NukeManager {
     // Place “on the floor”: below crowd visuals (which are at y + 100), above stage
     const img = this.scene.add.image(x, y, key)
       .setBlendMode(Phaser.BlendModes.ADD)
-      .setDepth(99)          // below all visuals (min visuals depth ≈ y+100)
+      .setDepth(99)
       .setAlpha(0.9)
-      .setOrigin(0.5, 0.6)   // bias downward for a ground feel
-      .setScale(0.3, 0.14);  // start elliptical (X > Y)
+      .setOrigin(0.5, 0.6)
+      .setScale(0.3, 0.14);
 
     const w = this.scene.scale.width;
     const h = this.scene.scale.height;
-    const texSize = 256; // diameter of our generated texture
+    const texSize = 256;
 
-    const targetScaleX = (Math.max(w, h) / texSize) * 1.35; // expand past screen
-    const targetScaleY = targetScaleX * 0.42;                // keep squashed for perspective
-    const driftY = 14;                                       // slight forward roll
+    const targetScaleX = (Math.max(w, h) / texSize) * 1.35;
+    const targetScaleY = targetScaleX * 0.42;
+    const driftY = 14;
 
     this.scene.tweens.add({
       targets: img,
       scaleX: { from: img.scaleX, to: targetScaleX },
-      scaleY: { from: img.scaleY, to: targetScaleY * 0.9 }, // squash a bit more as it grows
+      scaleY: { from: img.scaleY, to: targetScaleY * 0.9 },
       y: { from: y, to: y + driftY },
       alpha: { from: 0.9, to: 0 },
       duration: 800,
@@ -219,18 +209,17 @@ export default class NukeManager {
     const key = "nuke_shockwave_ring_ground";
     if (this.scene.textures.exists(key)) return key;
 
-    const size = 256;     // texture width/height
+    const size = 256;
     const r = size / 2;
-    const thickness = 34; // ring thickness
-    const steps = 10;     // more steps = softer falloff
+    const thickness = 34;
+    const steps = 10;
 
     const g = this.scene.add.graphics({ x: 0, y: 0 });
     g.clear();
 
-    // Outer-to-inner concentric strokes with fading alpha for a soft falloff
     for (let i = 0; i < steps; i++) {
       const t = thickness * (1 - i / steps);
-      const alpha = 0.22 * (1 - i / steps); // outer soft, inner brighter
+      const alpha = 0.22 * (1 - i / steps);
       g.lineStyle(t, 0xffffff, Math.max(0.03, alpha));
       g.strokeCircle(r, r, r - t / 2);
     }

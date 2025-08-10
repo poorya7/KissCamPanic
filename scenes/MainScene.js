@@ -14,7 +14,7 @@ import PowerupManager from "../entities/powerups/PowerupManager.js";
 import StageBuilder from "../entities/StageBuilder.js";
 import StartDialog from "../entities/StartDialog.js"; 	
 import BlockerManager from "../entities/BlockerManager.js"; 
-
+import NukeManager from "../entities/powerups/NukeManager.js";
 
 
 import {
@@ -79,12 +79,18 @@ this.debugText = this.add.text(10, 10, "", {
   this.staplerManager = new StaplerManager(this, this.player);
   this.mugManager = this.powerupManager.mugManager;
   this.powerupManager.staplerManager = this.staplerManager;
+  this.nukeManager = new NukeManager(this, this.player);
 
   this.staplerManager.enableCollision(() => {
     this.powerupManager.activateRapidFire(this.player);
   });
 
   this.mugManager.enableCollision(() => {});
+  
+  this.nukeManager.enableCollision(() => {
+  this.nukeManager.triggerNuke();
+});
+
 
   // ✅ Only bind manual shooting on desktop
   if (window.matchMedia("(pointer: fine)").matches) {

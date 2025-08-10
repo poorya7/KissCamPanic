@@ -184,38 +184,48 @@ for (let i = 0; i < spawnPoints.length && crowdCount < maxCrowd; i++) {
   // ─────────────────────────────────────────────
   // 🌀 Spawn 1 Crowd Anywhere Valid
   // ─────────────────────────────────────────────
-  spawnAtRandomValidLocation() {
-  const maxAttempts = 100;
+spawnAtRandomValidLocation() {
+  // 🔒 Global freeze guard
+  const freezeUntil = this.scene._nukeSpawnFreezeUntil || 0;
+  const now = this.scene.time.now;
+  if (now < freezeUntil) {
+    const delay = Math.max(0, freezeUntil - now + 10);
+    this.scene.time.delayedCall(delay, () => this.spawnAtRandomValidLocation());
+    return;
+  }
 
+  const maxAttempts = 100;
   for (let i = 0; i < maxAttempts; i++) {
     const x = Phaser.Math.Between(10, this.scene.scale.width - 10);
     const y = Phaser.Math.Between(20, this.scene.scale.height - 10);
 
     if (!this.isBlocked(x, y)) {
-      // Force spawn by skipping random chance
       this.spawnCrowdMember(x, y, { force: true });
-	  this.spawnCrowdMember(x, y, { force: true });
+      this.spawnCrowdMember(x, y, { force: true });
 
-	this.scene.time.delayedCall(100, () => {
-	SoundManager.playSFX("spawn");
-	});
-
-return;
-
+      this.scene.time.delayedCall(100, () => {
+        SoundManager.playSFX("spawn");
+      });
       return;
     }
   }
-
- 
 }
+
 
 // ─────────────────────────────────────────────
   // 🌀 spawnInLeastCrowdedArea
   // ─────────────────────────────────────────────
 
-
-
 spawnInLeastCrowdedArea() {
+  // 🔒 Global freeze guard (e.g., right after a nuke)
+  const freezeUntil = this.scene._nukeSpawnFreezeUntil || 0;
+  const now = this.scene.time.now;
+  if (now < freezeUntil) {
+    const delay = Math.max(0, freezeUntil - now + 10); // small buffer
+    this.scene.time.delayedCall(delay, () => this.spawnInLeastCrowdedArea());
+    return;
+  }
+
   const attempts = 50;
   const scanRadius = 150;
   const crowdMembers = this.group.getChildren();
@@ -239,13 +249,11 @@ spawnInLeastCrowdedArea() {
       }
     }
 
-    // 🎯 Perfect empty zone found — spawn immediately
     if (nearbyCount === 0) {
       this.spawnRandomEntity(x, y);
       return;
     }
 
-    // Keep best fallback
     const avgDist = totalDist / nearbyCount;
     if (avgDist > fallbackScore) {
       fallbackScore = avgDist;
@@ -253,16 +261,15 @@ spawnInLeastCrowdedArea() {
     }
   }
 
-  // 🪂 Fallback spawn
   if (fallback) {
     this.spawnRandomEntity(fallback.x, fallback.y);
   } else {
     console.warn("⚠️ Could not find valid spawn spot at all");
   }
 }
-
-
-
+// ─────────────────────────────────────────────
+  // 🌀 spawnRandomEntity
+  // ─────────────────────────────────────────────
 spawnRandomEntity(x, y) {
   if (Phaser.Math.Between(1, 25) === 1) {
     const alienFrames = ["a1", "a2", "a3", "a4"];

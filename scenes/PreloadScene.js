@@ -130,6 +130,7 @@ export default class PreloadScene extends Phaser.Scene {
     this.load.image("powerup_bar", "sprites/powerups/powerup_bar.png");
     this.load.image("powerup_fill", "sprites/powerups/powerup_fill2.png");
     this.load.image("bubble_kisscam", "sprites/props/bubble_kisscam.png");
+	this.load.image("nuke", "sprites/powerups/nuke1.png");
     this.load.audio("shoot1", "sounds/fx/shoot1.wav");
     this.load.audio("shoot2", "sounds/fx/shoot2.wav");
     this.load.audio("hit", "sounds/fx/hit.wav");

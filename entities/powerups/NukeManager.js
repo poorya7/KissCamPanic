@@ -6,7 +6,7 @@ export default class NukeManager {
   // ▶ Spawn config (powerup)
   // ───────────────────────────────
   NUKE_FIRST_DELAY_MS = 10000;     // first nuke after 10s
-  NUKE_SPAWN_INTERVAL_MS = 20000;  // schedule next spawn this long AFTER the BOOM
+  NUKE_SPAWN_INTERVAL_MS = 15000;  // schedule next spawn this long AFTER the BOOM
   MAX_NUKES_ON_FIELD = 1;          // max at once
 
   // ───────────────────────────────
@@ -43,10 +43,7 @@ export default class NukeManager {
   // ▶ Spawning (no repeating loop)
   // ───────────────────────────────
   trySpawnNuke() {
-    // Don't spawn while a sequence or nuke is ongoing
     if (this._pendingSequence || this._isNuking) return;
-
-    // Respect max on field
     if (this.nukeGroup.countActive(true) >= this.MAX_NUKES_ON_FIELD) return;
 
     const maxAttempts = 20;
@@ -129,6 +126,9 @@ export default class NukeManager {
     // BOOM
     SoundManager.playSFX("nuke");
 
+    // 🔆 Shockwave at the player's position (ground ripple)
+    this.spawnShockwave(this.player.x, this.player.y);
+
     // Clone children so we can safely destroy while iterating
     const members = [...this.scene.crowdGroup.getChildren()];
     for (const m of members) {
@@ -169,6 +169,65 @@ export default class NukeManager {
   }
 
   // ───────────────────────────────
+  // ▶ Shockwave ring (ground ripple, perspective)
+  // ───────────────────────────────
+  spawnShockwave(x, y) {
+    const key = this.ensureShockwaveTexture();
+
+    // Place “on the floor”: below crowd visuals (which are at y + 100), above stage
+    const img = this.scene.add.image(x, y, key)
+      .setBlendMode(Phaser.BlendModes.ADD)
+      .setDepth(99)          // below all visuals (min visuals depth ≈ y+100)
+      .setAlpha(0.9)
+      .setOrigin(0.5, 0.6)   // bias downward for a ground feel
+      .setScale(0.3, 0.14);  // start elliptical (X > Y)
+
+    const w = this.scene.scale.width;
+    const h = this.scene.scale.height;
+    const texSize = 256; // diameter of our generated texture
+
+    const targetScaleX = (Math.max(w, h) / texSize) * 1.35; // expand past screen
+    const targetScaleY = targetScaleX * 0.42;                // keep squashed for perspective
+    const driftY = 14;                                       // slight forward roll
+
+    this.scene.tweens.add({
+      targets: img,
+      scaleX: { from: img.scaleX, to: targetScaleX },
+      scaleY: { from: img.scaleY, to: targetScaleY * 0.9 }, // squash a bit more as it grows
+      y: { from: y, to: y + driftY },
+      alpha: { from: 0.9, to: 0 },
+      duration: 800,
+      ease: "Cubic.Out",
+      onComplete: () => img.destroy()
+    });
+  }
+
+  ensureShockwaveTexture() {
+    const key = "nuke_shockwave_ring_ground";
+    if (this.scene.textures.exists(key)) return key;
+
+    const size = 256;     // texture width/height
+    const r = size / 2;
+    const thickness = 34; // ring thickness
+    const steps = 10;     // more steps = softer falloff
+
+    const g = this.scene.add.graphics({ x: 0, y: 0 });
+    g.clear();
+
+    // Outer-to-inner concentric strokes with fading alpha for a soft falloff
+    for (let i = 0; i < steps; i++) {
+      const t = thickness * (1 - i / steps);
+      const alpha = 0.22 * (1 - i / steps); // outer soft, inner brighter
+      g.lineStyle(t, 0xffffff, Math.max(0.03, alpha));
+      g.strokeCircle(r, r, r - t / 2);
+    }
+
+    g.generateTexture(key, size, size);
+    g.destroy();
+    return key;
+  }
+
+  // ───────────────────────────────
   // ▶ Staggered refill logic
   // ───────────────────────────────
   scheduleRefill() {
@@ -192,20 +251,17 @@ export default class NukeManager {
   // ───────────────────────────────
   // ▶ Reset
   // ───────────────────────────────
- reset() {
-  this.nukeGroup.clear(true, true);
-  this._isNuking = false;
-  this._pendingSequence = false;
+  reset() {
+    this.nukeGroup.clear(true, true);
+    this._isNuking = false;
+    this._pendingSequence = false;
 
-  if (this._nextSpawnTimer) {
-    this._nextSpawnTimer.remove(false);
-    this._nextSpawnTimer = null;
+    if (this._nextSpawnTimer) {
+      this._nextSpawnTimer.remove(false);
+      this._nextSpawnTimer = null;
+    }
+
+    // ensure future bullet-kill spawns aren’t held back
+    this.scene._nukeSpawnFreezeUntil = 0;
   }
-
-  // 🔓 ensure future bullet-kill spawns aren’t held back
-  this.scene._nukeSpawnFreezeUntil = 0;
-}
-
-
- // ───────────────────────────────
 }

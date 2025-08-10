@@ -192,14 +192,20 @@ export default class NukeManager {
   // ───────────────────────────────
   // ▶ Reset
   // ───────────────────────────────
-  reset() {
-    this.nukeGroup.clear(true, true);
-    this._isNuking = false;
-    this._pendingSequence = false;
+ reset() {
+  this.nukeGroup.clear(true, true);
+  this._isNuking = false;
+  this._pendingSequence = false;
 
-    if (this._nextSpawnTimer) {
-      this._nextSpawnTimer.remove(false);
-      this._nextSpawnTimer = null;
-    }
+  if (this._nextSpawnTimer) {
+    this._nextSpawnTimer.remove(false);
+    this._nextSpawnTimer = null;
   }
+
+  // 🔓 ensure future bullet-kill spawns aren’t held back
+  this.scene._nukeSpawnFreezeUntil = 0;
+}
+
+
+ // ───────────────────────────────
 }

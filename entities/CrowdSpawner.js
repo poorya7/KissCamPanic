@@ -182,52 +182,45 @@ for (let i = 0; i < spawnPoints.length && crowdCount < maxCrowd; i++) {
   }
 
   // ─────────────────────────────────────────────
-  // 🌀 Spawn 1 Crowd Anywhere Valid
+  // 🌀 spawnAtRandomValidLocation
   // ─────────────────────────────────────────────
 spawnAtRandomValidLocation() {
-  // 🔒 Global freeze guard
+  // 🔒 Global freeze guard (drop spawns during freeze; no re-queue)
   const freezeUntil = this.scene._nukeSpawnFreezeUntil || 0;
   const now = this.scene.time.now;
-  if (now < freezeUntil) {
-    const delay = Math.max(0, freezeUntil - now + 10);
-    this.scene.time.delayedCall(delay, () => this.spawnAtRandomValidLocation());
-    return;
-  }
+  if (now < freezeUntil) return;
 
   const maxAttempts = 100;
+
   for (let i = 0; i < maxAttempts; i++) {
     const x = Phaser.Math.Between(10, this.scene.scale.width - 10);
     const y = Phaser.Math.Between(20, this.scene.scale.height - 10);
 
     if (!this.isBlocked(x, y)) {
+      // Force spawn by skipping random chance
       this.spawnCrowdMember(x, y, { force: true });
       this.spawnCrowdMember(x, y, { force: true });
 
       this.scene.time.delayedCall(100, () => {
         SoundManager.playSFX("spawn");
       });
+
       return;
     }
   }
+
+  console.warn("⚠️ Could not find valid spot to spawn at random");
 }
 
 
 // ─────────────────────────────────────────────
   // 🌀 spawnInLeastCrowdedArea
   // ─────────────────────────────────────────────
-
 spawnInLeastCrowdedArea() {
-  // 🔒 Global freeze guard (right after a nuke)
+  // 🔒 Global freeze guard (drop spawns during freeze; no re-queue)
   const freezeUntil = this.scene._nukeSpawnFreezeUntil || 0;
   const now = this.scene.time.now;
-  if (now < freezeUntil) {
-    const remaining = Math.max(0, freezeUntil - now);
-    const jitter = Phaser.Math.Between(500, 1500); // spread calls 0.5–1.5s after unfreeze
-    this.scene.time.delayedCall(remaining + jitter, () => this.spawnInLeastCrowdedArea());
-    return;
-  }
-
-
+  if (now < freezeUntil) return;
 
   const attempts = 50;
   const scanRadius = 150;
@@ -252,11 +245,13 @@ spawnInLeastCrowdedArea() {
       }
     }
 
+    // 🎯 Perfect empty zone found — spawn immediately
     if (nearbyCount === 0) {
       this.spawnRandomEntity(x, y);
       return;
     }
 
+    // Keep best fallback
     const avgDist = totalDist / nearbyCount;
     if (avgDist > fallbackScore) {
       fallbackScore = avgDist;
@@ -264,12 +259,14 @@ spawnInLeastCrowdedArea() {
     }
   }
 
+  // 🪂 Fallback spawn
   if (fallback) {
     this.spawnRandomEntity(fallback.x, fallback.y);
   } else {
     console.warn("⚠️ Could not find valid spawn spot at all");
   }
 }
+
 // ─────────────────────────────────────────────
   // 🌀 spawnRandomEntity
   // ─────────────────────────────────────────────
